@@ -25,7 +25,7 @@ export interface UpdateInstruction {
   select: string | Fn;
   data: any | Fn;
   patch: boolean;
-  projection: string;
+  projection?: string;
   condition: boolean | Fn;
 }
 

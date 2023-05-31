@@ -49,7 +49,7 @@ function normalizeResponses(responses?: Record<string, Input.Response>): Output.
   return Object.entries(responses).map(([key, response]) => ({
     key,
     title: response.title || key,
-    update: normalizeUpdateInstructions(response.update),
+    update: normalizeUpdateInstructions(response.update || []),
   }));
 }
 

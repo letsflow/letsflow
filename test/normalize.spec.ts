@@ -1,5 +1,5 @@
-import {normalize} from "../src/normalize";
-import {expect} from "chai";
+import { normalize } from '../src';
+import { expect } from 'chai';
 
 describe('normalize', () => {
   describe('normalize scenario', () => {
