@@ -1,0 +1,30 @@
+{
+  "name": "@letsflow/api",
+  "version": "0.0.0",
+  "description": "Shared library for LetsFlow",
+  "main": "./lib/index.js",
+  "author": "Arnold Daniels <arnold@jasny.net>",
+  "license": "MIT",
+  "dependencies": {
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@types/uuid": "^9.0.1",
+    "chai": "^4.3.7",
+    "eslint": "^8.41.0",
+    "mocha": "^10.2.0",
+    "prettier": "^2.8.8",
+    "ts-loader": "^9.4.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  },
+  "scripts": {
+    "clean": "rm -rf ./lib ./dist",
+    "compile": "tsc && tsc -p ./tsconfig.esm.json",
+    "test": "mocha --require ts-node/register 'test/**/*.spec.ts'",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint-fix": "eslint src --ext .ts,.tsx --fix"
+  }
+}
