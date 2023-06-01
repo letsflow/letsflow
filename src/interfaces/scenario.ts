@@ -1,60 +1,75 @@
-import { Fn } from './fn';
+export type Fn = FnRef | FnEval | FnTpl;
 
-export interface Actor {
-  schema: string;
-  key: string;
-  title: string | Fn;
+export interface JsonObjectSchema {
+  type?: 'object';
+  title?: string;
+  description?: string;
+  properties?: Record<string, any>;
+  required?: string[];
+  additionalProperties?: boolean | Record<string, any>;
+}
+
+interface FnRef {
+  '<ref>': string;
+}
+
+interface FnEval {
+  '<eval>': string;
+}
+
+interface FnTpl {
+  '<tpl>': string;
 }
 
 export interface Action {
-  schema: string;
-  key: string;
-  title: string | Fn;
+  $schema?: string;
+  title?: string;
   description?: string | Fn;
-  actors: string | string[] | Fn;
-  responses: Response[];
+  actor?: string | string[] | Fn;
+  responses?: Record<string, Response>;
+  [_: string]: any
 }
 
 export interface Response {
   title: string | Fn;
-  key: string;
-  update: UpdateInstruction[];
+  update?: UpdateInstruction | UpdateInstruction[];
 }
 
 export interface UpdateInstruction {
-  select: string | Fn;
+  select: string;
   data: any | Fn;
-  patch: boolean;
-  projection?: string;
-  condition: boolean | Fn;
+  patch?: boolean;
+  apply?: string;
+  if?: boolean | Fn;
 }
 
 export interface State {
-  key: string;
-  title: string | Fn;
-  description?: string | Fn;
-  actions: string[];
+  title?: string | Fn;
+  instructions?: string | Record<string, string>;
+  actions?: string[];
   transitions: Transition[];
 }
 
 export interface Transition {
-  action: string;
-  response?: string;
-  condition: boolean | Fn;
-  target: string;
+  on?: string | { action: string; response?: string };
+  if?: boolean | Fn;
+  goto: string;
+}
+
+export interface SimpleState {
+  title?: string | Fn;
+  instructions?: string | Record<string, string>;
+  on: string | { action: string; response?: string };
+  goto: string;
 }
 
 export interface Scenario {
-  id?: string;
+  $schema?: string;
   title: string;
   description?: string;
 
-  actors: Actor[];
-  actions: Action[];
-  states: State[];
-
-  data?: {
-    $schema?: string;
-    [key: string]: any;
-  };
+  actors: Record<string, JsonObjectSchema>;
+  actions: Record<string, Action>;
+  states: Record<string, State | SimpleState>;
+  assets?: Record<string, JsonObjectSchema>;
 }

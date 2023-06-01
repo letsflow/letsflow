@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.letsflow.io/v0.3.0/fn",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "<ref>": {
+          "type": "string"
+        }
+      },
+      "required": ["<ref>"]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "<eval>": {
+          "type": "string"
+        }
+      },
+      "required": ["<eval>"]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "<tpl>": {
+          "type": "string"
+        }
+      },
+      "required": ["<tpl>"]
+    }
+  ]
+}

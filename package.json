@@ -2,11 +2,12 @@
   "name": "@letsflow/api",
   "version": "0.0.0",
   "description": "Shared library for LetsFlow",
-  "main": "./src/index.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "author": "Arnold Daniels <arnold@jasny.net>",
   "license": "MIT",
   "dependencies": {
-    "uuid": "^9.0.0"
+    "ajv": "^8.12.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.5",

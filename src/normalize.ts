@@ -1,93 +1,107 @@
-import * as Input from './interfaces/scenario-input';
-import * as Output from './interfaces/scenario';
+import {
+  Action,
+  Scenario,
+  Response,
+  UpdateInstruction,
+  State,
+  SimpleState,
+  Transition,
+  JsonObjectSchema
+} from "./interfaces/scenario";
 
-const scenarioJsonSchema = 'https://specs.letsflow.io/v0.3.0/scenario#';
-const actorJsonSchema = 'https://specs.letsflow.io/v0.3.0/actor#';
-const actionJsonSchema = 'https://specs.letsflow.io/v0.3.0/action#';
+const scenarioJsonSchema = 'https://specs.letsflow.io/v0.3.0/scenario';
+const actionJsonSchema = 'https://specs.letsflow.io/v0.3.0/action';
 
-export function normalize(input: Input.Scenario): Output.Scenario {
-  if (input.$schema && input.$schema !== scenarioJsonSchema) {
-    throw new Error(`Unsupported scenario schema: ${input.$schema}, only ${scenarioJsonSchema} is supported`);
+export function normalize(input: Scenario): Scenario {
+  const scenario = structuredClone(input);
+
+  if (scenario.$schema && scenario.$schema !== scenarioJsonSchema) {
+    throw new Error(`Unsupported scenario schema: ${scenario.$schema}, only ${scenarioJsonSchema} is supported`);
   }
 
-  const actors = Object.keys(input.actors);
+  scenario.description ??= '';
+  normalizeActors(scenario.actors);
+  normalizeActions(scenario.actions, Object.keys(scenario.actors));
+  normalizeStates(scenario.states);
+  scenario.assets ??= {};
 
-  return {
-    title: input.title,
-    description: input.description,
-    actors: normalizeActors(input.actors),
-    actions: normalizeActions(input.actions, actors),
-    states: normalizeStates(input.states),
-    data: input.data || {},
-  };
+  return scenario;
 }
 
-function normalizeActors(actors: Record<string, Input.Actor>): Output.Actor[] {
-  return Object.entries(actors).map(([key, actor]) => ({
-    schema: actor.$schema || actorJsonSchema,
-    key,
-    title: actor.title || key,
-  }));
+function normalizeActors(actors: Record<string, JsonObjectSchema>): void {
+  Object.entries(actors).forEach(([key, actor]) => {
+    actor.title ??= key;
+    actor.properties ??= {};
+    actor.properties.title = { type: 'string' };
+  });
 }
 
-function normalizeActions(actions: Record<string, Input.Action>, allActors: string[]): Output.Action[] {
-  return Object.entries(actions).map(([key, action]) => ({
-    schema: action.$schema || actionJsonSchema,
-    key,
-    title: action.title || key,
-    description: action.description,
-    actors: action.actor || allActors,
-    responses: normalizeResponses(action.responses),
-  }));
+function normalizeActions(actions: Record<string, Action>, allActors: string[]): void {
+  Object.entries(actions).forEach(([key, action]) => {
+    action.$schema ??= actionJsonSchema;
+    action.title ??= key;
+    action.actor ??= allActors;
+    action.description ??= '';
+    action.responses ??= { ok: { title: 'ok', update: [] } };
+    action.$schema ??= actionJsonSchema;
+
+    normalizeResponses(action.responses);
+  });
 }
 
-function normalizeResponses(responses?: Record<string, Input.Response>): Output.Response[] {
-  if (!responses) {
-    return [{ key: 'ok', title: 'ok', update: [] }];
-  }
-
-  return Object.entries(responses).map(([key, response]) => ({
-    key,
-    title: response.title || key,
-    update: normalizeUpdateInstructions(response.update || []),
-  }));
+function normalizeResponses(responses: Record<string, Response>): void {
+  Object.entries(responses).forEach(([key, response]) => {
+    response.title ??= key;
+    response.update = normalizeUpdateInstructions(response.update ?? []);
+  });
 }
 
 function normalizeUpdateInstructions(
-  instructions: Input.UpdateInstruction | Input.UpdateInstruction[],
-): Output.UpdateInstruction[] {
+  instructions: UpdateInstruction | UpdateInstruction[],
+): UpdateInstruction[] {
   return (Array.isArray(instructions) ? instructions : [instructions]).map((instruction) => ({
     select: instruction.select,
-    data: instruction.data,
+    data: instruction.data || { '<ref>': 'response' },
     patch: instruction.patch || false,
-    projection: instruction.apply,
-    condition: instruction.if || true,
+    apply: instruction.apply,
+    if: instruction.if || true,
   }));
 }
 
-function normalizeStates(states: Record<string, Input.State | Input.SimpleState>): Output.State[] {
-  return Object.entries(states).map(([key, state]) => ({
-    key,
-    title: state.title || key,
-    description: state.description,
-    actions: normalizeStateActions(state),
-    transitions: normalizeStateTransitions(state),
-  }));
+function normalizeStates(states: Record<string, State | SimpleState>): void {
+  for (const key in states) {
+    const state = states[key];
+    states[key] = {
+      title: state.title ?? key,
+      instructions: typeof state.instructions === 'string' ? { '*': state.instructions } : state.instructions ?? {},
+      actions: normalizeStateActions(state),
+      transitions: normalizeTransitions(state),
+    }
+  }
 }
 
-function normalizeStateActions(state: Input.State | Input.SimpleState): string[] {
+function normalizeStateActions(state: State | SimpleState): string[] {
   return ('on' in state ? [state.on] : state.transitions.map((transition) => transition.on))
-    .map((action) => action.split('.')[0]);
+    .filter((on) => !!on)
+    .map((on) => typeof on === 'string' ? on.split('.')[0] : on!.action);
 }
 
-function normalizeStateTransitions(state: Input.State | Input.SimpleState): Output.Transition[] {
+function normalizeTransitions(state: State | SimpleState): Transition[] {
   if ('on' in state) {
-    const [action, response] = state.on.split('.');
-    return [{ action, response, condition: true, target: state.goto }];
+    const [action, response] = typeof state.on === 'string'
+        ? state.on.split('.')
+        : [state.on.action, state.on.response || '*'];
+    return [{ on: { action, response }, if: true, goto: state.goto }];
   }
 
-  return state.transitions.map((transition) => {
-    const [action, response] = transition.on.split('.');
-    return { action, response, condition: transition.if || true, target: transition.goto };
+  state.transitions.forEach((transition) => {
+    if (typeof transition.on === 'string') {
+      const [action, response] = transition.on.split('.');
+      transition.on = { action, response };
+    }
+
+    transition.if ??= true;
   });
+
+  return state.transitions;
 }

@@ -1,10 +1,10 @@
-import { normalize } from '../src';
+import { normalize, Scenario } from '../src';
 import { expect } from 'chai';
 
 describe('normalize', () => {
   describe('normalize scenario', () => {
     it('should normalize a minimal scenario', () => {
-      const input = {
+      const scenario: Scenario = {
         title: 'minimal scenario',
         actors: {
           user: {},
@@ -20,47 +20,77 @@ describe('normalize', () => {
         },
       };
 
-      const output = normalize(input);
-
-      expect(output).to.deep.eq({
+      expect(normalize(scenario)).to.deep.eq({
         title: 'minimal scenario',
-        description: undefined,
-        actors: [
-          {
-            schema: 'https://specs.letsflow.io/v0.3.0/actor#',
-            key: 'user',
+        description: '',
+        actors: {
+          user: {
             title: 'user',
-          },
-        ],
-        actions: [
-          {
-            schema: 'https://specs.letsflow.io/v0.3.0/action#',
-            key: 'complete',
+            properties: {
+              title: { type: 'string' },
+            }
+          }
+        },
+        actions: {
+          complete: {
+            $schema: "https://specs.letsflow.io/v0.3.0/action",
             title: 'complete',
-            description: undefined,
-            actors: [ 'user' ],
-            responses: [
-              { key: 'ok', title: 'ok', update: [] },
-            ],
+            description: '',
+            actor: ['user'],
+            responses: {
+              ok: { title: 'ok', update: [] },
+            },
           },
-        ],
-        states: [
-          {
-            key: 'initial',
+        },
+        states: {
+          initial: {
             title: 'initial',
-            description: undefined,
-            actions: [ 'complete' ],
+            instructions: {},
+            actions: ['complete'],
             transitions: [
               {
-                action: 'complete',
-                response: undefined,
-                condition: true,
-                target: '(done)',
+                on: { action: 'complete', response: undefined },
+                if: true,
+                goto: '(done)',
               }
             ],
           }
-        ],
-        data: {},
+        },
+        assets: {},
+      });
+    });
+  });
+
+  describe('normalize actors', () => {
+    it('should set the actor title', () => {
+      const scenario: Scenario = {
+        title: 'minimal scenario',
+        actors: {
+          user: {
+            properties: {
+              name: { type: 'string' }
+            }
+          },
+        },
+        actions: {},
+        states: {},
+      };
+
+      expect(normalize(scenario)).to.deep.eq({
+        title: 'minimal scenario',
+        description: '',
+        actors: {
+          user: {
+            title: 'user',
+            properties: {
+              title: { type: 'string' },
+              name: { type: 'string' }
+            }
+          }
+        },
+        actions: {},
+        states: {},
+        assets: {},
       });
     });
   });

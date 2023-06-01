@@ -6,9 +6,12 @@
     "sourceMap": true,
     "declaration": true,
     "target": "es6",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "paths": {},
     "rootDir": "src",
-    "outDir": "lib"
+    "outDir": "lib",
+    "strictNullChecks": true
   },
   "include": ["src"]
 }

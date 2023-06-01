@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.letsflow.io/v0.3.0/scenario",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "actors": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/objectSchema"
+      }
+    },
+    "actions": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "https://schemas.letsflow.io/v0.3.0/action"
+      }
+    },
+    "states": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/state"
+      }
+    },
+    "assets": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/objectSchema"
+      }
+    }
+  },
+  "required": ["title", "actors", "actions", "states"],
+  "definitions": {
+    "state": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "title": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "https://schemas.letsflow.io/v0.3.0/fn"
+                }
+              ]
+            },
+            "instructions": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "actions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "transitions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/transition"
+              }
+            }
+          },
+          "required": [ "transitions" ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "title": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "https://schemas.letsflow.io/v0.3.0/fn"
+                }
+              ]
+            },
+            "instructions": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "on": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transitionSelector"
+                }
+              ]
+            },
+            "goto": {
+              "type": "string"
+            }
+          },
+          "required": [ "on", "goto" ]
+        }
+      ]
+    },
+    "transition": {
+      "type": "object",
+      "properties": {
+        "on": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "action": {
+                  "type": "string"
+                },
+                "response": {
+                  "type": "string"
+                }
+              },
+              "required": ["action"]
+            }
+          ]
+        },
+        "if": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "https://schemas.letsflow.io/v0.3.0/fn"
+            }
+          ]
+        },
+        "goto": {
+          "type": "string"
+        }
+      },
+      "required": ["goto"]
+    },
+    "transitionSelector": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "required": ["action"]
+    },
+    "objectSchema": {
+      "allOf": [
+        { "$ref": "https://json-schema.org/draft/2020-12/schema" },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["object"]
+            }
+          },
+          "additionalProperties": true
+        }
+      ]
+    }
+  }
+}

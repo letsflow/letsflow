@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.letsflow.io/v0.3.0/action",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "https://schemas.letsflow.io/v0.3.0/fn"
+        }
+      ]
+    },
+    "actor": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "$ref": "https://schemas.letsflow.io/v0.3.0/fn"
+        }
+      ]
+    },
+    "responses": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/response"
+      }
+    }
+  },
+  "definitions": {
+    "response": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "https://schemas.letsflow.io/v0.3.0/fn"
+            }
+          ]
+        },
+        "update": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/updateInstruction"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/updateInstruction"
+              }
+            }
+          ]
+        }
+      },
+      "required": ["title"]
+    },
+    "updateInstruction": {
+      "type": "object",
+      "properties": {
+        "select": {
+          "type": "string"
+        },
+        "data": {},
+        "patch": {
+          "type": "boolean"
+        },
+        "apply": {
+          "type": "string"
+        },
+        "if": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "https://schemas.letsflow.io/v0.3.0/fn"
+            }
+          ]
+        }
+      },
+      "required": ["select", "data"]
+    }
+  }
+}
