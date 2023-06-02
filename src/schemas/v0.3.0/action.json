@@ -70,7 +70,7 @@
           ]
         }
       },
-      "required": ["title"]
+      "required": []
     },
     "updateInstruction": {
       "type": "object",
@@ -81,9 +81,6 @@
         "data": {},
         "patch": {
           "type": "boolean"
-        },
-        "apply": {
-          "type": "string"
         },
         "if": {
           "oneOf": [
@@ -96,7 +93,7 @@
           ]
         }
       },
-      "required": ["select", "data"]
+      "required": ["select"]
     }
   }
 }

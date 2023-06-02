@@ -12,6 +12,10 @@ import {
 const scenarioJsonSchema = 'https://specs.letsflow.io/v0.3.0/scenario';
 const actionJsonSchema = 'https://specs.letsflow.io/v0.3.0/action';
 
+function keyToTitle(key: string): string {
+  return key.replace(/[\-_]/, ' ');
+}
+
 export function normalize(input: Scenario): Scenario {
   const scenario = structuredClone(input);
 
@@ -20,17 +24,19 @@ export function normalize(input: Scenario): Scenario {
   }
 
   scenario.description ??= '';
+  scenario.actors ??= { actor: {title: 'actor'} };
+  scenario.assets ??= {};
+
   normalizeActors(scenario.actors);
   normalizeActions(scenario.actions, Object.keys(scenario.actors));
   normalizeStates(scenario.states);
-  scenario.assets ??= {};
 
   return scenario;
 }
 
 function normalizeActors(actors: Record<string, JsonObjectSchema>): void {
   Object.entries(actors).forEach(([key, actor]) => {
-    actor.title ??= key;
+    actor.title ??= keyToTitle(key);
     actor.properties ??= {};
     actor.properties.title = { type: 'string' };
   });
@@ -39,7 +45,7 @@ function normalizeActors(actors: Record<string, JsonObjectSchema>): void {
 function normalizeActions(actions: Record<string, Action>, allActors: string[]): void {
   Object.entries(actions).forEach(([key, action]) => {
     action.$schema ??= actionJsonSchema;
-    action.title ??= key;
+    action.title ??= key.replace(/[\-_]/, ' ');;
     action.actor ??= allActors;
     action.description ??= '';
     action.responses ??= { ok: { title: 'ok', update: [] } };
@@ -51,7 +57,7 @@ function normalizeActions(actions: Record<string, Action>, allActors: string[]):
 
 function normalizeResponses(responses: Record<string, Response>): void {
   Object.entries(responses).forEach(([key, response]) => {
-    response.title ??= key;
+    response.title ??= keyToTitle(key);
     response.update = normalizeUpdateInstructions(response.update ?? []);
   });
 }
@@ -63,7 +69,6 @@ function normalizeUpdateInstructions(
     select: instruction.select,
     data: instruction.data || { '<ref>': 'response' },
     patch: instruction.patch || false,
-    apply: instruction.apply,
     if: instruction.if || true,
   }));
 }
@@ -72,7 +77,7 @@ function normalizeStates(states: Record<string, State | SimpleState>): void {
   for (const key in states) {
     const state = states[key];
     states[key] = {
-      title: state.title ?? key,
+      title: state.title ?? keyToTitle(key),
       instructions: typeof state.instructions === 'string' ? { '*': state.instructions } : state.instructions ?? {},
       actions: normalizeStateActions(state),
       transitions: normalizeTransitions(state),

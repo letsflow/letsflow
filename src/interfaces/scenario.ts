@@ -31,15 +31,14 @@ export interface Action {
 }
 
 export interface Response {
-  title: string | Fn;
+  title?: string | Fn;
   update?: UpdateInstruction | UpdateInstruction[];
 }
 
 export interface UpdateInstruction {
   select: string;
-  data: any | Fn;
+  data?: any | Fn;
   patch?: boolean;
-  apply?: string;
   if?: boolean | Fn;
 }
 
@@ -68,7 +67,7 @@ export interface Scenario {
   title: string;
   description?: string;
 
-  actors: Record<string, JsonObjectSchema>;
+  actors?: Record<string, JsonObjectSchema>;
   actions: Record<string, Action>;
   states: Record<string, State | SimpleState>;
   assets?: Record<string, JsonObjectSchema>;

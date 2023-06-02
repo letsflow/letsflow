@@ -28,7 +28,8 @@
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/state"
-      }
+      },
+      "required": ["initial"]
     },
     "assets": {
       "type": "object",
@@ -37,7 +38,7 @@
       }
     }
   },
-  "required": ["title", "actors", "actions", "states"],
+  "required": ["title", "actions", "states"],
   "definitions": {
     "state": {
       "oneOf": [
@@ -184,7 +185,9 @@
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["object"]
+              "enum": [
+                "object"
+              ]
             }
           },
           "additionalProperties": true

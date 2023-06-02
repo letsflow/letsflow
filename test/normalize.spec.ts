@@ -64,9 +64,9 @@ describe('normalize', () => {
   describe('normalize actors', () => {
     it('should set the actor title', () => {
       const scenario: Scenario = {
-        title: 'minimal scenario',
+        title: '',
         actors: {
-          user: {
+          user_1: {
             properties: {
               name: { type: 'string' }
             }
@@ -77,11 +77,11 @@ describe('normalize', () => {
       };
 
       expect(normalize(scenario)).to.deep.eq({
-        title: 'minimal scenario',
+        title: '',
         description: '',
         actors: {
-          user: {
-            title: 'user',
+          user_1: {
+            title: 'user 1',
             properties: {
               title: { type: 'string' },
               name: { type: 'string' }
