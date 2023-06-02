@@ -37,19 +37,16 @@ describe('normalize', () => {
             title: 'complete',
             description: '',
             actor: ['user'],
-            responses: {
-              ok: { title: 'ok', update: [] },
-            },
+            update: [],
           },
         },
         states: {
           initial: {
             title: 'initial',
             instructions: {},
-            actions: ['complete'],
             transitions: [
               {
-                on: { action: 'complete', response: undefined },
+                on: 'complete',
                 if: true,
                 goto: '(done)',
               }

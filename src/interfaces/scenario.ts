@@ -26,13 +26,8 @@ export interface Action {
   title?: string;
   description?: string | Fn;
   actor?: string | string[] | Fn;
-  responses?: Record<string, Response>;
-  [_: string]: any
-}
-
-export interface Response {
-  title?: string | Fn;
   update?: UpdateInstruction | UpdateInstruction[];
+  [_: string]: any
 }
 
 export interface UpdateInstruction {
@@ -42,23 +37,28 @@ export interface UpdateInstruction {
   if?: boolean | Fn;
 }
 
+export interface SimpleState {
+  title?: string | Fn;
+  instructions?: string | Record<string, string>;
+  on: string;
+  goto: string;
+}
+
 export interface State {
   title?: string | Fn;
   instructions?: string | Record<string, string>;
-  actions?: string[];
-  transitions: Transition[];
+  transitions: Array<Transition | TimeoutTransition>;
 }
 
 export interface Transition {
-  on?: string | { action: string; response?: string };
+  on: string;
   if?: boolean | Fn;
   goto: string;
 }
 
-export interface SimpleState {
-  title?: string | Fn;
-  instructions?: string | Record<string, string>;
-  on: string | { action: string; response?: string };
+export interface TimeoutTransition {
+  after: string | number;
+  if?: boolean | Fn;
   goto: string;
 }
 

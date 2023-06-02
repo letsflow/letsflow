@@ -25,13 +25,49 @@ describe('validate', () => {
   });
 
   describe('validate actors', () => {
-    it('should succeed with an actor with some properties', () => {
+    it('should succeed with an actor with schema properties', () => {
       const scenario = {
         title: '',
         actors: {
           user: {
             properties: {
-              name: { type: 'string' }
+              name: {
+                type: 'string'
+              },
+              favorites: {
+                type: 'array',
+                items: {
+                  type: 'string'
+                }
+              }
+            }
+          },
+        },
+        actions: {
+          complete: {},
+        },
+        states: {
+          initial: { on: 'complete', goto: '(done)' },
+        },
+      };
+
+      const result = validate(scenario);
+
+      expect(validate.errors).to.eq(null);
+      expect(result).to.be.true;
+    });
+
+    it('should succeed with an actor with simple properties', () => {
+      const scenario = {
+        title: '',
+        actors: {
+          user: {
+            properties: {
+              name: 'string',
+              address: {
+                street: 'string',
+                number: 'integer'
+              }
             }
           },
         },
@@ -64,6 +100,7 @@ describe('validate', () => {
       };
 
       const result = validate(scenario);
+      const errors = validate.errors;
 
       expect(result).to.be.false;
       expect(validate.errors).to.be.deep.contain(  {
@@ -71,7 +108,7 @@ describe('validate', () => {
         keyword: 'enum',
         message: 'must be equal to one of the allowed values',
         params: { allowedValues: [ 'object' ] },
-        schemaPath: '#/allOf/1/properties/type/enum'
+        schemaPath: '#/oneOf/0/allOf/1/properties/type/enum'
       });
     });
 
@@ -134,45 +171,14 @@ describe('validate', () => {
       expect(result).to.be.true;
     });
 
-    it('should fail if responses is not a map of responses', () => {
-      const scenario = {
-        title: '',
-        actions: {
-          complete: {
-            responses: { title: 'ok' },
-          }
-        },
-        states: {
-          initial: { on: 'complete', goto: '(done)' },
-        },
-      };
-
-      const result = validate(scenario);
-
-      expect(result).to.be.false;
-      expect(validate.errors).to.deep.contain({
-        instancePath: '/actions/complete/responses/title',
-        keyword: 'type',
-        message: 'must be object',
-        params: {
-          type: 'object',
-        },
-        schemaPath: '#/type',
-      });
-    });
-
     it('should fail update instruction is missing select', () => {
       const scenario = {
         title: '',
         actions: {
           complete: {
-            responses: {
-              ok: {
-                update: {
-                  data: 'foo'
-                }
-              }
-            },
+            update: {
+              data: 'foo'
+            }
           }
         },
         states: {
@@ -184,7 +190,7 @@ describe('validate', () => {
 
       expect(result).to.be.false;
       expect(validate.errors).to.deep.contain(  {
-        instancePath: '/actions/complete/responses/ok/update',
+        instancePath: '/actions/complete/update',
         keyword: 'required',
         message: "must have required property 'select'",
         params: {

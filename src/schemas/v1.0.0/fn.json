@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.letsflow.io/v0.3.0/fn",
+  "$id": "https://schemas.letsflow.io/v1.0.0/fn",
   "oneOf": [
     {
       "type": "object",

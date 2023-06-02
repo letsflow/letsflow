@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.letsflow.io/v0.3.0/scenario",
+  "$id": "https://schemas.letsflow.io/v1.0.0/scenario",
   "type": "object",
   "properties": {
     "$schema": {
@@ -21,7 +21,7 @@
     "actions": {
       "type": "object",
       "additionalProperties": {
-        "$ref": "https://schemas.letsflow.io/v0.3.0/action"
+        "$ref": "https://schemas.letsflow.io/v1.0.0/action"
       }
     },
     "states": {
@@ -51,7 +51,7 @@
                   "type": "string"
                 },
                 {
-                  "$ref": "https://schemas.letsflow.io/v0.3.0/fn"
+                  "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
                 }
               ]
             },
@@ -67,12 +67,6 @@
                   }
                 }
               ]
-            },
-            "actions": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
             },
             "transitions": {
               "type": "array",
@@ -92,7 +86,7 @@
                   "type": "string"
                 },
                 {
-                  "$ref": "https://schemas.letsflow.io/v0.3.0/fn"
+                  "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
                 }
               ]
             },
@@ -110,20 +104,13 @@
               ]
             },
             "on": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "$ref": "#/definitions/transitionSelector"
-                }
-              ]
+              "type": "string"
             },
             "goto": {
               "type": "string"
             }
           },
-          "required": [ "on", "goto" ]
+          "required": ["on", "goto"]
         }
       ]
     },
@@ -131,23 +118,7 @@
       "type": "object",
       "properties": {
         "on": {
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "action": {
-                  "type": "string"
-                },
-                "response": {
-                  "type": "string"
-                }
-              },
-              "required": ["action"]
-            }
-          ]
+          "type": "string"
         },
         "if": {
           "oneOf": [
@@ -155,7 +126,7 @@
               "type": "boolean"
             },
             {
-              "$ref": "https://schemas.letsflow.io/v0.3.0/fn"
+              "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
             }
           ]
         },
@@ -165,32 +136,50 @@
       },
       "required": ["goto"]
     },
-    "transitionSelector": {
-      "type": "object",
-      "properties": {
-        "action": {
-          "type": "string"
-        },
-        "response": {
-          "type": "string"
-        }
-      },
-      "required": ["action"]
-    },
     "objectSchema": {
-      "allOf": [
-        { "$ref": "https://json-schema.org/draft/2020-12/schema" },
+      "oneOf": [
+        {
+          "allOf": [
+            {
+              "$ref": "https://json-schema.org/draft/2020-12/schema"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["object"]
+                }
+              },
+              "additionalProperties": true
+            }
+          ]
+        },
         {
           "type": "object",
           "properties": {
-            "type": {
-              "type": "string",
-              "enum": [
-                "object"
-              ]
+            "title": {
+              "type": "string"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "boolean",
+                      "integer",
+                      "number",
+                      "string"
+                    ]
+                  },
+                  { "$ref": "#/definitions/objectSchema" }
+                ]
+              }
             }
           },
-          "additionalProperties": true
+          "required": ["properties"]
         }
       ]
     }
