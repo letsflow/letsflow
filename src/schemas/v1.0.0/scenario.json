@@ -26,10 +26,29 @@
     },
     "states": {
       "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/state"
+      "patternProperties": {
+        "^\\w": {
+          "$ref": "#/definitions/state"
+        },
+        "^\\(.+\\)$": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+                }
+              ]
+            }
+          }
+        }
       },
-      "required": ["initial"]
+      "required": [
+        "initial"
+      ]
     },
     "assets": {
       "type": "object",
@@ -38,7 +57,11 @@
       }
     }
   },
-  "required": ["title", "actions", "states"],
+  "required": [
+    "title",
+    "actions",
+    "states"
+  ],
   "definitions": {
     "state": {
       "oneOf": [
@@ -75,7 +98,9 @@
               }
             }
           },
-          "required": [ "transitions" ]
+          "required": [
+            "transitions"
+          ]
         },
         {
           "type": "object",
@@ -110,7 +135,10 @@
               "type": "string"
             }
           },
-          "required": ["on", "goto"]
+          "required": [
+            "on",
+            "goto"
+          ]
         }
       ]
     },
@@ -134,7 +162,9 @@
           "type": "string"
         }
       },
-      "required": ["goto"]
+      "required": [
+        "goto"
+      ]
     },
     "objectSchema": {
       "oneOf": [
@@ -148,7 +178,9 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": ["object"]
+                  "enum": [
+                    "object"
+                  ]
                 }
               },
               "additionalProperties": true
@@ -174,12 +206,16 @@
                       "string"
                     ]
                   },
-                  { "$ref": "#/definitions/objectSchema" }
+                  {
+                    "$ref": "#/definitions/objectSchema"
+                  }
                 ]
               }
             }
           },
-          "required": ["properties"]
+          "required": [
+            "properties"
+          ]
         }
       ]
     }
