@@ -9,7 +9,8 @@
           "type": "string"
         }
       },
-      "required": ["<ref>"]
+      "required": ["<ref>"],
+      "additionalProperties": false
     },
     {
       "type": "object",
@@ -18,7 +19,8 @@
           "type": "string"
         }
       },
-      "required": ["<eval>"]
+      "required": ["<eval>"],
+      "additionalProperties": false
     },
     {
       "type": "object",
@@ -27,7 +29,8 @@
           "type": "string"
         }
       },
-      "required": ["<tpl>"]
+      "required": ["<tpl>"],
+      "additionalProperties": false
     }
   ]
 }

@@ -43,7 +43,9 @@ describe('normalize', () => {
         states: {
           initial: {
             title: 'initial',
+            description: '',
             instructions: {},
+            actions: ['complete'],
             transitions: [
               {
                 on: 'complete',

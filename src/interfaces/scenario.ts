@@ -38,33 +38,46 @@ export interface UpdateInstruction {
     if?: boolean | Fn;
 }
 
-export interface SimpleState {
+export type State = ExplicitState | SimpleState | SimpleTimeoutState;
+
+interface BaseState {
     title?: string | Fn;
-    instructions?: string | Record<string, string>;
+    description?: string | Fn;
+    instructions?: Record<string, string>;
+    actions?: string[];
+}
+
+interface SimpleState extends BaseState {
     on: string;
     goto: string;
 }
 
-export interface State {
-    title?: string | Fn;
-    instructions?: string | Record<string, string>;
-    transitions: Array<Transition | TimeoutTransition>;
-}
-
-export interface Transition {
-    on: string;
-    if?: boolean | Fn;
-    goto: string;
-}
-
-export interface TimeoutTransition {
+interface SimpleTimeoutState extends BaseState  {
     after: string | number;
-    if?: boolean | Fn;
     goto: string;
+}
+
+interface ExplicitState extends BaseState  {
+    transitions: Array<Transition>;
 }
 
 export interface EndState {
     title?: string | Fn;
+    description?: string | Fn;
+}
+
+export type Transition = ActionTransition | TimeoutTransition;
+
+interface ActionTransition {
+    on: string;
+    if?: boolean | Fn;
+    goto: string;
+}
+
+interface TimeoutTransition {
+    after: string | number;
+    if?: boolean | Fn;
+    goto: string;
 }
 
 export interface Scenario {
@@ -74,6 +87,6 @@ export interface Scenario {
 
     actors?: Record<string, JsonObjectSchema>;
     actions: Record<string, Action>;
-    states: Record<string, State | SimpleState | EndState>;
+    states: Record<string, State | EndState>;
     assets?: Record<string, JsonObjectSchema>;
 }

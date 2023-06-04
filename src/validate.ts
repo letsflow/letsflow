@@ -20,23 +20,12 @@ export const validate: ValidateFunction = (scenario: any): boolean => {
 
     const errors = [
         ...(validateSchema.errors || []),
-        ...validateActions(scenario),
         ...validateStates(scenario),
     ];
 
     validate.errors = errors.length > 0 ? errors : null;
 
     return errors.length === 0;
-}
-
-function validateActions(scenario: Scenario): ErrorObject[] {
-    const errors: ErrorObject[] = [];
-
-    if (Object.keys(scenario.actions || {}).length === 0) {
-        errors.push(error('/actions', 'must have at least one action'));
-    }
-
-    return errors;
 }
 
 function validateStates(scenario: Scenario): ErrorObject[] {
@@ -61,14 +50,18 @@ function validateStates(scenario: Scenario): ErrorObject[] {
             ));
         }
 
+        if (!('transitions' in state)) return errors;
+
         return [
             ...errors,
-            ...('transitions' in state ? validateTransitions(state, actions, states) : []),
+            ...(validateTransitions(state, actions, states)),
         ];
     }).flat();
 }
 
 function validateTransitions(state: State, actions: string[], states: string[]): ErrorObject[] {
+    if (!('transitions' in state)) return [];
+
     const errors: ErrorObject[] = [];
 
     Object.entries(state.transitions || {}).forEach(([key, transition]) => {

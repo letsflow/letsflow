@@ -27,23 +27,11 @@
     "states": {
       "type": "object",
       "patternProperties": {
-        "^\\w": {
+        "^[^(]|[^)]$": {
           "$ref": "#/definitions/state"
         },
         "^\\(.+\\)$": {
-          "type": "object",
-          "properties": {
-            "title": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
-                }
-              ]
-            }
-          }
+          "$ref": "#/definitions/endState"
         }
       },
       "required": [
@@ -69,27 +57,16 @@
           "type": "object",
           "properties": {
             "title": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
-                }
-              ]
+              "$ref": "#/definitions/stringFn"
             },
             "instructions": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "object",
-                  "additionalProperties": {
+              "$ref": "#/definitions/instructions"
+            },
+            "actions": {
+                "type": "array",
+                "items": {
                     "type": "string"
-                  }
                 }
-              ]
             },
             "transitions": {
               "type": "array",
@@ -106,30 +83,16 @@
           "type": "object",
           "properties": {
             "title": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
-                }
-              ]
+              "$ref": "#/definitions/stringFn"
             },
             "instructions": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "object",
-                  "additionalProperties": {
-                    "type": "string"
-                  }
-                }
-              ]
+              "$ref": "#/definitions/instructions"
             },
             "on": {
               "type": "string"
+            },
+            "if": {
+              "type": "null"
             },
             "goto": {
               "type": "string"
@@ -139,31 +102,81 @@
             "on",
             "goto"
           ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "title": {
+              "$ref": "#/definitions/stringFn"
+            },
+            "instructions": {
+              "$ref": "#/definitions/instructions"
+            },
+            "after": {
+              "type": "string",
+              "pattern": "^(\\d+)\\s*(s|second|seconds|m|minute|minutes|h|hour|hours|d|day|days|w|week|weeks)$"
+            },
+            "if": {
+              "type": "null"
+            },
+            "goto": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "after",
+            "goto"
+          ]
         }
       ]
     },
-    "transition": {
+    "endState": {
       "type": "object",
       "properties": {
-        "on": {
-          "type": "string"
-        },
-        "if": {
-          "oneOf": [
-            {
-              "type": "boolean"
+        "title": {
+          "$ref": "#/definitions/stringFn"
+        }
+      }
+    },
+    "transition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "on": {
+              "type": "string"
             },
-            {
-              "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+            "if": {
+              "$ref": "#/definitions/booleanFn"
+            },
+            "goto": {
+              "type": "string"
             }
+          },
+          "required": [
+            "on",
+            "goto"
           ]
         },
-        "goto": {
-          "type": "string"
+        {
+          "type": "object",
+          "properties": {
+            "after": {
+              "type": "string",
+              "pattern": "^(\\d+)\\s*(s|second|seconds|m|minute|minutes|h|hour|hours|d|day|days|w|week|weeks)$"
+            },
+            "if": {
+              "$ref": "#/definitions/booleanFn"
+            },
+            "goto": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "after",
+            "goto"
+          ]
         }
-      },
-      "required": [
-        "goto"
       ]
     },
     "objectSchema": {
@@ -215,7 +228,41 @@
           },
           "required": [
             "properties"
-          ]
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "instructions": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "stringFn": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+        }
+      ]
+    },
+    "booleanFn": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
         }
       ]
     }

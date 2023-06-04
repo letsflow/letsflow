@@ -3,20 +3,19 @@ import {
     Scenario,
     UpdateInstruction,
     State,
-    SimpleState,
     Transition,
-    JsonObjectSchema, TimeoutTransition
-} from "./interfaces/scenario";
+    JsonObjectSchema, EndState
+} from './interfaces/scenario';
 
 const scenarioJsonSchema = 'https://specs.letsflow.io/v0.3.0/scenario';
 const actionJsonSchema = 'https://specs.letsflow.io/v0.3.0/action';
 
 function keyToTitle(key: string): string {
-    return key.replace(/[\-_]/, ' ');
+    return key.replace('_', ' ');
 }
 
 export function normalize(input: Scenario): Scenario {
-    const scenario = structuredClone(input);
+    const scenario: Scenario = structuredClone(input);
 
     if (scenario.$schema && scenario.$schema !== scenarioJsonSchema) {
         throw new Error(`Unsupported scenario schema: ${scenario.$schema}, only ${scenarioJsonSchema} is supported`);
@@ -66,20 +65,38 @@ function normalizeUpdateInstructions(
     }));
 }
 
-function normalizeStates(states: Record<string, State | SimpleState>): void {
+function normalizeStates(states: Record<string, State | EndState>): void {
     for (const key in states) {
         const state = states[key];
-        states[key] = {
+        states[key] = 'goto' in state || 'transitions' in state ? {
             title: state.title ?? keyToTitle(key),
-            instructions: typeof state.instructions === 'string' ? {'*': state.instructions} : state.instructions ?? {},
+            description: state.description ?? '',
+            instructions: state.instructions ?? {},
+            actions: state.actions ?? determineActions(state),
             transitions: normalizeTransitions(state),
+        } : {
+            title: state.title ?? keyToTitle(key),
+            description: state.description ?? '',
         };
     }
 }
 
-function normalizeTransitions(state: State | SimpleState): Array<Transition | TimeoutTransition> {
+function determineActions(state: State): string[] {
+    if ('after' in state) return [];
+    if ('on' in state) return [state.on];
+
+    return state.transitions
+        .filter((transition) => 'on' in transition)
+        .map((transition) => (transition as any).on);
+}
+
+function normalizeTransitions(state: State): Array<Transition> {
     if ('on' in state) {
         return [{on: state.on, if: true, goto: state.goto}];
+    }
+
+    if ('after' in state) {
+        return [{after: state.after, if: true, goto: state.goto}];
     }
 
     state.transitions.forEach((transition) => {
