@@ -9,7 +9,9 @@
           "type": "string"
         }
       },
-      "required": ["<ref>"],
+      "required": [
+        "<ref>"
+      ],
       "additionalProperties": false
     },
     {
@@ -19,7 +21,9 @@
           "type": "string"
         }
       },
-      "required": ["<eval>"],
+      "required": [
+        "<eval>"
+      ],
       "additionalProperties": false
     },
     {
@@ -29,7 +33,9 @@
           "type": "string"
         }
       },
-      "required": ["<tpl>"],
+      "required": [
+        "<tpl>"
+      ],
       "additionalProperties": false
     }
   ]

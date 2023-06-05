@@ -1,280 +1,739 @@
-import {validate} from '../src';
-import {expect} from 'chai';
+import { validate } from '../src';
+import { expect } from 'chai';
 
 describe('validate', () => {
-    describe('validate scenario', () => {
-        it('should succeed with a minimal scenario', () => {
-            const scenario = {
-                title: 'minimal scenario',
-                actions: {
-                    complete: {},
-                },
-                states: {
-                    initial: {
-                        on: 'complete',
-                        goto: '(done)',
-                    },
-                },
-            };
+  describe('validate scenario', () => {
+    it('should succeed with a minimal scenario', () => {
+      const scenario = {
+        title: 'minimal scenario',
+        actions: {
+          next: {},
+        },
+        states: {
+          initial: {
+            on: 'next',
+            goto: '(done)',
+          },
+        },
+      };
 
-            const result = validate(scenario);
+      const result = validate(scenario);
 
-            expect(validate.errors).to.eq(null);
-            expect(result).to.be.true;
-        });
-
-        it('show fail if title is missing', () => {
-            const scenario = {
-                actions: {
-                    complete: {},
-                },
-                states: {
-                    initial: {
-                        on: 'complete',
-                        goto: '(done)',
-                    },
-                },
-            };
-
-            const result = validate(scenario);
-
-            expect(result).to.be.false;
-            expect(validate.errors).to.deep.contain({
-                instancePath: '',
-                keyword: 'required',
-                message: "must have required property 'title'",
-                params: {
-                    missingProperty: 'title',
-                },
-                schemaPath: '#/required'
-            });
-        });
+      expect(validate.errors).to.eq(null);
+      expect(result).to.be.true;
     });
 
-    describe('validate actors', () => {
-        it('should succeed with an actor with schema properties', () => {
-            const scenario = {
-                title: '',
-                actors: {
-                    user: {
-                        properties: {
-                            name: {
-                                type: 'string'
-                            },
-                            favorites: {
-                                type: 'array',
-                                items: {
-                                    type: 'string'
-                                }
-                            }
-                        }
-                    },
-                },
-                actions: {
-                    complete: {},
-                },
-                states: {
-                    initial: {on: 'complete', goto: '(done)'},
-                },
-            };
+    it('show fail if title is missing', () => {
+      const scenario = {
+        actions: {
+          next: {},
+        },
+        states: {
+          initial: {
+            on: 'next',
+            goto: '(done)',
+          },
+        },
+      };
 
-            const result = validate(scenario);
+      const result = validate(scenario);
 
-            expect(validate.errors).to.eq(null);
-            expect(result).to.be.true;
-        });
+      expect(result).to.be.false;
+      expect(validate.errors).to.deep.contain({
+        instancePath: '',
+        keyword: 'required',
+        message: 'must have required property \'title\'',
+        params: {
+          missingProperty: 'title',
+        },
+        schemaPath: '#/required',
+      });
+    });
+  });
 
-        it('should succeed with an actor with simple properties', () => {
-            const scenario = {
-                title: '',
-                actors: {
-                    user: {
-                        properties: {
-                            name: 'string',
-                            address: {
-                                street: 'string',
-                                number: 'integer'
-                            }
-                        }
-                    },
+  describe('validate actors', () => {
+    it('should succeed with an actor with schema properties', () => {
+      const scenario = {
+        title: '',
+        actors: {
+          user: {
+            properties: {
+              name: {
+                type: 'string',
+              },
+              favorites: {
+                type: 'array',
+                items: {
+                  type: 'string',
                 },
-                actions: {
-                    complete: {},
-                },
-                states: {
-                    initial: {on: 'complete', goto: '(done)'},
-                },
-            };
+              },
+            },
+          },
+        },
+        actions: {
+          next: {},
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)' },
+        },
+      };
 
-            const result = validate(scenario);
+      const result = validate(scenario);
 
-            expect(validate.errors).to.eq(null);
-            expect(result).to.be.true;
-        });
-
-        it('should fail for an actor of an incorrect type', () => {
-            const scenario = {
-                title: '',
-                actors: {
-                    user: {type: 'string'}
-                },
-                actions: {
-                    complete: {},
-                },
-                states: {
-                    initial: {on: 'complete', goto: '(done)'},
-                },
-            };
-
-            const result = validate(scenario);
-
-            expect(result).to.be.false;
-            expect(validate.errors).to.be.deep.contain({
-                instancePath: '/actors/user/type',
-                keyword: 'enum',
-                message: 'must be equal to one of the allowed values',
-                params: {allowedValues: ['object']},
-                schemaPath: '#/oneOf/0/allOf/1/properties/type/enum'
-            });
-        });
-
-        it('should succeed with a ref to a schema', () => {
-            const scenario = {
-                title: '',
-                actors: {
-                    user: {
-                        title: 'User',
-                        '$ref': 'https://example.com/schemas/person'
-                    }
-                },
-                actions: {
-                    complete: {},
-                },
-                states: {
-                    initial: {on: 'complete', goto: '(done)'},
-                },
-            };
-
-            const result = validate(scenario);
-
-            expect(validate.errors).to.eq(null);
-            expect(result).to.be.true;
-        });
+      expect(validate.errors).to.eq(null);
+      expect(result).to.be.true;
     });
 
-    describe('validate actions', () => {
-        it('should succeed with a standard action', () => {
-            const scenario = {
-                title: '',
-                actions: {
-                    complete: {
-                        title: 'Complete',
-                        description: 'Complete the process',
-                        actor: 'user',
-                        responses: {
-                            one: {title: 'one'},
-                            two: {title: 'two', update: [{select: 'assets.reason'}]},
-                            three: {
-                                title: 'two',
-                                update: {
-                                    select: 'assets.reason',
-                                    data: {'<eval>': 'response | { message, code }'},
-                                    patch: true,
-                                    if: {'<eval>': "response.types.state | contains(@, 'WA')"}
-                                }
-                            }
-                        },
-                    }
-                },
-                states: {
-                    initial: {on: 'complete', goto: '(done)'},
-                },
-            };
+    it('should succeed with an actor with simple properties', () => {
+      const scenario = {
+        title: '',
+        actors: {
+          user: {
+            properties: {
+              name: 'string',
+              address: {
+                street: 'string',
+                number: 'integer',
+              },
+            },
+          },
+        },
+        actions: {
+          next: {},
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)' },
+        },
+      };
 
-            const result = validate(scenario);
+      const result = validate(scenario);
 
-            expect(validate.errors).to.eq(null);
-            expect(result).to.be.true;
-        });
-
-        it('should fail if update instruction is missing select', () => {
-            const scenario = {
-                title: '',
-                actions: {
-                    complete: {
-                        update: {
-                            data: 'foo'
-                        }
-                    }
-                },
-                states: {
-                    initial: {on: 'complete', goto: '(done)'},
-                },
-            };
-
-            const result = validate(scenario);
-
-            expect(result).to.be.false;
-            expect(validate.errors).to.deep.contain({
-                instancePath: '/actions/complete/update',
-                keyword: 'required',
-                message: "must have required property 'select'",
-                params: {
-                    missingProperty: 'select',
-                },
-                schemaPath: '#/required',
-            });
-        });
+      expect(validate.errors).to.eq(null);
+      expect(result).to.be.true;
     });
 
-    describe('validate states', () => {
-        it('should succeed with a simple state', () => {
-            const scenario = {
-                title: '',
-                actions: {
-                    complete: {},
-                },
-                states: {
-                    initial: {
-                        on: 'complete',
-                        goto: '(done)'
-                    }
-                },
-            };
+    it('should fail for an actor of an incorrect type', () => {
+      const scenario = {
+        title: '',
+        actors: {
+          user: { type: 'string' },
+        },
+        actions: {
+          next: {},
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)' },
+        },
+      };
 
-            const result = validate(scenario);
+      const result = validate(scenario);
 
-            expect(validate.errors).to.eq(null);
-            expect(result).to.be.true;
-        });
-
-        it('should fail for a simple state with a condition', () => {
-            const scenario = {
-                title: '',
-                actions: {
-                    complete: {},
-                },
-                states: {
-                    initial: {
-                        on: 'complete',
-                        goto: '(done)',
-                        if: { '<eval>': true }
-                    }
-                },
-            };
-
-            const result = validate(scenario);
-
-            expect(result).to.be.false;
-            expect(validate.errors).to.deep.contain({
-                instancePath: '/states/initial/if',
-                keyword: 'type',
-                message: 'must be null',
-                params: {
-                    type: 'null',
-                },
-                schemaPath: '#/oneOf/1/properties/if/type',
-            });
-        });
+      expect(result).to.be.false;
+      expect(validate.errors).to.be.deep.contain({
+        instancePath: '/actors/user/type',
+        keyword: 'enum',
+        message: 'must be equal to one of the allowed values',
+        params: { allowedValues: ['object'] },
+        schemaPath: '#/oneOf/0/allOf/1/properties/type/enum',
+      });
     });
+
+    it('should succeed with a ref to a schema', () => {
+      const scenario = {
+        title: '',
+        actors: {
+          user: {
+            title: 'User',
+            '$ref': 'https://example.com/schemas/person',
+          },
+        },
+        actions: {
+          next: {},
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)' },
+        },
+      };
+
+      const result = validate(scenario);
+
+      expect(validate.errors).to.eq(null);
+      expect(result).to.be.true;
+    });
+  });
+
+  describe('validate actions', () => {
+    it('should succeed with a standard action', () => {
+      const scenario = {
+        title: '',
+        actors: {
+          user: {},
+        },
+        actions: {
+          next: {
+            title: 'Complete',
+            description: 'Complete the process',
+            actor: 'user',
+            responses: {
+              one: { title: 'one' },
+              two: { title: 'two', update: [{ select: 'assets.reason' }] },
+              three: {
+                title: 'two',
+                update: {
+                  select: 'assets.reason',
+                  data: { '<eval>': 'response | { message, code }' },
+                  patch: true,
+                  if: { '<eval>': 'response.types.state | contains(@, \'WA\')' },
+                },
+              },
+            },
+          },
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)' },
+        },
+      };
+
+      const result = validate(scenario);
+
+      expect(validate.errors).to.eq(null);
+      expect(result).to.be.true;
+    });
+
+    it('should fail if update instruction is missing select', () => {
+      const scenario = {
+        title: '',
+        actions: {
+          next: {
+            update: {
+              data: 'foo',
+            },
+          },
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)' },
+        },
+      };
+
+      const result = validate(scenario);
+
+      expect(result).to.be.false;
+      expect(validate.errors).to.deep.contain({
+        instancePath: '/actions/next/update',
+        keyword: 'required',
+        message: "must have required property 'select'",
+        params: {
+          missingProperty: 'select',
+        },
+        schemaPath: '#/required',
+      });
+    });
+
+    it('should fail if action is referencing a non-existing actor', () => {
+      const scenario = {
+        title: '',
+        actors: {
+          user: {},
+        },
+        actions: {
+          next: {
+            actor: 'admin',
+          },
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)' },
+        },
+      };
+
+      const result = validate(scenario);
+
+      expect(result).to.be.false;
+      expect(validate.errors).to.deep.contain(  {
+        instancePath: '/actions/next/actor',
+        keyword: '',
+        message: 'must reference an actor',
+        params: {
+          allowedValues: ['user'],
+          value: 'admin',
+        },
+        schemaPath: '',
+      });
+    });
+
+    it('should fail if update instruction is missing select', () => {
+      const scenario = {
+        title: '',
+        actions: {
+          next: {
+            update: {
+              data: 'foo',
+            },
+          },
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)' },
+        },
+      };
+
+      const result = validate(scenario);
+
+      expect(result).to.be.false;
+      expect(validate.errors).to.deep.contain({
+        instancePath: '/actions/next/update',
+        keyword: 'required',
+        message: "must have required property 'select'",
+        params: {
+          missingProperty: 'select',
+        },
+        schemaPath: '#/required',
+      });
+    });
+  });
+
+  describe('validate states', () => {
+    describe('simple state', () => {
+      it('should succeed with a simple state', () => {
+        const scenario = {
+          title: '',
+          actions: {
+            next: {},
+          },
+          states: {
+            initial: {
+              title: 'Initial',
+              description: 'The initial state',
+              on: 'next',
+              goto: '(done)',
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(validate.errors).to.eq(null);
+        expect(result).to.be.true;
+      });
+
+      it('should succeed with a timeout state', () => {
+        const scenario = {
+          title: '',
+          actions: {},
+          states: {
+            initial: {
+              title: 'Initial',
+              description: 'The initial state',
+              after: '15 minutes',
+              goto: '(done)',
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(validate.errors).to.eq(null);
+        expect(result).to.be.true;
+      });
+
+      it('should succeed with a state with instructions', () => {
+        const scenario = {
+          title: '',
+          actors: {
+            user: {},
+          },
+          actions: {
+            next: {},
+          },
+          states: {
+            initial: {
+              title: 'Initial',
+              description: 'The initial state',
+              instructions: {
+                user: 'Press next to continue',
+              },
+              on: 'next',
+              goto: 'second',
+            },
+            second: {
+              title: 'Second',
+              description: 'The second state',
+              instructions: {
+                user: 'Wait for 5 minutes',
+              },
+              after: '5 minutes',
+              goto: '(done)',
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(validate.errors).to.eq(null);
+        expect(result).to.be.true;
+      });
+
+      it('should fail for a simple or timeout state with a condition', () => {
+        const scenario = {
+          title: '',
+          actions: {
+            next: {},
+          },
+          states: {
+            initial: {
+              on: 'next',
+              goto: 'second',
+              if: true,
+            },
+            second: {
+              after: '5 minutes',
+              goto: '(done)',
+              if: true,
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(result).to.be.false;
+        expect(validate.errors).to.deep.contain({
+          instancePath: '/states/initial/if',
+          keyword: 'type',
+          message: 'must be null',
+          params: {
+            type: 'null',
+          },
+          schemaPath: '#/properties/if/type',
+        });
+        expect(validate.errors).to.deep.contain({
+          instancePath: '/states/second/if',
+          keyword: 'type',
+          message: 'must be null',
+          params: {
+            type: 'null',
+          },
+          schemaPath: '#/properties/if/type',
+        });
+      });
+
+      it('should fail if `on` references an unknown action', () => {
+        const scenario = {
+          title: '',
+          actions: {},
+          states: {
+            initial: {
+              on: 'foo',
+              goto: '(done)',
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(result).to.be.false;
+        expect(validate.errors).to.deep.contain({
+          instancePath: '/states/initial/on',
+          keyword: '',
+          message: 'must reference an action',
+          params: {
+            value: 'foo',
+            allowedValues: []
+          },
+          schemaPath: '',
+        });
+      });
+
+      it('should fail if `goto` references an unknown state', () => {
+        const scenario = {
+          title: '',
+          actions: {
+            next: {},
+          },
+          states: {
+            initial: {
+              on: 'next',
+              goto: 'foo',
+            },
+            second: {
+              after: '5 minutes',
+              goto: 'bar',
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(result).to.be.false;
+        expect(validate.errors).to.deep.contain({
+          instancePath: '/states/initial/goto',
+          keyword: '',
+          message: 'must reference a state',
+          params: {
+            value: 'foo',
+            allowedValues: ['initial', 'second']
+          },
+          schemaPath: '',
+        });
+        expect(validate.errors).to.deep.contain({
+          instancePath: '/states/second/goto',
+          keyword: '',
+          message: 'must reference a state',
+          params: {
+            value: 'bar',
+            allowedValues: ['initial', 'second']
+          },
+          schemaPath: '',
+        });
+      });
+    });
+
+    describe('explicit state', () => {
+      it('should succeed with an explicit state', () => {
+        const scenario = {
+          title: '',
+          actions: {
+            next: {},
+          },
+          states: {
+            initial: {
+              title: 'Initial',
+              description: 'The initial state',
+              transitions: [
+                {
+                  after: '15 minutes',
+                  goto: '(failed)',
+                },
+                {
+                  on: 'next',
+                  goto: '(done)',
+                },
+              ],
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(validate.errors).to.eq(null);
+        expect(result).to.be.true;
+      });
+
+      it('should succeed with an explicit state with actions', () => {
+        const scenario = {
+          title: '',
+          actions: {
+            next: {},
+            other: {},
+          },
+          states: {
+            initial: {
+              title: 'Initial',
+              description: 'The initial state',
+              actions: [
+                'next',
+                'other',
+              ],
+              transitions: [
+                {
+                  on: 'next',
+                  goto: '(done)',
+                },
+              ],
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(validate.errors).to.eq(null);
+        expect(result).to.be.true;
+      });
+
+      it('should succeed with a state with instructions', () => {
+        const scenario = {
+          title: '',
+          actors: {
+            user: {},
+          },
+          actions: {
+            next: {},
+          },
+          states: {
+            initial: {
+              title: 'Initial',
+              description: 'The initial state',
+              instructions: {
+                user: 'Press next to finish',
+              },
+              transitions: [
+                {
+                  after: '15 minutes',
+                  goto: '(failed)',
+                },
+                {
+                  on: 'next',
+                  goto: '(done)',
+                },
+              ],
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(validate.errors).to.eq(null);
+        expect(result).to.be.true;
+      });
+
+      it('should succeed for transitions with a condition', () => {
+        const scenario = {
+          title: '',
+          actions: {
+            next: {},
+          },
+          states: {
+            initial: {
+              transitions: [
+                {
+                  on: 'next',
+                  goto: '(done)',
+                  if: true,
+                },
+              ],
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(validate.errors).to.eq(null);
+        expect(result).to.be.true;
+      });
+
+      it('should fail if state references an unknown action', () => {
+        const scenario = {
+          title: '',
+          actions: {
+            next: {},
+          },
+          states: {
+            initial: {
+              actions: [
+                'foo',
+                'next',
+              ],
+              transitions: [
+                {
+                  on: 'next',
+                  goto: '(done)',
+                },
+              ],
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(result).to.be.false;
+        expect(validate.errors).to.deep.contain(  {
+          instancePath: '/states/initial/actions/0',
+          keyword: '',
+          message: 'must reference an action',
+          params: {
+            allowedValues: ['next'],
+            value: 'foo'
+          },
+          schemaPath: ''
+        });
+      });
+
+      it('should fail if `on` references an unknown action', () => {
+        const scenario = {
+          title: '',
+          actions: {},
+          states: {
+            initial: {
+              transitions: [
+                {
+                  on: 'foo',
+                  goto: '(done)',
+                },
+              ],
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(result).to.be.false;
+        expect(validate.errors).to.deep.contain(  {
+          instancePath: '/states/initial/transitions/0/on',
+          keyword: '',
+          message: 'must reference an action',
+          params: {
+            allowedValues: [],
+            value: 'foo'
+          },
+          schemaPath: ''
+        });
+      });
+
+      it('should fail if `goto` references an unknown state', () => {
+        const scenario = {
+          title: '',
+          actions: {
+            next: {},
+          },
+          states: {
+            initial: {
+              transitions: [
+                {
+                  on: 'next',
+                  goto: 'foo',
+                },
+              ],
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(result).to.be.false;
+        expect(validate.errors).to.deep.contain(  {
+          instancePath: '/states/initial/transitions/0/goto',
+          keyword: '',
+          message: 'must reference a state',
+          params: {
+            allowedValues: ['initial'],
+            value: 'foo'
+          },
+          schemaPath: ''
+        });
+      });
+    });
+
+    describe('end state', () => {
+      it('should succeed with an end state', () => {
+        const scenario = {
+          title: '',
+          actions: {
+            next: {},
+          },
+          states: {
+            initial: {
+              on: 'next',
+              goto: '(done)',
+            },
+            '(done)': {
+              title: 'Done',
+              description: 'The end state',
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(validate.errors).to.eq(null);
+        expect(result).to.be.true;
+      });
+    });
+  });
 });

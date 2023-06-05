@@ -54,80 +54,89 @@
     "state": {
       "oneOf": [
         {
-          "type": "object",
-          "properties": {
-            "title": {
-              "$ref": "#/definitions/stringFn"
-            },
-            "instructions": {
-              "$ref": "#/definitions/instructions"
-            },
-            "actions": {
-                "type": "array",
-                "items": {
-                    "type": "string"
-                }
-            },
-            "transitions": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/transition"
-              }
-            }
-          },
-          "required": [
-            "transitions"
-          ]
+          "$ref": "#/definitions/explicitState"
         },
         {
-          "type": "object",
-          "properties": {
-            "title": {
-              "$ref": "#/definitions/stringFn"
-            },
-            "instructions": {
-              "$ref": "#/definitions/instructions"
-            },
-            "on": {
-              "type": "string"
-            },
-            "if": {
-              "type": "null"
-            },
-            "goto": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "on",
-            "goto"
-          ]
+          "$ref": "#/definitions/simpleState"
         },
         {
-          "type": "object",
-          "properties": {
-            "title": {
-              "$ref": "#/definitions/stringFn"
-            },
-            "instructions": {
-              "$ref": "#/definitions/instructions"
-            },
-            "after": {
-              "type": "string",
-              "pattern": "^(\\d+)\\s*(s|second|seconds|m|minute|minutes|h|hour|hours|d|day|days|w|week|weeks)$"
-            },
-            "if": {
-              "type": "null"
-            },
-            "goto": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "after",
-            "goto"
-          ]
+          "$ref": "#/definitions/timeoutState"
         }
+      ]
+    },
+    "explicitState": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/definitions/stringFn"
+        },
+        "instructions": {
+          "$ref": "#/definitions/instructions"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/transition"
+          }
+        }
+      },
+      "required": [
+        "transitions"
+      ]
+    },
+    "simpleState": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/definitions/stringFn"
+        },
+        "instructions": {
+          "$ref": "#/definitions/instructions"
+        },
+        "on": {
+          "type": "string"
+        },
+        "if": {
+          "type": "null"
+        },
+        "goto": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "on",
+        "goto"
+      ]
+    },
+    "timeoutState": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/definitions/stringFn"
+        },
+        "instructions": {
+          "$ref": "#/definitions/instructions"
+        },
+        "after": {
+          "type": "string",
+          "pattern": "^(\\d+)\\s*(s|second|seconds|m|minute|minutes|h|hour|hours|d|day|days|w|week|weeks)$"
+        },
+        "if": {
+          "type": "null"
+        },
+        "goto": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "after",
+        "goto"
       ]
     },
     "endState": {
