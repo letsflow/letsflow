@@ -6,9 +6,6 @@ describe('normalize', () => {
     it('should normalize a minimal scenario', () => {
       const scenario: Scenario = {
         title: 'minimal scenario',
-        actors: {
-          user: {},
-        },
         actions: {
           complete: {},
         },
@@ -24,8 +21,8 @@ describe('normalize', () => {
         title: 'minimal scenario',
         description: '',
         actors: {
-          user: {
-            title: 'user',
+          actor: {
+            title: 'actor',
             properties: {
               title: { type: 'string' },
             }
@@ -36,7 +33,7 @@ describe('normalize', () => {
             $schema: "https://specs.letsflow.io/v0.3.0/action",
             title: 'complete',
             description: '',
-            actor: ['user'],
+            actor: ['actor'],
             update: [],
           },
         },
