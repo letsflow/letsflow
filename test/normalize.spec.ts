@@ -18,6 +18,7 @@ describe('normalize', () => {
       };
 
       expect(normalize(scenario)).to.deep.eq({
+        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
         title: 'minimal scenario',
         description: '',
         actors: {
@@ -30,7 +31,7 @@ describe('normalize', () => {
         },
         actions: {
           complete: {
-            $schema: "https://specs.letsflow.io/v0.3.0/action",
+            $schema: "https://specs.letsflow.io/v1.0.0/action",
             title: 'complete',
             description: '',
             actor: ['actor'],
@@ -73,6 +74,7 @@ describe('normalize', () => {
       };
 
       expect(normalize(scenario)).to.deep.eq({
+        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
         actors: {

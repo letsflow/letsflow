@@ -6,9 +6,7 @@ import {
   Transition,
   JsonObjectSchema, EndState,
 } from './interfaces/scenario';
-
-const scenarioJsonSchema = 'https://specs.letsflow.io/v0.3.0/scenario';
-const actionJsonSchema = 'https://specs.letsflow.io/v0.3.0/action';
+import { actionJsonSchema, scenarioJsonSchema } from './constants';
 
 function keyToTitle(key: string): string {
   return key.replace('_', ' ');
@@ -17,7 +15,8 @@ function keyToTitle(key: string): string {
 export function normalize(input: Scenario): Scenario {
   const scenario: Scenario = structuredClone(input);
 
-  if (scenario.$schema && scenario.$schema !== scenarioJsonSchema) {
+  scenario.$schema ??= scenarioJsonSchema;
+  if (scenario.$schema !== scenarioJsonSchema) {
     throw new Error(`Unsupported scenario schema: ${scenario.$schema}, only ${scenarioJsonSchema} is supported`);
   }
 

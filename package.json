@@ -7,7 +7,9 @@
   "author": "Arnold Daniels <arnold@jasny.net>",
   "license": "MIT",
   "dependencies": {
-    "ajv": "^8.12.0"
+    "ajv": "^8.12.0",
+    "fast-json-stable-stringify": "^2.1.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.5",
