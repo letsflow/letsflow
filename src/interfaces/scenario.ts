@@ -57,7 +57,7 @@ interface SimpleTimeoutState extends BaseState {
   goto: string;
 }
 
-interface ExplicitState extends BaseState {
+export interface ExplicitState extends BaseState {
   transitions: Array<Transition>;
 }
 
@@ -85,8 +85,29 @@ export interface Scenario {
   title: string;
   description?: string;
 
-  actors?: Record<string, JsonObjectSchema>;
+  actors?: Record<string, JsonObjectSchema | null>;
   actions: Record<string, Action>;
   states: Record<string, State | EndState>;
-  assets?: Record<string, JsonObjectSchema>;
+  assets?: Record<string, JsonObjectSchema | null>;
+}
+
+export interface NormalizedAction {
+  $schema: string;
+  title: string;
+  description: string | Fn;
+  actor: string[];
+  update: UpdateInstruction[];
+
+  [_: string]: any;
+}
+
+export interface NormalizedScenario {
+  $schema?: string;
+  title: string;
+  description: string;
+
+  actors: Record<string, JsonObjectSchema>;
+  actions: Record<string, NormalizedAction>;
+  states: Record<string, ExplicitState | EndState>;
+  assets: Record<string, JsonObjectSchema>;
 }

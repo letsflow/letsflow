@@ -91,5 +91,54 @@ describe('normalize', () => {
         assets: {},
       });
     });
+
+    it('should convert a null actor', () => {
+      const scenario: Scenario = {
+        title: '',
+        actors: {
+          user: null,
+        },
+        actions: {},
+        states: {},
+      };
+
+      expect(normalize(scenario)).to.deep.eq({
+        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        title: '',
+        description: '',
+        actors: {
+          user: {}
+        },
+        actions: {},
+        states: {},
+        assets: {},
+      });
+    });
+  });
+
+  describe('normalize assets', () => {
+    it('should convert a null asset', () => {
+      const scenario: Scenario = {
+        title: '',
+        actors: {},
+        actions: {},
+        states: {},
+        assets: {
+          foo: null,
+        }
+      };
+
+      expect(normalize(scenario)).to.deep.eq({
+        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        title: '',
+        description: '',
+        actors: {},
+        actions: {},
+        states: {},
+        assets: {
+          foo: {}
+        },
+      });
+    });
   });
 });

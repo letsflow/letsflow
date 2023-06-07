@@ -1,4 +1,4 @@
-import { validate } from '../src';
+import { Scenario, validate } from '../src';
 import { expect } from 'chai';
 
 describe('validate', () => {
@@ -52,6 +52,46 @@ describe('validate', () => {
   });
 
   describe('validate actors', () => {
+    it('should succeed with a basic actor', () => {
+      const scenario = {
+        title: '',
+        actors: {
+          user: {},
+        },
+        actions: {
+          next: {},
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)' },
+        },
+      };
+
+      const result = validate(scenario);
+
+      expect(validate.errors).to.eq(null);
+      expect(result).to.be.true;
+    });
+
+    it('should succeed with a null actor', () => {
+      const scenario = {
+        title: '',
+        actors: {
+          user: null,
+        },
+        actions: {
+          next: {},
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)' },
+        },
+      } as unknown as Scenario;
+
+      const result = validate(scenario);
+
+      expect(validate.errors).to.eq(null);
+      expect(result).to.be.true;
+    });
+
     it('should succeed with an actor with schema properties', () => {
       const scenario = {
         title: '',
@@ -371,7 +411,7 @@ describe('validate', () => {
         expect(result).to.be.true;
       });
 
-      it('should fail for a simple or timeout state with a condition', () => {
+      it('should fail for a simple state with a condition', () => {
         const scenario = {
           title: '',
           actions: {
@@ -380,11 +420,6 @@ describe('validate', () => {
           states: {
             initial: {
               on: 'next',
-              goto: 'second',
-              if: true,
-            },
-            second: {
-              after: '5 minutes',
               goto: '(done)',
               if: true,
             },
@@ -403,8 +438,28 @@ describe('validate', () => {
           },
           schemaPath: '#/properties/if/type',
         });
+      });
+
+      it('should fail for a timeout state with a condition', () => {
+        const scenario = {
+          title: '',
+          actions: {
+            next: {},
+          },
+          states: {
+            initial: {
+              after: '5 minutes',
+              goto: '(done)',
+              if: true,
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(result).to.be.false;
         expect(validate.errors).to.deep.contain({
-          instancePath: '/states/second/if',
+          instancePath: '/states/initial/if',
           keyword: 'type',
           message: 'must be null',
           params: {

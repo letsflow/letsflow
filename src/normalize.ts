@@ -4,7 +4,7 @@ import {
   UpdateInstruction,
   State,
   Transition,
-  JsonObjectSchema, EndState,
+  JsonObjectSchema, EndState, NormalizedScenario,
 } from './interfaces/scenario';
 import { actionJsonSchema, scenarioJsonSchema } from './constants';
 
@@ -12,7 +12,7 @@ function keyToTitle(key: string): string {
   return key.replace('_', ' ');
 }
 
-export function normalize(input: Scenario): Scenario {
+export function normalize(input: Scenario): NormalizedScenario {
   const scenario: Scenario = structuredClone(input);
 
   scenario.$schema ??= scenarioJsonSchema;
@@ -24,19 +24,23 @@ export function normalize(input: Scenario): Scenario {
   scenario.actors ??= { actor: { title: 'actor' } };
   scenario.assets ??= {};
 
-  normalizeActors(scenario.actors);
+  normalizeSchemas(scenario.actors);
   normalizeActions(scenario.actions, Object.keys(scenario.actors));
   normalizeStates(scenario.states);
+  normalizeSchemas(scenario.assets);
 
-  return scenario;
+  return scenario as NormalizedScenario;
 }
 
-function normalizeActors(actors: Record<string, JsonObjectSchema>): void {
-  Object.entries(actors).forEach(([key, actor]) => {
-    actor.title ??= keyToTitle(key);
-    actor.properties ??= {};
-    actor.properties.title = { type: 'string' };
-  });
+function normalizeSchemas(items: Record<string, JsonObjectSchema | null>): void {
+  for (const key in items) {
+    const actor = items[key];
+
+    items[key] = actor === null ? {} : {
+      title: actor.title ?? keyToTitle(key),
+      properties: { ...actor.properties ?? {}, title: { type: 'string' } },
+    };
+  }
 }
 
 function normalizeActions(actions: Record<string, Action>, allActors: string[]): void {

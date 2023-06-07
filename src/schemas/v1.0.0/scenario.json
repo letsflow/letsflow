@@ -238,22 +238,17 @@
           "required": [
             "properties"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "nullable": true
         }
       ]
     },
     "instructions": {
-      "oneOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        }
-      ]
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "nullable": true
     },
     "stringFn": {
       "oneOf": [
