@@ -1,11 +1,19 @@
 import * as YAML from 'yaml';
-import { CollectionTag, YAMLMap } from 'yaml';
+import { Scalar, ScalarTag } from 'yaml';
+import { stringifyString } from 'yaml/util'
 
-const fnTag = (type: string): CollectionTag => ({
-  identify: (value) => typeof value === 'object' && value !== null && `<${type}>` in value,
+const fnTag = (type: string): ScalarTag => ({
+  identify: (value) => {
+    return typeof value === 'object' && value !== null && `<${type}>` in value;
+  },
   tag: `!${type}`,
-  collection: 'map',
-  resolve: (value: YAMLMap.Parsed) => value[`<${type}>`]
+  stringify(item: Scalar<Record<string, string>>, ctx, onComment, onChompKeep) {
+    const value = item.value[`<${type}>`];
+    return stringifyString({ value }, ctx, onComment, onChompKeep);
+  },
+  resolve(str) {
+    return { [`<${type}>`]: str };
+  }
 });
 
 export const schema = new YAML.Schema({

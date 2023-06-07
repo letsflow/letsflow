@@ -4,9 +4,9 @@ export { validate } from './validate';
 export { uuid } from './uuid';
 export * as yaml from './yaml';
 
-import fnSchema from './schemas/v1.0.0/action.json';
+import fnSchema from './schemas/v1.0.0/fn.json';
 import actionSchema from './schemas/v1.0.0/action.json';
-import scenarioSchema from './schemas/v1.0.0/action.json';
+import scenarioSchema from './schemas/v1.0.0/scenario.json';
 
 export const schemas = {
   'v1.0.0': {
