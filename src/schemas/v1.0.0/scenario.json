@@ -27,12 +27,12 @@
     "states": {
       "type": "object",
       "patternProperties": {
-        "^[^(]|[^)]$": {
-          "$ref": "#/definitions/state"
-        },
         "^\\(.+\\)$": {
           "$ref": "#/definitions/endState"
         }
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/state"
       },
       "required": [
         "initial"
