@@ -152,8 +152,7 @@
           "$ref": "#/definitions/instructions"
         },
         "after": {
-          "type": "string",
-          "pattern": "^(\\d+)\\s*(s|second|seconds|m|minute|minutes|h|hour|hours|d|day|days|w|week|weeks)$"
+          "$ref": "#/definitions/timePeriod"
         },
         "if": {
           "type": "null"
@@ -200,8 +199,7 @@
           "type": "object",
           "properties": {
             "after": {
-              "type": "string",
-              "pattern": "^(\\d+)\\s*(s|second|seconds|m|minute|minutes|h|hour|hours|d|day|days|w|week|weeks)$"
+              "$ref": "#/definitions/timePeriod"
             },
             "if": {
               "$ref": "#/definitions/booleanFn"
@@ -240,6 +238,18 @@
         },
         {
           "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+        }
+      ]
+    },
+    "timePeriod": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^(\\d+)\\s*(s|second|seconds|m|minute|minutes|h|hour|hours|d|day|days|w|week|weeks)$"
+        },
+        {
+          "type": "integer",
+          "minimum": 0
         }
       ]
     },

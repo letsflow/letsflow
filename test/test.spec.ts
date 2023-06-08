@@ -378,9 +378,9 @@ describe('import scenario', () => {
           title: 'initial',
           transitions: [
             {
+              on: 'new_lead',
               goto: 'introduction',
               if: true,
-              on: 'new_lead',
             },
           ],
         },
@@ -391,9 +391,9 @@ describe('import scenario', () => {
           title: 'introduction',
           transitions: [
             {
+              on: 'introduce_company',
               goto: 'wait_on_client',
               if: true,
-              on: 'introduce_company',
             },
           ],
         },
@@ -404,9 +404,9 @@ describe('import scenario', () => {
           title: 'remind client',
           transitions: [
             {
+              on: 'send_reminder',
               goto: 'wait_on_client',
               if: true,
-              on: 'send_reminder',
             },
           ],
         },
@@ -421,14 +421,14 @@ describe('import scenario', () => {
           title: 'send quote',
           transitions: [
             {
+              on: 'accept',
               goto: '(success)',
               if: true,
-              on: 'accept',
             },
             {
+              on: 'reject',
               goto: '(failed)',
               if: true,
-              on: 'reject',
             },
           ],
         },
@@ -439,14 +439,14 @@ describe('import scenario', () => {
           title: 'wait on_client',
           transitions: [
             {
+              on: 'request_quote',
               goto: 'send_quote',
               if: true,
-              on: 'request_quote',
             },
             {
+              on: 'cancel',
               goto: '(canceled)',
               if: true,
-              on: 'cancel',
             },
             {
               after: 432000,
