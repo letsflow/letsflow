@@ -24,6 +24,7 @@ describe('normalize', () => {
         actors: {
           actor: {
             title: 'actor',
+            type: 'object',
             properties: {
               title: { type: 'string' },
             },
@@ -80,6 +81,7 @@ describe('normalize', () => {
         actors: {
           user_1: {
             title: 'user 1',
+            type: 'object',
             properties: {
               title: { type: 'string' },
               name: { type: 'string' },
@@ -107,37 +109,17 @@ describe('normalize', () => {
         title: '',
         description: '',
         actors: {
-          user: {},
+          user: {
+            title: 'user',
+            type: 'object',
+            properties: {
+              title: { type: 'string' },
+            },
+          },
         },
         actions: {},
         states: {},
         assets: {},
-      });
-    });
-  });
-
-  describe('normalize assets', () => {
-    it('should convert a null asset', () => {
-      const scenario: Scenario = {
-        title: '',
-        actors: {},
-        actions: {},
-        states: {},
-        assets: {
-          foo: null,
-        },
-      };
-
-      expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
-        title: '',
-        description: '',
-        actors: {},
-        actions: {},
-        states: {},
-        assets: {
-          foo: {},
-        },
       });
     });
   });

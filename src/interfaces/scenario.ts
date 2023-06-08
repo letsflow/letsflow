@@ -103,7 +103,7 @@ export interface NormalizedAction {
 }
 
 export interface NormalizedScenario {
-  $schema?: string;
+  $schema: string;
   title: string;
   description: string;
 
