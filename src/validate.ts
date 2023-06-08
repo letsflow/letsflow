@@ -3,6 +3,7 @@ import { ErrorObject } from 'ajv/dist/types';
 import scenarioSchema from './schemas/v1.0.0/scenario.json';
 import actionSchema from './schemas/v1.0.0/action.json';
 import fnSchema from './schemas/v1.0.0/fn.json';
+import schemaSchema from './schemas/v1.0.0/schema.json';
 import { Scenario, State } from './interfaces/scenario';
 
 export interface ValidateFunction {
@@ -11,18 +12,14 @@ export interface ValidateFunction {
 }
 
 const ajv = new Ajv();
-ajv.addSchema([actionSchema, fnSchema]);
+ajv.addSchema([actionSchema, fnSchema, schemaSchema]);
 
 const validateSchema = ajv.compile(scenarioSchema);
 
 export const validate: ValidateFunction = (scenario: any): boolean => {
   validateSchema(scenario);
 
-  const errors = [
-    ...(validateSchema.errors || []),
-    ...(validateActions(scenario)),
-    ...validateStates(scenario),
-  ];
+  const errors = [...(validateSchema.errors || []), ...validateActions(scenario), ...validateStates(scenario)];
 
   validate.errors = errors.length > 0 ? errors : null;
 
@@ -34,16 +31,12 @@ function validateActions(scenario: Scenario): ErrorObject[] {
   const errors: ErrorObject[] = [];
 
   Object.entries(scenario.actions || {}).forEach(([key, action]) => {
-    if (!action.actor) return;
+    if (action === null || !action.actor) return;
     const actionActors: string[] = Array.isArray(action.actor) ? action.actor : [action.actor];
 
     for (const actor of actionActors) {
       if (!actors.includes(actor)) {
-        errors.push(error(
-          `/actions/${key}/actor`,
-          'must reference an actor',
-          { value: actor, allowedValues: actors },
-        ));
+        errors.push(error(`/actions/${key}/actor`, 'must reference an actor', { value: actor, allowedValues: actors }));
       }
     }
   });
@@ -55,42 +48,39 @@ function validateStates(scenario: Scenario): ErrorObject[] {
   const actions = Object.keys(scenario.actions || {});
   const states = Object.keys(scenario.states || {});
 
-  return Object.entries(scenario.states || {}).map(([key, state]) => {
-    const errors: ErrorObject[] = [];
-    if ('on' in state && !actions.includes(state.on)) {
-      errors.push(error(
-        `/states/${key}/on`,
-        'must reference an action',
-        { value: state.on, allowedValues: actions },
-      ));
-    }
+  return Object.entries(scenario.states || {})
+    .map(([key, state]) => {
+      const errors: ErrorObject[] = [];
+      if (state !== null && 'on' in state && !actions.includes(state.on)) {
+        errors.push(
+          error(`/states/${key}/on`, 'must reference an action', { value: state.on, allowedValues: actions }),
+        );
+      }
 
-    if ('goto' in state && !states.includes(state.goto) && !state.goto.match(/^\(.*\)$/)) {
-      errors.push(error(
-        `/states/${key}/goto`,
-        'must reference a state',
-        { value: state.goto, allowedValues: states },
-      ));
-    }
+      if (state !== null && 'goto' in state && !states.includes(state.goto) && !state.goto.match(/^\(.*\)$/)) {
+        errors.push(
+          error(`/states/${key}/goto`, 'must reference a state', { value: state.goto, allowedValues: states }),
+        );
+      }
 
-    if ('actions' in state && state.actions) {
-      state.actions.forEach((action, index) => {
-        if (actions.includes(action)) return;
-        errors.push(error(
-          `/states/${key}/actions/${index}`,
-          'must reference an action',
-          { value: action, allowedValues: actions },
-        ));
-      });
-    }
+      if (state !== null && 'actions' in state && state.actions) {
+        state.actions.forEach((action, index) => {
+          if (actions.includes(action)) return;
+          errors.push(
+            error(`/states/${key}/actions/${index}`, 'must reference an action', {
+              value: action,
+              allowedValues: actions,
+            }),
+          );
+        });
+      }
 
-    const transitionErrors = 'transitions' in state ? validateTransitions(state, key, actions, states) : [];
+      const transitionErrors =
+        state !== null && 'transitions' in state ? validateTransitions(state, key, actions, states) : [];
 
-    return [
-      ...errors,
-      ...transitionErrors,
-    ];
-  }).flat();
+      return [...errors, ...transitionErrors];
+    })
+    .flat();
 }
 
 function validateTransitions(state: State, key: string, actions: string[], states: string[]): ErrorObject[] {
@@ -100,19 +90,21 @@ function validateTransitions(state: State, key: string, actions: string[], state
 
   Object.entries(state.transitions || {}).forEach(([index, transition]) => {
     if ('on' in transition && !actions.includes(transition.on)) {
-      errors.push(error(
-        `/states/${key}/transitions/${index}/on`,
-        'must reference an action',
-        { value: transition.on, allowedValues: actions },
-      ));
+      errors.push(
+        error(`/states/${key}/transitions/${index}/on`, 'must reference an action', {
+          value: transition.on,
+          allowedValues: actions,
+        }),
+      );
     }
 
     if ('goto' in transition && !states.includes(transition.goto) && !transition.goto.match(/^\(.*\)$/)) {
-      errors.push(error(
-        `/states/${key}/transitions/${index}/goto`,
-        'must reference a state',
-        { value: transition.goto, allowedValues: states },
-      ));
+      errors.push(
+        error(`/states/${key}/transitions/${index}/goto`, 'must reference a state', {
+          value: transition.goto,
+          allowedValues: states,
+        }),
+      );
     }
   });
 

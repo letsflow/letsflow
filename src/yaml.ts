@@ -1,5 +1,5 @@
 import * as YAML from 'yaml';
-import { stringifyString } from 'yaml/util'
+import { stringifyString } from 'yaml/util';
 
 const fnTag = (type: string): YAML.ScalarTag => ({
   identify: (value) => {
@@ -12,11 +12,11 @@ const fnTag = (type: string): YAML.ScalarTag => ({
   },
   resolve(str) {
     return { [`<${type}>`]: str };
-  }
+  },
 });
 
 export const schema = new YAML.Schema({
-  customTags: [ fnTag('ref'), fnTag('eval'), fnTag('tpl') ],
+  customTags: [fnTag('ref'), fnTag('eval'), fnTag('tpl')],
 });
 
 export function stringify(data: any): string {

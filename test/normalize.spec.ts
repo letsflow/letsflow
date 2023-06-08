@@ -26,12 +26,12 @@ describe('normalize', () => {
             title: 'actor',
             properties: {
               title: { type: 'string' },
-            }
-          }
+            },
+          },
         },
         actions: {
           complete: {
-            $schema: "https://specs.letsflow.io/v1.0.0/action",
+            $schema: 'https://specs.letsflow.io/v1.0.0/action',
             title: 'complete',
             description: '',
             actor: ['actor'],
@@ -49,9 +49,9 @@ describe('normalize', () => {
                 on: 'complete',
                 if: true,
                 goto: '(done)',
-              }
+              },
             ],
-          }
+          },
         },
         assets: {},
       });
@@ -65,8 +65,8 @@ describe('normalize', () => {
         actors: {
           user_1: {
             properties: {
-              name: { type: 'string' }
-            }
+              name: { type: 'string' },
+            },
           },
         },
         actions: {},
@@ -82,9 +82,9 @@ describe('normalize', () => {
             title: 'user 1',
             properties: {
               title: { type: 'string' },
-              name: { type: 'string' }
-            }
-          }
+              name: { type: 'string' },
+            },
+          },
         },
         actions: {},
         states: {},
@@ -107,7 +107,7 @@ describe('normalize', () => {
         title: '',
         description: '',
         actors: {
-          user: {}
+          user: {},
         },
         actions: {},
         states: {},
@@ -125,7 +125,7 @@ describe('normalize', () => {
         states: {},
         assets: {
           foo: null,
-        }
+        },
       };
 
       expect(normalize(scenario)).to.deep.eq({
@@ -136,7 +136,7 @@ describe('normalize', () => {
         actions: {},
         states: {},
         assets: {
-          foo: {}
+          foo: {},
         },
       });
     });

@@ -42,7 +42,7 @@ describe('validate', () => {
       expect(validate.errors).to.deep.contain({
         instancePath: '',
         keyword: 'required',
-        message: 'must have required property \'title\'',
+        message: "must have required property 'title'",
         params: {
           missingProperty: 'title',
         },
@@ -131,10 +131,9 @@ describe('validate', () => {
           user: {
             properties: {
               name: 'string',
-              address: {
-                street: 'string',
-                number: 'integer',
-              },
+              age: 'integer',
+              verified: 'boolean',
+              score: 'number',
             },
           },
         },
@@ -184,7 +183,7 @@ describe('validate', () => {
         actors: {
           user: {
             title: 'User',
-            '$ref': 'https://example.com/schemas/person',
+            $ref: 'https://example.com/schemas/person',
           },
         },
         actions: {
@@ -223,7 +222,7 @@ describe('validate', () => {
                   select: 'assets.reason',
                   data: { '<eval>': 'response | { message, code }' },
                   patch: true,
-                  if: { '<eval>': 'response.types.state | contains(@, \'WA\')' },
+                  if: { '<eval>': "response.types.state | contains(@, 'WA')" },
                 },
               },
             },
@@ -288,7 +287,7 @@ describe('validate', () => {
       const result = validate(scenario);
 
       expect(result).to.be.false;
-      expect(validate.errors).to.deep.contain(  {
+      expect(validate.errors).to.deep.contain({
         instancePath: '/actions/next/actor',
         keyword: '',
         message: 'must reference an actor',
@@ -490,7 +489,7 @@ describe('validate', () => {
           message: 'must reference an action',
           params: {
             value: 'foo',
-            allowedValues: []
+            allowedValues: [],
           },
           schemaPath: '',
         });
@@ -523,7 +522,7 @@ describe('validate', () => {
           message: 'must reference a state',
           params: {
             value: 'foo',
-            allowedValues: ['initial', 'second']
+            allowedValues: ['initial', 'second'],
           },
           schemaPath: '',
         });
@@ -533,7 +532,7 @@ describe('validate', () => {
           message: 'must reference a state',
           params: {
             value: 'bar',
-            allowedValues: ['initial', 'second']
+            allowedValues: ['initial', 'second'],
           },
           schemaPath: '',
         });
@@ -582,10 +581,7 @@ describe('validate', () => {
             initial: {
               title: 'Initial',
               description: 'The initial state',
-              actions: [
-                'next',
-                'other',
-              ],
+              actions: ['next', 'other'],
               transitions: [
                 {
                   on: 'next',
@@ -671,10 +667,7 @@ describe('validate', () => {
           },
           states: {
             initial: {
-              actions: [
-                'foo',
-                'next',
-              ],
+              actions: ['foo', 'next'],
               transitions: [
                 {
                   on: 'next',
@@ -688,15 +681,15 @@ describe('validate', () => {
         const result = validate(scenario);
 
         expect(result).to.be.false;
-        expect(validate.errors).to.deep.contain(  {
+        expect(validate.errors).to.deep.contain({
           instancePath: '/states/initial/actions/0',
           keyword: '',
           message: 'must reference an action',
           params: {
             allowedValues: ['next'],
-            value: 'foo'
+            value: 'foo',
           },
-          schemaPath: ''
+          schemaPath: '',
         });
       });
 
@@ -719,15 +712,15 @@ describe('validate', () => {
         const result = validate(scenario);
 
         expect(result).to.be.false;
-        expect(validate.errors).to.deep.contain(  {
+        expect(validate.errors).to.deep.contain({
           instancePath: '/states/initial/transitions/0/on',
           keyword: '',
           message: 'must reference an action',
           params: {
             allowedValues: [],
-            value: 'foo'
+            value: 'foo',
           },
-          schemaPath: ''
+          schemaPath: '',
         });
       });
 
@@ -752,15 +745,15 @@ describe('validate', () => {
         const result = validate(scenario);
 
         expect(result).to.be.false;
-        expect(validate.errors).to.deep.contain(  {
+        expect(validate.errors).to.deep.contain({
           instancePath: '/states/initial/transitions/0/goto',
           keyword: '',
           message: 'must reference a state',
           params: {
             allowedValues: ['initial'],
-            value: 'foo'
+            value: 'foo',
           },
-          schemaPath: ''
+          schemaPath: '',
         });
       });
     });

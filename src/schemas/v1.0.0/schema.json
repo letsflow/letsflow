@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.letsflow.io/v1.0.0/schema",
+  "oneOf": [
+    {
+      "$ref": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "$ref": "#/definitions/scalar"
+    },
+    {
+      "$ref": "#/definitions/object"
+    },
+    {
+      "$ref": "#/definitions/array"
+    }
+  ],
+  "definitions": {
+    "simple": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/scalar"
+        },
+        {
+          "$ref": "#/definitions/object"
+        },
+        {
+          "$ref": "#/definitions/array"
+        }
+      ]
+    },
+    "scalar": {
+      "type": "string",
+      "enum": [
+        "boolean",
+        "integer",
+        "number",
+        "string"
+      ]
+    },
+    "object": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/simple"
+          },
+          "minProperties": 1
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {
+          "$ref": "#/definitions/simple"
+        }
+      },
+      "required": [
+        "properties"
+      ]
+    },
+    "array": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "array"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "items": {
+          "$ref": "#/definitions/simple"
+        },
+        "minItems": {
+          "type": "number"
+        },
+        "maxItems": {
+          "type": "number"
+        },
+        "uniqueItems": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "items"
+      ]
+    }
+  }
+}

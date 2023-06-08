@@ -12,6 +12,5 @@
     "rootDir": "src",
     "outDir": "lib",
     "strictNullChecks": true
-  },
-  "include": ["src"]
+  }
 }

@@ -41,16 +41,20 @@ describe('yaml', () => {
       const data = {
         foo: 'bar',
         baz: ['qux', 'quux'],
-      }
+      };
 
       const yamlString = yaml.stringify(data);
 
-      expect(yamlString.trim()).to.eql(`
+      expect(yamlString.trim()).to.eql(
+        `
         foo: bar
         baz:
           - qux
           - quux
-      `.replace(/^\s{8}/gm, '').trim());
+      `
+          .replace(/^\s{8}/gm, '')
+          .trim(),
+      );
     });
 
     it('should stringify yaml with custom tags', () => {
@@ -63,12 +67,16 @@ describe('yaml', () => {
 
       const yamlString = yaml.stringify(data);
 
-      expect(yamlString.trim()).to.eql(`
+      expect(yamlString.trim()).to.eql(
+        `
         foo: !ref abc
         bar: !eval abc > 0
         bor: !eval "!def"
         qux: !tpl Hello, {{ name }}!
-      `.replace(/^\s{8}/gm, '').trim());
+      `
+          .replace(/^\s{8}/gm, '')
+          .trim(),
+      );
     });
   });
 });

@@ -16,8 +16,12 @@
     "@types/chai": "^4.3.5",
     "@types/mocha": "^10.0.1",
     "@types/uuid": "^9.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.59.9",
+    "@typescript-eslint/parser": "^5.59.9",
     "chai": "^4.3.7",
-    "eslint": "^8.41.0",
+    "eslint": "^8.42.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "mocha": "^10.2.0",
     "prettier": "^2.8.8",
     "ts-loader": "^9.4.3",
@@ -26,9 +30,8 @@
   },
   "scripts": {
     "clean": "rm -rf ./lib ./dist",
-    "compile": "tsc",
+    "build": "tsc --project tsconfig.build.json",
     "test": "mocha --require ts-node/register 'test/**/*.spec.ts'",
-    "lint": "eslint src --ext .ts,.tsx",
-    "lint-fix": "eslint src --ext .ts,.tsx --fix"
+    "lint": "eslint \"{src,test}/**/*.ts\" --fix"
   }
 }

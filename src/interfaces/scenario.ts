@@ -1,11 +1,12 @@
 export type Fn = FnRef | FnEval | FnTpl;
 
-export interface JsonObjectSchema {
-  type?: 'object';
+export interface Schema {
+  type?: string;
   title?: string;
   description?: string;
   properties?: Record<string, any>;
   required?: string[];
+  items?: any;
   additionalProperties?: boolean | Record<string, any>;
 }
 
@@ -85,10 +86,10 @@ export interface Scenario {
   title: string;
   description?: string;
 
-  actors?: Record<string, JsonObjectSchema | null>;
-  actions: Record<string, Action>;
-  states: Record<string, State | EndState>;
-  assets?: Record<string, JsonObjectSchema | null>;
+  actors?: Record<string, Schema | null>;
+  actions: Record<string, Action | null>;
+  states: Record<string, State | EndState | null>;
+  assets?: Record<string, Schema>;
 }
 
 export interface NormalizedAction {
@@ -106,8 +107,8 @@ export interface NormalizedScenario {
   title: string;
   description: string;
 
-  actors: Record<string, JsonObjectSchema>;
+  actors: Record<string, Schema>;
   actions: Record<string, NormalizedAction>;
   states: Record<string, ExplicitState | EndState>;
-  assets: Record<string, JsonObjectSchema>;
+  assets: Record<string, Schema>;
 }

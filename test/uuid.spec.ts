@@ -2,7 +2,7 @@ import { uuid } from '../src/';
 import { expect } from 'chai';
 
 describe('uuid', () => {
-  it('should create a deterministic uuid', function() {
+  it('should create a deterministic uuid', function () {
     const scenario = {
       $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
       title: 'minimal scenario',
@@ -12,12 +12,12 @@ describe('uuid', () => {
           title: 'actor',
           properties: {
             title: { type: 'string' },
-          }
-        }
+          },
+        },
       },
       actions: {
         complete: {
-          $schema: "https://specs.letsflow.io/v1.0.0/action",
+          $schema: 'https://specs.letsflow.io/v1.0.0/action',
           title: 'complete',
           description: '',
           actor: ['actor'],
@@ -35,9 +35,9 @@ describe('uuid', () => {
               on: 'complete',
               if: true,
               goto: '(done)',
-            }
+            },
           ],
-        }
+        },
       },
       assets: {},
     };

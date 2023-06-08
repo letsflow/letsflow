@@ -4,7 +4,9 @@ import {
   UpdateInstruction,
   State,
   Transition,
-  JsonObjectSchema, EndState, NormalizedScenario,
+  Schema,
+  EndState,
+  NormalizedScenario,
 } from './interfaces/scenario';
 import { actionJsonSchema, scenarioJsonSchema } from './constants';
 
@@ -24,42 +26,64 @@ export function normalize(input: Scenario): NormalizedScenario {
   scenario.actors ??= { actor: { title: 'actor' } };
   scenario.assets ??= {};
 
-  normalizeSchemas(scenario.actors);
+  normalizeActors(scenario.actors);
   normalizeActions(scenario.actions, Object.keys(scenario.actors));
   normalizeStates(scenario.states);
-  normalizeSchemas(scenario.assets);
+  normalizeSchemas(scenario.assets, true);
 
   return scenario as NormalizedScenario;
 }
 
-function normalizeSchemas(items: Record<string, JsonObjectSchema | null>): void {
+function normalizeActors(items: Record<string, Schema | null>): void {
   for (const key in items) {
-    const actor = items[key];
+    const actor = items[key] || {};
 
-    items[key] = actor === null ? {} : {
-      title: actor.title ?? keyToTitle(key),
-      properties: { ...actor.properties ?? {}, title: { type: 'string' } },
-    };
+    actor.title ??= keyToTitle(key);
+    actor.type ??= 'object';
+    actor.properties = { ...(actor.properties ?? {}), title: { type: 'string' } };
+
+    normalizeSchemas(actor.properties);
+
+    items[key] = actor;
   }
 }
 
-function normalizeActions(actions: Record<string, Action>, allActors: string[]): void {
-  Object.entries(actions).forEach(([key, action]) => {
+function normalizeSchemas(properties: Record<string, any>, setTitle = false): void {
+  for (const key in properties) {
+    if (typeof properties[key] === 'string') {
+      properties[key] = setTitle ? { title: keyToTitle(key), type: properties[key] } : { type: properties[key] };
+      continue;
+    }
+
+    properties[key].type ??= 'object';
+    if (setTitle) properties[key].title ??= keyToTitle(key);
+
+    if ('properties' in properties[key]) {
+      normalizeSchemas(properties[key].properties);
+    }
+
+    if ('additionalProperties' in properties[key]) {
+      properties[key].type ??= 'object';
+      normalizeSchemas(properties[key].properties);
+    }
+  }
+}
+
+function normalizeActions(actions: Record<string, Action | null>, allActors: string[]): void {
+  for (const key in actions) {
+    if (actions[key] === null) actions[key] = {};
+    const action = actions[key] as Action;
+
     action.$schema ??= actionJsonSchema;
     action.title ??= keyToTitle(key);
     action.actor ??= allActors;
     action.description ??= '';
     action.$schema ??= actionJsonSchema;
-    action.update ??= [];
-
-    normalizeUpdateInstructions(action.update);
-  });
+    action.update = normalizeUpdateInstructions(action.update ?? []);
+  }
 }
 
-
-function normalizeUpdateInstructions(
-  instructions: UpdateInstruction | UpdateInstruction[],
-): UpdateInstruction[] {
+function normalizeUpdateInstructions(instructions: UpdateInstruction | UpdateInstruction[]): UpdateInstruction[] {
   return (Array.isArray(instructions) ? instructions : [instructions]).map((instruction) => ({
     select: instruction.select,
     data: instruction.data || { '<ref>': 'response' },
@@ -68,19 +92,23 @@ function normalizeUpdateInstructions(
   }));
 }
 
-function normalizeStates(states: Record<string, State | EndState>): void {
+function normalizeStates(states: Record<string, State | EndState | null>): void {
   for (const key in states) {
-    const state = states[key];
-    states[key] = 'goto' in state || 'transitions' in state ? {
-      title: state.title ?? keyToTitle(key),
-      description: state.description ?? '',
-      instructions: state.instructions ?? {},
-      actions: state.actions ?? determineActions(state),
-      transitions: normalizeTransitions(state),
-    } : {
-      title: state.title ?? keyToTitle(key),
-      description: state.description ?? '',
-    };
+    const state = (states[key] || {}) as State | EndState;
+
+    states[key] =
+      'goto' in state || 'transitions' in state
+        ? {
+            title: state.title ?? keyToTitle(key),
+            description: state.description ?? '',
+            instructions: state.instructions ?? {},
+            actions: state.actions ?? determineActions(state),
+            transitions: normalizeTransitions(state),
+          }
+        : {
+            title: state.title ?? keyToTitle(key),
+            description: state.description ?? '',
+          };
   }
 }
 
@@ -88,9 +116,7 @@ function determineActions(state: State): string[] {
   if ('after' in state) return [];
   if ('on' in state) return [state.on];
 
-  return state.transitions
-    .filter((transition) => 'on' in transition)
-    .map((transition) => (transition as any).on);
+  return state.transitions.filter((transition) => 'on' in transition).map((transition) => (transition as any).on);
 }
 
 function normalizeTransitions(state: State): Array<Transition> {
@@ -114,21 +140,16 @@ function normalizeTransitions(state: State): Array<Transition> {
 }
 
 function convertTimePeriodToSeconds(timePeriod: string): number {
-  const match = timePeriod.trim().match(/^(\d+)(\w*)$/);
-
-  if (!match) {
-    throw new Error('Invalid time period format.');
-  }
+  const match = timePeriod.match(/^\s*(\d+)\s*(\w*)\s*$/);
+  if (!match) throw new Error('Invalid time period format');
 
   const value = parseInt(match[1]);
-
-  if (isNaN(value)) {
-    throw new Error('Invalid time period value.');
-  }
+  if (isNaN(value)) throw new Error('Invalid time period value');
 
   const unit = match[2]?.toLowerCase();
 
   switch (unit) {
+    case '':
     case 's':
     case 'second':
     case 'seconds':
