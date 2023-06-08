@@ -12,6 +12,7 @@ export interface ValidateFunction {
 }
 
 const ajv = new Ajv();
+ajv.addKeyword('$anchor');
 ajv.addSchema([actionSchema, fnSchema, schemaSchema]);
 
 const validateSchema = ajv.compile(scenarioSchema);

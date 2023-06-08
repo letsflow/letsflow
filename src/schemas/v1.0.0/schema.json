@@ -17,6 +17,7 @@
   ],
   "definitions": {
     "simple": {
+      "$anchor": "simple",
       "oneOf": [
         {
           "$ref": "#/definitions/scalar"
@@ -39,6 +40,7 @@
       ]
     },
     "object": {
+      "$anchor": "object",
       "type": "object",
       "properties": {
         "title": {
@@ -75,6 +77,7 @@
       ]
     },
     "array": {
+      "$anchor": "array",
       "type": "object",
       "properties": {
         "title": {

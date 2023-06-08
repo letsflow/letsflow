@@ -48,23 +48,23 @@ function normalizeActors(items: Record<string, Schema | null>): void {
   }
 }
 
-function normalizeSchemas(properties: Record<string, any>, setTitle = false): void {
-  for (const key in properties) {
-    if (typeof properties[key] === 'string') {
-      properties[key] = setTitle ? { title: keyToTitle(key), type: properties[key] } : { type: properties[key] };
+function normalizeSchemas(schemas: Record<string, any>, setTitle = false): void {
+  for (const key in schemas) {
+    if (typeof schemas[key] === 'string') {
+      schemas[key] = setTitle ? { title: keyToTitle(key), type: schemas[key] } : { type: schemas[key] };
       continue;
     }
 
-    properties[key].type ??= 'object';
-    if (setTitle) properties[key].title ??= keyToTitle(key);
+    schemas[key].type ??= 'object';
+    if (setTitle) schemas[key].title ??= keyToTitle(key);
 
-    if ('properties' in properties[key]) {
-      normalizeSchemas(properties[key].properties);
+    if ('properties' in schemas[key]) {
+      normalizeSchemas(schemas[key].properties);
     }
 
-    if ('additionalProperties' in properties[key]) {
-      properties[key].type ??= 'object';
-      normalizeSchemas(properties[key].properties);
+    if ('additionalProperties' in schemas[key]) {
+      schemas[key].type ??= 'object';
+      normalizeSchemas(schemas[key].properties);
     }
   }
 }

@@ -72,7 +72,7 @@
           ]
         },
         {
-          "$ref": "#/definitions/objectSchema"
+          "$ref": "https://schemas.letsflow.io/v1.0.0/schema#object"
         },
         {
           "type": "null"
@@ -251,96 +251,6 @@
           "type": "integer",
           "minimum": 0
         }
-      ]
-    },
-    "simpleSchema": {
-      "oneOf": [
-        {
-          "$ref": "#/definitions/scalarSchema"
-        },
-        {
-          "$ref": "#/definitions/objectSchema"
-        },
-        {
-          "$ref": "#/definitions/arraySchema"
-        }
-      ]
-    },
-    "scalarSchema": {
-      "type": "string",
-      "enum": [
-        "boolean",
-        "integer",
-        "number",
-        "string"
-      ]
-    },
-    "objectSchema": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string"
-        },
-        "properties": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/simpleSchema"
-          },
-          "minProperties": 1
-        },
-        "required": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": {
-          "$ref": "#/definitions/simpleSchema"
-        }
-      },
-      "required": [
-        "properties"
-      ]
-    },
-    "arraySchema": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "array"
-          ]
-        },
-        "description": {
-          "type": "string"
-        },
-        "items": {
-          "$ref": "#/definitions/simpleSchema"
-        },
-        "minItems": {
-          "type": "number"
-        },
-        "maxItems": {
-          "type": "number"
-        },
-        "uniqueItems": {
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "items"
       ]
     }
   }
