@@ -215,11 +215,11 @@ describe('validate', () => {
             actor: 'user',
             responses: {
               one: { title: 'one' },
-              two: { title: 'two', update: [{ select: 'assets.reason' }] },
+              two: { title: 'two', update: [{ select: 'vars.reason' }] },
               three: {
                 title: 'two',
                 update: {
-                  select: 'assets.reason',
+                  select: 'vars.reason',
                   data: { '<eval>': 'response | { message, code }' },
                   patch: true,
                   if: { '<eval>': "response.types.state | contains(@, 'WA')" },

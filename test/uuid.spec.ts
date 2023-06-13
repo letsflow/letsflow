@@ -39,9 +39,9 @@ describe('uuid', () => {
           ],
         },
       },
-      assets: {},
+      vars: {},
     };
 
-    expect(uuid(scenario)).to.eq('9b590526-b650-5700-9e96-c6785343a4b0');
+    expect(uuid(scenario)).to.eq('906a51d4-bfb5-5db4-98d1-4d660298c77f');
   });
 });

@@ -54,7 +54,7 @@ describe('normalize', () => {
             ],
           },
         },
-        assets: {},
+        vars: {},
       });
     });
   });
@@ -90,7 +90,7 @@ describe('normalize', () => {
         },
         actions: {},
         states: {},
-        assets: {},
+        vars: {},
       });
     });
 
@@ -119,7 +119,7 @@ describe('normalize', () => {
         },
         actions: {},
         states: {},
-        assets: {},
+        vars: {},
       });
     });
   });

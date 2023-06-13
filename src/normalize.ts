@@ -24,12 +24,12 @@ export function normalize(input: Scenario): NormalizedScenario {
 
   scenario.description ??= '';
   scenario.actors ??= { actor: { title: 'actor' } };
-  scenario.assets ??= {};
+  scenario.vars ??= {};
 
   normalizeActors(scenario.actors);
   normalizeActions(scenario.actions, Object.keys(scenario.actors));
   normalizeStates(scenario.states);
-  normalizeSchemas(scenario.assets, true);
+  normalizeSchemas(scenario.vars, true);
 
   return scenario as NormalizedScenario;
 }

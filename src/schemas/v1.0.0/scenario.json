@@ -38,7 +38,7 @@
         "initial"
       ]
     },
-    "assets": {
+    "vars": {
       "type": "object",
       "additionalProperties": {
         "$ref": "https://schemas.letsflow.io/v1.0.0/schema"

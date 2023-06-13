@@ -25,7 +25,7 @@ actions:
     actor: client
     form: general_quote
     update:
-      select: assets.quote_request
+      select: vars.quote_request
   send_quote:
     $schema: https://example.com/schemas/reply
     actor: company
@@ -36,7 +36,7 @@ actions:
     recipient: !ref actors.client
     template: quote_reminder
     update:
-      select: assets.reminded
+      select: vars.reminded
       data: true
   set_client_info:
     $schema: https://example.com/schemas/form
@@ -71,10 +71,10 @@ states:
         goto: (canceled)
       - after: 5 days
         goto: remind_client
-        if: !eval '!assets.reminded'
+        if: !eval '!vars.reminded'
       - after: 10 days  
         goto: (failed)
-        if: !eval assets.reminded
+        if: !eval vars.reminded
   remind_client:
     on: send_reminder
     goto: wait_on_client
@@ -86,14 +86,14 @@ states:
     instructions:
       company: !tpl |
         {{ actors.client.name
-        {{ assets.quote_request.description }}
+        {{ vars.quote_request.description }}
     transitions:
       - on: accept
         goto: (success)
       - on: reject
         goto: (failed)
     
-assets:
+vars:
   quote_request:
     properties:
       description: string
@@ -136,7 +136,7 @@ describe('import scenario', () => {
           actor: 'client',
           form: 'general_quote',
           update: {
-            select: 'assets.quote_request',
+            select: 'vars.quote_request',
           },
         },
         send_quote: {
@@ -150,7 +150,7 @@ describe('import scenario', () => {
           recipient: { '<ref>': 'actors.client' },
           template: 'quote_reminder',
           update: {
-            select: 'assets.reminded',
+            select: 'vars.reminded',
             data: true,
           },
         },
@@ -196,12 +196,12 @@ describe('import scenario', () => {
             {
               after: '5 days',
               goto: 'remind_client',
-              if: { '<eval>': '!assets.reminded' },
+              if: { '<eval>': '!vars.reminded' },
             },
             {
               after: '10 days',
               goto: '(failed)',
-              if: { '<eval>': 'assets.reminded' },
+              if: { '<eval>': 'vars.reminded' },
             },
           ],
         },
@@ -212,7 +212,7 @@ describe('import scenario', () => {
         send_quote: {
           actions: ['accept', 'reject', 'set_client_info'],
           instructions: {
-            company: { '<tpl>': '{{ actors.client.name\n{{ assets.quote_request.description }}\n' },
+            company: { '<tpl>': '{{ actors.client.name\n{{ vars.quote_request.description }}\n' },
           },
           transitions: [
             {
@@ -226,7 +226,7 @@ describe('import scenario', () => {
           ],
         },
       },
-      assets: {
+      vars: {
         quote_request: {
           properties: {
             description: 'string',
@@ -322,7 +322,7 @@ describe('import scenario', () => {
           title: 'request quote',
           update: [
             {
-              select: 'assets.quote_request',
+              select: 'vars.quote_request',
               data: { '<ref>': 'response' },
               patch: false,
               if: true,
@@ -346,7 +346,7 @@ describe('import scenario', () => {
           title: 'send reminder',
           update: [
             {
-              select: 'assets.reminded',
+              select: 'vars.reminded',
               data: true,
               patch: false,
               if: true,
@@ -415,7 +415,7 @@ describe('import scenario', () => {
           description: '',
           instructions: {
             company: {
-              '<tpl>': '{{ actors.client.name\n{{ assets.quote_request.description }}\n',
+              '<tpl>': '{{ actors.client.name\n{{ vars.quote_request.description }}\n',
             },
           },
           title: 'send quote',
@@ -451,17 +451,17 @@ describe('import scenario', () => {
             {
               after: 432000,
               goto: 'remind_client',
-              if: { '<eval>': '!assets.reminded' },
+              if: { '<eval>': '!vars.reminded' },
             },
             {
               after: 864000,
               goto: '(failed)',
-              if: { '<eval>': 'assets.reminded' },
+              if: { '<eval>': 'vars.reminded' },
             },
           ],
         },
       },
-      assets: {
+      vars: {
         quote_request: {
           title: 'quote request',
           type: 'object',

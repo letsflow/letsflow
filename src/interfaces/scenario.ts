@@ -89,7 +89,7 @@ export interface Scenario {
   actors?: Record<string, Schema | null>;
   actions: Record<string, Action | null>;
   states: Record<string, State | EndState | null>;
-  assets?: Record<string, Schema>;
+  vars?: Record<string, Schema>;
 }
 
 export interface NormalizedAction {
@@ -110,5 +110,5 @@ export interface NormalizedScenario {
   actors: Record<string, Schema>;
   actions: Record<string, NormalizedAction>;
   states: Record<string, ExplicitState | EndState>;
-  assets: Record<string, Schema>;
+  vars: Record<string, Schema>;
 }
