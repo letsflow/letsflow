@@ -1,8 +1,8 @@
-import { Scenario, normalize } from '../src/scenario';
+import { Scenario, normalize } from '../../src/scenario';
 import { expect } from 'chai';
 
-describe('normalize', () => {
-  describe('normalize scenario', () => {
+describe('normalize scenario', () => {
+  describe('scenario', () => {
     it('should normalize a minimal scenario', () => {
       const scenario: Scenario = {
         title: 'minimal scenario',
@@ -60,7 +60,7 @@ describe('normalize', () => {
     });
   });
 
-  describe('normalize actors', () => {
+  describe('actors', () => {
     it('should set the actor title', () => {
       const scenario: Scenario = {
         title: '',

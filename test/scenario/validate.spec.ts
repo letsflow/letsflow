@@ -1,8 +1,8 @@
-import { Scenario, validate } from '../src/scenario';
+import { Scenario, validate } from '../../src/scenario';
 import { expect } from 'chai';
 
-describe('validate', () => {
-  describe('validate scenario', () => {
+describe('validate scenario', () => {
+  describe('scenario', () => {
     it('should succeed with a minimal scenario', () => {
       const scenario = {
         title: 'minimal scenario',
@@ -51,7 +51,7 @@ describe('validate', () => {
     });
   });
 
-  describe('validate actors', () => {
+  describe('actors', () => {
     it('should succeed with a basic actor', () => {
       const scenario = {
         title: '',
@@ -201,7 +201,7 @@ describe('validate', () => {
     });
   });
 
-  describe('validate actions', () => {
+  describe('actions', () => {
     it('should succeed with a standard action', () => {
       const scenario = {
         title: '',
@@ -329,7 +329,7 @@ describe('validate', () => {
     });
   });
 
-  describe('validate states', () => {
+  describe('states', () => {
     describe('simple state', () => {
       it('should succeed with a simple state', () => {
         const scenario = {

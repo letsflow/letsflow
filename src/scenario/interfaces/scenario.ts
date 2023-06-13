@@ -3,6 +3,7 @@ import { Fn } from './fn';
 export interface Schema {
   type?: string;
   title?: string;
+  default?: any;
   description?: string;
   properties?: Record<string, any>;
   required?: string[];
