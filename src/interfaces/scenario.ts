@@ -1,4 +1,4 @@
-export type Fn = FnRef | FnEval | FnTpl;
+import { Fn } from './fn';
 
 export interface Schema {
   type?: string;
@@ -8,18 +8,6 @@ export interface Schema {
   required?: string[];
   items?: any;
   additionalProperties?: boolean | Record<string, any>;
-}
-
-interface FnRef {
-  '<ref>': string;
-}
-
-interface FnEval {
-  '<eval>': string;
-}
-
-interface FnTpl {
-  '<tpl>': string;
 }
 
 export interface Action {
@@ -90,25 +78,4 @@ export interface Scenario {
   actions: Record<string, Action | null>;
   states: Record<string, State | EndState | null>;
   vars?: Record<string, Schema>;
-}
-
-export interface NormalizedAction {
-  $schema: string;
-  title: string;
-  description: string | Fn;
-  actor: string[];
-  update: UpdateInstruction[];
-
-  [_: string]: any;
-}
-
-export interface NormalizedScenario {
-  $schema: string;
-  title: string;
-  description: string;
-
-  actors: Record<string, Schema>;
-  actions: Record<string, NormalizedAction>;
-  states: Record<string, ExplicitState | EndState>;
-  vars: Record<string, Schema>;
 }

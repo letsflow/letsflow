@@ -1,13 +1,5 @@
-import {
-  Action,
-  Scenario,
-  UpdateInstruction,
-  State,
-  Transition,
-  Schema,
-  EndState,
-  NormalizedScenario,
-} from './interfaces/scenario';
+import { Action, Scenario, UpdateInstruction, State, Transition, Schema, EndState } from './interfaces/scenario';
+import { NormalizedScenario } from './interfaces/normalized';
 import { actionJsonSchema, scenarioJsonSchema } from './constants';
 
 function keyToTitle(key: string): string {
