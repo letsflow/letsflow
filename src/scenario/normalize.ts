@@ -1,6 +1,6 @@
 import { Action, Scenario, UpdateInstruction, State, Transition, Schema, EndState } from './interfaces/scenario';
 import { NormalizedScenario } from './interfaces/normalized';
-import { actionJsonSchema, scenarioJsonSchema } from './constants';
+import { actionJsonSchema, scenarioJsonSchema } from '../constants';
 
 function keyToTitle(key: string): string {
   return key.replace('_', ' ');

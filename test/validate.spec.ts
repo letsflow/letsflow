@@ -1,4 +1,4 @@
-import { Scenario, validate } from '../src';
+import { Scenario, validate } from '../src/scenario';
 import { expect } from 'chai';
 
 describe('validate', () => {

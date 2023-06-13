@@ -1,4 +1,4 @@
-import { uuid } from '../src/';
+import { uuid } from '../src/uuid';
 import { expect } from 'chai';
 
 describe('uuid', () => {

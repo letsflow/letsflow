@@ -1,9 +1,9 @@
 import Ajv from 'ajv/dist/2020';
 import { ErrorObject } from 'ajv/dist/types';
-import scenarioSchema from './schemas/v1.0.0/scenario.json';
-import actionSchema from './schemas/v1.0.0/action.json';
-import fnSchema from './schemas/v1.0.0/fn.json';
-import schemaSchema from './schemas/v1.0.0/schema.json';
+import scenarioSchema from '../schemas/v1.0.0/scenario.json';
+import actionSchema from '../schemas/v1.0.0/action.json';
+import fnSchema from '../schemas/v1.0.0/fn.json';
+import schemaSchema from '../schemas/v1.0.0/schema.json';
 import { Scenario, State } from './interfaces/scenario';
 
 export interface ValidateFunction {

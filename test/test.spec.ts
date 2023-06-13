@@ -1,4 +1,5 @@
-import { yaml, normalize, validate, NormalizedScenario, Scenario } from '../src';
+import { NormalizedScenario, Scenario, normalize, validate } from '../src/scenario';
+import { parse as yamlParse } from '../src/yaml';
 import { expect } from 'chai';
 
 const scenarioYaml = `
@@ -105,7 +106,7 @@ describe('import scenario', () => {
   let normalized: NormalizedScenario;
 
   it('should parse yaml', () => {
-    scenario = yaml.parse(scenarioYaml);
+    scenario = yamlParse(scenarioYaml);
 
     expect(scenario).to.deep.eq({
       title: 'Quote',

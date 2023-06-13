@@ -1,4 +1,4 @@
-import { yaml } from '../src/';
+import { parse, stringify } from '../src/yaml';
 import { expect } from 'chai';
 
 describe('yaml', () => {
@@ -11,7 +11,7 @@ describe('yaml', () => {
           - quux
       `;
 
-      const data = yaml.parse(yamlString);
+      const data = parse(yamlString);
 
       expect(data).to.eql({
         foo: 'bar',
@@ -26,7 +26,7 @@ describe('yaml', () => {
         qux: !tpl "Hello, {{ name }}!"
       `;
 
-      const data = yaml.parse(yamlString);
+      const data = parse(yamlString);
 
       expect(data).to.eql({
         foo: { '<ref>': 'abc' },
@@ -43,7 +43,7 @@ describe('yaml', () => {
         baz: ['qux', 'quux'],
       };
 
-      const yamlString = yaml.stringify(data);
+      const yamlString = stringify(data);
 
       expect(yamlString.trim()).to.eql(
         `
@@ -65,7 +65,7 @@ describe('yaml', () => {
         qux: { '<tpl>': 'Hello, {{ name }}!' },
       };
 
-      const yamlString = yaml.stringify(data);
+      const yamlString = stringify(data);
 
       expect(yamlString.trim()).to.eql(
         `

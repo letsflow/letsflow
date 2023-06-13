@@ -2,10 +2,23 @@
   "name": "@letsflow/api",
   "version": "0.0.0",
   "description": "Shared library for LetsFlow",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
   "author": "Arnold Daniels <arnold@jasny.net>",
   "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./scenario": {
+      "types": "./lib/scenario/index.d.ts",
+      "default": "./lib/scenario/index.js"
+    },
+    "./schemas": {
+      "types": "./lib/schemas/index.d.ts",
+      "default": "./lib/schemas/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "dependencies": {
     "ajv": "^8.12.0",
     "fast-json-stable-stringify": "^2.1.0",

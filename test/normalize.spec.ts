@@ -1,4 +1,4 @@
-import { normalize, Scenario } from '../src';
+import { Scenario, normalize } from '../src/scenario';
 import { expect } from 'chai';
 
 describe('normalize', () => {
