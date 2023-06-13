@@ -32,7 +32,7 @@ function normalizeActors(items: Record<string, Schema | null>): void {
 
     actor.title ??= keyToTitle(key);
     actor.type ??= 'object';
-    actor.properties = { ...(actor.properties ?? {}), title: { type: 'string' } };
+    actor.properties = { ...(actor.properties ?? {}), id: { type: 'string' }, title: { type: 'string' } };
 
     normalizeSchemas(actor.properties);
 

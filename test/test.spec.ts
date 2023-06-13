@@ -256,15 +256,17 @@ describe('import scenario', () => {
           title: 'client',
           type: 'object',
           properties: {
+            id: { type: 'string' },
+            title: { type: 'string' },
             email: { type: 'string' },
             name: { type: 'string' },
-            title: { type: 'string' },
           },
         },
         company: {
           title: 'company',
           type: 'object',
           properties: {
+            id: { type: 'string' },
             title: { type: 'string' },
           },
         },

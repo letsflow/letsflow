@@ -26,6 +26,7 @@ describe('normalize', () => {
             title: 'actor',
             type: 'object',
             properties: {
+              id: { type: 'string' },
               title: { type: 'string' },
             },
           },
@@ -83,6 +84,7 @@ describe('normalize', () => {
             title: 'user 1',
             type: 'object',
             properties: {
+              id: { type: 'string' },
               title: { type: 'string' },
               name: { type: 'string' },
             },
@@ -113,6 +115,7 @@ describe('normalize', () => {
             title: 'user',
             type: 'object',
             properties: {
+              id: { type: 'string' },
               title: { type: 'string' },
             },
           },
