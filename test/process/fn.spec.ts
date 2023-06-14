@@ -1,5 +1,21 @@
 import { expect } from 'chai';
-import { sub } from '../../src/process/fn';
+import { ref, sub } from '../../src/process/fn';
+
+describe('ref function', () => {
+  const data = { name: 'Alice', age: 25, items: { a: 1, b: 2, c: 3 } };
+
+  it('should apply jmespath expressions correctly', () => {
+    expect(ref('name', data)).to.equal('Alice');
+    expect(ref('age', data)).to.equal(25);
+
+    expect(ref('items.*', data)).to.deep.equal([1, 2, 3]);
+  });
+
+  it('should auto quote string literals', () => {
+    expect(ref('age >= 21', data)).to.be.true;
+    expect(ref('age < 21', data)).to.be.false;
+  });
+});
 
 describe('sub function', () => {
   const data = { name: 'Alice', age: 25, items: { a: 1, b: 2, c: 3 } };

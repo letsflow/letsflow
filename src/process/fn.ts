@@ -1,4 +1,4 @@
-import jmespath from '@jmespath-community/jmespath';
+import jmespath from '@letsflow/jmespath';
 
 export function ref(expression, data) {
   return jmespath.search(data, expression);
