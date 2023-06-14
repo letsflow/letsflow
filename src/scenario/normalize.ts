@@ -3,7 +3,7 @@ import { NormalizedScenario } from './interfaces/normalized';
 import { actionJsonSchema, scenarioJsonSchema } from '../constants';
 
 function keyToTitle(key: string): string {
-  return key.replace('_', ' ');
+  return key.replace(/\*$/, '').replace('_', ' ').trim();
 }
 
 export function normalize(input: Scenario): NormalizedScenario {

@@ -6,7 +6,14 @@ export interface Actor {
   [key: string]: any;
 }
 
+export interface StartInstructions {
+  scenario: string;
+  actors?: Record<string, Omit<Actor, 'title'>>;
+  vars?: Record<string, any>;
+}
+
 export interface InstantiateEvent {
+  id: string;
   timestamp: Date;
   scenario: string;
   actors: Record<string, Omit<Actor, 'title'>>;
