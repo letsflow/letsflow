@@ -22,16 +22,16 @@ describe('yaml', () => {
     it('should parse yaml with custom tags', () => {
       const yamlString = `
         foo: !ref abc
-        bar: !eval abc > 0
-        qux: !tpl "Hello, {{ name }}!"
+        bar: !ref abc > 0
+        qux: !sub "Hello, \${ name }!"
       `;
 
       const data = parse(yamlString);
 
       expect(data).to.eql({
         foo: { '<ref>': 'abc' },
-        bar: { '<eval>': 'abc > 0' },
-        qux: { '<tpl>': 'Hello, {{ name }}!' },
+        bar: { '<ref>': 'abc > 0' },
+        qux: { '<sub>': 'Hello, ${ name }!' },
       });
     });
   });
@@ -60,9 +60,9 @@ describe('yaml', () => {
     it('should stringify yaml with custom tags', () => {
       const data = {
         foo: { '<ref>': 'abc' },
-        bar: { '<eval>': 'abc > 0' },
-        bor: { '<eval>': '!def' },
-        qux: { '<tpl>': 'Hello, {{ name }}!' },
+        bar: { '<ref>': 'abc > 0' },
+        bor: { '<ref>': '!def' },
+        qux: { '<sub>': 'Hello, ${ name }!' },
       };
 
       const yamlString = stringify(data);
@@ -70,9 +70,9 @@ describe('yaml', () => {
       expect(yamlString.trim()).to.eql(
         `
         foo: !ref abc
-        bar: !eval abc > 0
-        bor: !eval "!def"
-        qux: !tpl Hello, {{ name }}!
+        bar: !ref abc > 0
+        bor: !ref "!def"
+        qux: !sub Hello, \${ name }!
       `
           .replace(/^\s{8}/gm, '')
           .trim(),

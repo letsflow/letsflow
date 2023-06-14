@@ -16,7 +16,7 @@ const fnTag = (type: string): YAML.ScalarTag => ({
 });
 
 export const schema = new YAML.Schema({
-  customTags: [fnTag('ref'), fnTag('eval'), fnTag('tpl')],
+  customTags: [fnTag('ref'), fnTag('sub')],
 });
 
 export function stringify(data: any): string {

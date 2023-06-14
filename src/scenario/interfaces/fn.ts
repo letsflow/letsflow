@@ -1,13 +1,9 @@
-export type Fn = FnRef | FnEval | FnTpl;
+export type Fn = FnRef | FnSub;
 
 interface FnRef {
   '<ref>': string;
 }
 
-interface FnEval {
-  '<eval>': string;
-}
-
-interface FnTpl {
-  '<tpl>': string;
+interface FnSub {
+  '<sub>': string;
 }

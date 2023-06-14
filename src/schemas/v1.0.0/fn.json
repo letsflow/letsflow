@@ -17,24 +17,12 @@
     {
       "type": "object",
       "properties": {
-        "<eval>": {
+        "<sub>": {
           "type": "string"
         }
       },
       "required": [
-        "<eval>"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "<tpl>": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "<tpl>"
+        "<sub>"
       ],
       "additionalProperties": false
     }

@@ -72,10 +72,10 @@ states:
         goto: (canceled)
       - after: 5 days
         goto: remind_client
-        if: !eval '!vars.reminded'
+        if: !ref '!vars.reminded'
       - after: 10 days  
         goto: (failed)
-        if: !eval vars.reminded
+        if: !ref vars.reminded
   remind_client:
     on: send_reminder
     goto: wait_on_client
@@ -85,9 +85,9 @@ states:
       - reject
       - set_client_info
     instructions:
-      company: !tpl |
-        {{ actors.client.name
-        {{ vars.quote_request.description }}
+      company: !sub |
+        \${actors.client.name}
+        \${vars.quote_request.description}
     transitions:
       - on: accept
         goto: (success)
@@ -197,12 +197,12 @@ describe('import scenario', () => {
             {
               after: '5 days',
               goto: 'remind_client',
-              if: { '<eval>': '!vars.reminded' },
+              if: { '<ref>': '!vars.reminded' },
             },
             {
               after: '10 days',
               goto: '(failed)',
-              if: { '<eval>': 'vars.reminded' },
+              if: { '<ref>': 'vars.reminded' },
             },
           ],
         },
@@ -213,7 +213,7 @@ describe('import scenario', () => {
         send_quote: {
           actions: ['accept', 'reject', 'set_client_info'],
           instructions: {
-            company: { '<tpl>': '{{ actors.client.name\n{{ vars.quote_request.description }}\n' },
+            company: { '<sub>': '${actors.client.name}\n${vars.quote_request.description}\n' },
           },
           transitions: [
             {
@@ -418,7 +418,7 @@ describe('import scenario', () => {
           description: '',
           instructions: {
             company: {
-              '<tpl>': '{{ actors.client.name\n{{ vars.quote_request.description }}\n',
+              '<sub>': '${actors.client.name}\n${vars.quote_request.description}\n',
             },
           },
           title: 'send quote',
@@ -454,12 +454,12 @@ describe('import scenario', () => {
             {
               after: 432000,
               goto: 'remind_client',
-              if: { '<eval>': '!vars.reminded' },
+              if: { '<ref>': '!vars.reminded' },
             },
             {
               after: 864000,
               goto: '(failed)',
-              if: { '<eval>': 'vars.reminded' },
+              if: { '<ref>': 'vars.reminded' },
             },
           ],
         },
