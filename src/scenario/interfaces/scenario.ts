@@ -22,7 +22,7 @@ export interface Action {
 }
 
 export interface UpdateInstruction {
-  select: string;
+  select: string | Fn;
   data?: any | Fn;
   patch?: boolean;
   if?: boolean | Fn;

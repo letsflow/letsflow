@@ -55,7 +55,14 @@
       "type": "object",
       "properties": {
         "select": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+            }
+          ]
         },
         "data": {},
         "patch": {
