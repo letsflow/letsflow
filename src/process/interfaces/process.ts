@@ -29,12 +29,37 @@ export interface Event {
   hash: string;
 }
 
+export interface Action {
+  $schema: string;
+  title: string;
+  description: string;
+  actor: string[];
+  update: UpdateInstruction[];
+
+  [_: string]: any;
+}
+
+export interface UpdateInstruction {
+  select: string;
+  data: any;
+  patch: boolean;
+  if: boolean;
+}
+
+export interface State {
+  key: string;
+  title: string;
+  description: string;
+  instructions: Record<string, string>;
+  actions: Record<string, Action>;
+}
+
 export interface Process {
   id: string;
   scenario: NormalizedScenario;
   actors: Record<string, Actor>;
   vars: Record<string, any>;
-  state: string;
+  current: State;
   response?: any;
   events: Array<InstantiateEvent | Event>;
 }

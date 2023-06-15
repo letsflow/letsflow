@@ -1,5 +1,25 @@
 import jmespath from '@letsflow/jmespath';
 
+export function applyFn(subject: any, data: Record<string, any>) {
+  if (typeof subject !== 'object' || subject === null || subject instanceof Date) {
+    return subject;
+  }
+
+  if (Array.isArray(subject)) {
+    return subject.map((item) => applyFn(item, data));
+  }
+
+  if ('<ref>' in subject) {
+    return ref(subject['<ref>'], data);
+  }
+
+  if ('<sub>' in subject) {
+    return sub(subject['<sub>'], data);
+  }
+
+  return Object.fromEntries(Object.entries(subject).map(([key, value]) => [key, applyFn(value, data)]));
+}
+
 export function ref(expression, data) {
   return jmespath.search(data, expression);
 }

@@ -1,19 +1,23 @@
 import { NormalizedScenario, Schema } from '../scenario';
 import { v4 as uuid } from 'uuid';
-import { Actor, InstantiateEvent, Process, StartInstructions } from './interfaces/process';
+import { Actor, InstantiateEvent, Process, StartInstructions, State } from './interfaces/process';
 import { hash } from './hash';
+import { applyFn } from './fn';
 
 export function instantiate(scenario: NormalizedScenario, instructions: StartInstructions): Process {
   const event = createInstantiateEvent(instructions);
 
-  return {
+  const process = {
     id: event.id,
     scenario,
     actors: instantiateActors(scenario.actors, event.actors),
     vars: { ...defaultVars(scenario.vars), ...event.vars },
-    state: 'initial',
-    events: [event as InstantiateEvent],
+    events: [event],
   };
+
+  const current = instantiateState(scenario, 'initial', process);
+
+  return { ...process, current };
 }
 
 function createInstantiateEvent(instructions: StartInstructions): InstantiateEvent {
@@ -50,6 +54,22 @@ function instantiateActors(
     ]);
 
   return Object.fromEntries(entries);
+}
+
+export function instantiateState(scenario: NormalizedScenario, key: string, process: Omit<Process, 'current'>): State {
+  const state = scenario.states[key];
+  if (!state) throw new Error(`State '${key}' not found in scenario`);
+
+  const actionKeys = 'actions' in state ? state.actions : [];
+  const actions = Object.fromEntries(actionKeys.map((action) => [action, applyFn(scenario.actions[action], process)]));
+
+  return {
+    key,
+    title: applyFn(state.title, process),
+    description: applyFn(state.description, process),
+    instructions: applyFn(state.instructions, process),
+    actions,
+  };
 }
 
 function defaultVars(vars: Record<string, any>): Record<string, any> {

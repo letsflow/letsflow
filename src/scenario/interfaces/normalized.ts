@@ -18,6 +18,6 @@ export interface NormalizedScenario {
 
   actors: Record<string, Schema>;
   actions: Record<string, NormalizedAction>;
-  states: Record<string, ExplicitState | EndState>;
+  states: Record<string, Required<ExplicitState> | Required<EndState>>;
   vars: Record<string, Schema>;
 }

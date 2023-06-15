@@ -4,11 +4,13 @@ import { expect } from 'chai';
 import { hash } from '../../src/process/hash';
 
 describe('instantiate process', () => {
-  it('should instantiate from a minimal scenario', () => {
+  it('should instantiate from a scenario', () => {
     const scenario: NormalizedScenario = normalize({
-      title: 'minimal scenario',
+      title: 'some scenario',
       actions: {
-        complete: {},
+        complete: {
+          description: { '<sub>': 'Complete ${scenario.title}' },
+        },
       },
       states: {
         initial: {
@@ -29,7 +31,21 @@ describe('instantiate process', () => {
       actor: { title: 'actor' },
     });
     expect(process.vars).to.deep.eq({});
-    expect(process.state).to.eq('initial');
+    expect(process.current).to.deep.eq({
+      key: 'initial',
+      title: 'initial',
+      description: '',
+      instructions: {},
+      actions: {
+        complete: {
+          $schema: 'https://specs.letsflow.io/v1.0.0/action',
+          title: 'complete',
+          description: 'Complete some scenario',
+          actor: ['actor'],
+          update: [],
+        },
+      },
+    });
 
     expect(process.events.length).to.eq(1);
     const { hash: eventHash, ...event } = process.events[0] as InstantiateEvent;
@@ -42,7 +58,7 @@ describe('instantiate process', () => {
 
   it('should instantiate actors', () => {
     const scenario: NormalizedScenario = normalize({
-      title: 'minimal scenario',
+      title: 'some scenario',
       actors: {
         user: {
           title: 'Main user',

@@ -54,6 +54,7 @@ export interface ExplicitState extends BaseState {
 export interface EndState {
   title?: string | Fn;
   description?: string | Fn;
+  instructions?: Record<string, string>;
 }
 
 export type Transition = ActionTransition | TimeoutTransition;
