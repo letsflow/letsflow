@@ -54,7 +54,7 @@
     "updateInstruction": {
       "type": "object",
       "properties": {
-        "select": {
+        "path": {
           "oneOf": [
             {
               "type": "string"
@@ -65,7 +65,7 @@
           ]
         },
         "data": {},
-        "patch": {
+        "merge": {
           "type": "boolean"
         },
         "if": {
@@ -80,7 +80,7 @@
         }
       },
       "required": [
-        "select"
+        "path"
       ]
     }
   }

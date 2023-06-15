@@ -42,7 +42,6 @@ describe('instantiate process', () => {
           title: 'complete',
           description: 'Complete some scenario',
           actor: ['actor'],
-          update: [],
         },
       },
     });

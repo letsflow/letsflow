@@ -21,11 +21,18 @@ export interface InstantiateEvent {
   hash: string;
 }
 
-export interface Event {
+export interface ActionEvent {
   previous: string;
   timestamp: Date;
   action: string;
+  actor: { key: string; id: string };
   response?: any;
+  hash: string;
+}
+
+export interface TimeoutEvent {
+  previous: string;
+  timestamp: Date;
   hash: string;
 }
 
@@ -34,16 +41,8 @@ export interface Action {
   title: string;
   description: string;
   actor: string[];
-  update: UpdateInstruction[];
 
   [_: string]: any;
-}
-
-export interface UpdateInstruction {
-  select: string;
-  data: any;
-  patch: boolean;
-  if: boolean;
 }
 
 export interface State {
@@ -61,5 +60,5 @@ export interface Process {
   vars: Record<string, any>;
   current: State;
   response?: any;
-  events: Array<InstantiateEvent | Event>;
+  events: Array<InstantiateEvent | ActionEvent | TimeoutEvent>;
 }

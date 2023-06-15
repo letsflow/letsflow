@@ -1,13 +1,19 @@
-import { NormalizedScenario, Schema } from '../scenario';
+import { NormalizedAction, NormalizedScenario, Schema } from '../scenario';
 import { v4 as uuid } from 'uuid';
-import { Actor, InstantiateEvent, Process, StartInstructions, State } from './interfaces/process';
-import { hash } from './hash';
+import { Action, Actor, InstantiateEvent, Process, StartInstructions, State } from './interfaces/process';
+import { withHash } from './hash';
 import { applyFn } from './fn';
 
 export function instantiate(scenario: NormalizedScenario, instructions: StartInstructions): Process {
-  const event = createInstantiateEvent(instructions);
+  const event: InstantiateEvent = withHash({
+    id: uuid(),
+    timestamp: new Date(),
+    scenario: instructions.scenario,
+    actors: instructions.actors ?? {},
+    vars: instructions.vars ?? {},
+  });
 
-  const process = {
+  const process: Omit<Process, 'current'> = {
     id: event.id,
     scenario,
     actors: instantiateActors(scenario.actors, event.actors),
@@ -18,19 +24,6 @@ export function instantiate(scenario: NormalizedScenario, instructions: StartIns
   const current = instantiateState(scenario, 'initial', process);
 
   return { ...process, current };
-}
-
-function createInstantiateEvent(instructions: StartInstructions): InstantiateEvent {
-  const event: Partial<InstantiateEvent> = {
-    id: uuid(),
-    timestamp: new Date(),
-    scenario: instructions.scenario,
-    actors: instructions.actors ?? {},
-    vars: instructions.vars ?? {},
-  };
-  event.hash = hash(event);
-
-  return event as InstantiateEvent;
 }
 
 function instantiateActors(
@@ -61,7 +54,9 @@ export function instantiateState(scenario: NormalizedScenario, key: string, proc
   if (!state) throw new Error(`State '${key}' not found in scenario`);
 
   const actionKeys = 'actions' in state ? state.actions : [];
-  const actions = Object.fromEntries(actionKeys.map((action) => [action, applyFn(scenario.actions[action], process)]));
+  const actions = Object.fromEntries(
+    actionKeys.map((action) => [action, instantiateAction(scenario.actions[action], process)]),
+  );
 
   return {
     key,
@@ -70,6 +65,13 @@ export function instantiateState(scenario: NormalizedScenario, key: string, proc
     instructions: applyFn(state.instructions, process),
     actions,
   };
+}
+
+function instantiateAction(action: NormalizedAction, process: Omit<Process, 'current'>): Action {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { update, ...scenarioAction } = action;
+
+  return applyFn(scenarioAction, process);
 }
 
 function defaultVars(vars: Record<string, any>): Record<string, any> {

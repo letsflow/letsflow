@@ -215,11 +215,11 @@ describe('validate scenario', () => {
             actor: 'user',
             responses: {
               one: { title: 'one' },
-              two: { title: 'two', update: [{ select: 'vars.reason' }] },
+              two: { title: 'two', update: [{ path: 'vars.reason' }] },
               three: {
                 title: 'two',
                 update: {
-                  select: 'vars.reason',
+                  path: 'vars.reason',
                   data: { '<eval>': 'response | { message, code }' },
                   patch: true,
                   if: { '<eval>': "response.types.state | contains(@, 'WA')" },
@@ -239,7 +239,7 @@ describe('validate scenario', () => {
       expect(result).to.be.true;
     });
 
-    it('should fail if update instruction is missing select', () => {
+    it('should fail if update instruction is missing path', () => {
       const scenario = {
         title: '',
         actions: {
@@ -260,9 +260,9 @@ describe('validate scenario', () => {
       expect(validate.errors).to.deep.contain({
         instancePath: '/actions/next/update',
         keyword: 'required',
-        message: "must have required property 'select'",
+        message: "must have required property 'path'",
         params: {
-          missingProperty: 'select',
+          missingProperty: 'path',
         },
         schemaPath: '#/required',
       });
@@ -299,7 +299,7 @@ describe('validate scenario', () => {
       });
     });
 
-    it('should fail if update instruction is missing select', () => {
+    it('should fail if update instruction is missing path', () => {
       const scenario = {
         title: '',
         actions: {
@@ -320,9 +320,9 @@ describe('validate scenario', () => {
       expect(validate.errors).to.deep.contain({
         instancePath: '/actions/next/update',
         keyword: 'required',
-        message: "must have required property 'select'",
+        message: "must have required property 'path'",
         params: {
-          missingProperty: 'select',
+          missingProperty: 'path',
         },
         schemaPath: '#/required',
       });

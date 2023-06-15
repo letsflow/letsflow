@@ -69,6 +69,7 @@ function normalizeActions(actions: Record<string, Action | null>, allActors: str
     action.$schema ??= actionJsonSchema;
     action.title ??= keyToTitle(key);
     action.actor ??= allActors;
+    if (!Array.isArray(action.actor)) action.actor = [action.actor];
     action.description ??= '';
     action.$schema ??= actionJsonSchema;
     action.update = normalizeUpdateInstructions(action.update ?? []);
@@ -77,9 +78,9 @@ function normalizeActions(actions: Record<string, Action | null>, allActors: str
 
 function normalizeUpdateInstructions(instructions: UpdateInstruction | UpdateInstruction[]): UpdateInstruction[] {
   return (Array.isArray(instructions) ? instructions : [instructions]).map((instruction) => ({
-    select: instruction.select,
+    path: instruction.path,
     data: instruction.data || { '<ref>': 'response' },
-    patch: instruction.patch || false,
+    merge: instruction.merge || false,
     if: instruction.if || true,
   }));
 }

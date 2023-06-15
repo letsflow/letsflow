@@ -1,6 +1,6 @@
 import jmespath from '@letsflow/jmespath';
 
-export function applyFn(subject: any, data: Record<string, any>) {
+export function applyFn(subject: any, data: Record<string, any>): any {
   if (typeof subject !== 'object' || subject === null || subject instanceof Date) {
     return subject;
   }

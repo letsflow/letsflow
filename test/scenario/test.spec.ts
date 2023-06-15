@@ -15,7 +15,7 @@ actions:
   new_lead:
     actor: company
     update:
-      select: actors.client
+      path: actors.client
   introduce_company:
     $schema: https://example.com/schemas/message
     actor: company
@@ -26,7 +26,7 @@ actions:
     actor: client
     form: general_quote
     update:
-      select: vars.quote_request
+      path: vars.quote_request
   send_quote:
     $schema: https://example.com/schemas/reply
     actor: company
@@ -37,7 +37,7 @@ actions:
     recipient: !ref actors.client
     template: quote_reminder
     update:
-      select: vars.reminded
+      path: vars.reminded
       data: true
   set_client_info:
     $schema: https://example.com/schemas/form
@@ -45,7 +45,7 @@ actions:
     data: !ref actors.client
     data_schema: !ref scenario.actors.client
     update:
-      select: actors.client
+      path: actors.client
   accept:
     actor: client
   reject:
@@ -123,7 +123,7 @@ describe('import scenario', () => {
         new_lead: {
           actor: 'company',
           update: {
-            select: 'actors.client',
+            path: 'actors.client',
           },
         },
         introduce_company: {
@@ -137,7 +137,7 @@ describe('import scenario', () => {
           actor: 'client',
           form: 'general_quote',
           update: {
-            select: 'vars.quote_request',
+            path: 'vars.quote_request',
           },
         },
         send_quote: {
@@ -151,7 +151,7 @@ describe('import scenario', () => {
           recipient: { '<ref>': 'actors.client' },
           template: 'quote_reminder',
           update: {
-            select: 'vars.reminded',
+            path: 'vars.reminded',
             data: true,
           },
         },
@@ -161,7 +161,7 @@ describe('import scenario', () => {
           data: { '<ref>': 'actors.client' },
           data_schema: { '<ref>': 'scenario.actors.client' },
           update: {
-            select: 'actors.client',
+            path: 'actors.client',
           },
         },
         accept: {
@@ -251,7 +251,7 @@ describe('import scenario', () => {
     expect(normalized).to.deep.eq({
       $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
       title: 'Quote',
-      description: '',
+      description: 'Provide a quote to a client',
       actors: {
         client: {
           title: 'client',
@@ -303,9 +303,9 @@ describe('import scenario', () => {
           title: 'new lead',
           update: [
             {
-              select: 'actors.client',
+              path: 'actors.client',
               data: { '<ref>': 'response' },
-              patch: false,
+              merge: false,
               if: true,
             },
           ],
@@ -325,9 +325,9 @@ describe('import scenario', () => {
           title: 'request quote',
           update: [
             {
-              select: 'vars.quote_request',
+              path: 'vars.quote_request',
               data: { '<ref>': 'response' },
-              patch: false,
+              merge: false,
               if: true,
             },
           ],
@@ -349,9 +349,9 @@ describe('import scenario', () => {
           title: 'send reminder',
           update: [
             {
-              select: 'vars.reminded',
+              path: 'vars.reminded',
               data: true,
-              patch: false,
+              merge: false,
               if: true,
             },
           ],
@@ -365,9 +365,9 @@ describe('import scenario', () => {
           title: 'set client_info',
           update: [
             {
-              select: 'actors.client',
+              path: 'actors.client',
               data: { '<ref>': 'response' },
-              patch: false,
+              merge: false,
               if: true,
             },
           ],

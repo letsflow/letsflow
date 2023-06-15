@@ -22,9 +22,9 @@ export interface Action {
 }
 
 export interface UpdateInstruction {
-  select: string | Fn;
+  path: string | Fn;
   data?: any | Fn;
-  patch?: boolean;
+  merge?: boolean;
   if?: boolean | Fn;
 }
 

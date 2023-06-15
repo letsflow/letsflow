@@ -126,4 +126,166 @@ describe('normalize scenario', () => {
       });
     });
   });
+
+  describe('actions', () => {
+    it('should set all default properties', () => {
+      const scenario: Scenario = {
+        title: '',
+        actors: {
+          user: {},
+          admin: {},
+        },
+        actions: {
+          complete: {},
+        },
+        states: {},
+      };
+
+      expect(normalize(scenario)).to.deep.eq({
+        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        title: '',
+        description: '',
+        actors: {
+          user: {
+            title: 'user',
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              title: { type: 'string' },
+            },
+          },
+          admin: {
+            title: 'admin',
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              title: { type: 'string' },
+            },
+          },
+        },
+        actions: {
+          complete: {
+            $schema: 'https://specs.letsflow.io/v1.0.0/action',
+            title: 'complete',
+            description: '',
+            actor: ['user', 'admin'],
+            update: [],
+          },
+        },
+        states: {},
+        vars: {},
+      });
+    });
+
+    it('should make an array of the `actor` property', () => {
+      const scenario: Scenario = {
+        title: '',
+        actors: {
+          user: {},
+          admin: {},
+        },
+        actions: {
+          complete: {
+            actor: 'user',
+          },
+        },
+        states: {},
+      };
+
+      expect(normalize(scenario)).to.deep.eq({
+        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        title: '',
+        description: '',
+        actors: {
+          user: {
+            title: 'user',
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              title: { type: 'string' },
+            },
+          },
+          admin: {
+            title: 'admin',
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              title: { type: 'string' },
+            },
+          },
+        },
+        actions: {
+          complete: {
+            $schema: 'https://specs.letsflow.io/v1.0.0/action',
+            title: 'complete',
+            description: '',
+            actor: ['user'],
+            update: [],
+          },
+        },
+        states: {},
+        vars: {},
+      });
+    });
+
+    it('should normalize the update instructions', () => {
+      const scenario: Scenario = {
+        title: '',
+        actors: {
+          user: {},
+          admin: {},
+        },
+        actions: {
+          complete: {
+            update: {
+              path: 'vars.foo',
+            },
+          },
+        },
+        states: {},
+      };
+
+      expect(normalize(scenario)).to.deep.eq({
+        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        title: '',
+        description: '',
+        actors: {
+          user: {
+            title: 'user',
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              title: { type: 'string' },
+            },
+          },
+          admin: {
+            title: 'admin',
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              title: { type: 'string' },
+            },
+          },
+        },
+        actions: {
+          complete: {
+            $schema: 'https://specs.letsflow.io/v1.0.0/action',
+            title: 'complete',
+            description: '',
+            actor: ['user', 'admin'],
+            update: [
+              {
+                path: 'vars.foo',
+                data: { '<ref>': 'response' },
+                merge: false,
+                if: true,
+              },
+            ],
+          },
+        },
+        states: {},
+        vars: {},
+      });
+    });
+  });
 });
