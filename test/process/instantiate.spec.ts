@@ -31,20 +31,6 @@ describe('instantiate process', () => {
       actor: { title: 'actor' },
     });
     expect(process.vars).to.deep.eq({});
-    expect(process.current).to.deep.eq({
-      key: 'initial',
-      title: 'initial',
-      description: '',
-      instructions: {},
-      actions: {
-        complete: {
-          $schema: 'https://specs.letsflow.io/v1.0.0/action',
-          title: 'complete',
-          description: 'Complete some scenario',
-          actor: ['actor'],
-        },
-      },
-    });
 
     expect(process.events.length).to.eq(1);
     const { hash: eventHash, ...event } = process.events[0] as InstantiateEvent;
@@ -53,6 +39,18 @@ describe('instantiate process', () => {
     expect(event.actors).to.deep.eq({});
     expect(event.vars).to.deep.eq({});
     expect(eventHash).to.eq(hash(event));
+
+    expect(process.current.key).to.eq('initial');
+    expect(process.current.title).to.eq('initial');
+    expect(process.current.timestamp).to.eq(event.timestamp);
+    expect(process.current.actions).to.deep.eq({
+      complete: {
+        $schema: 'https://specs.letsflow.io/v1.0.0/action',
+        title: 'complete',
+        description: 'Complete some scenario',
+        actor: ['actor'],
+      },
+    });
   });
 
   it('should instantiate actors', () => {
@@ -82,12 +80,15 @@ describe('instantiate process', () => {
 
     const process = instantiate(scenario, {
       scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-      actors: {},
+      actors: {
+        user: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+      },
       vars: {},
     });
 
     expect(process.actors.user).to.deep.eq({
       title: 'Main user',
+      id: 'eb82534d-1b99-415f-8d32-096070ea3310',
       verified: false,
     });
 
@@ -96,5 +97,38 @@ describe('instantiate process', () => {
     });
 
     expect(Object.keys(process.actors)).to.deep.eq(['user', 'admin']);
+  });
+
+  it('should instantiate vars', () => {
+    const scenario: NormalizedScenario = normalize({
+      title: 'some scenario',
+      actions: {
+        complete: {},
+      },
+      states: {
+        initial: {
+          on: 'complete',
+          goto: '(done)',
+        },
+      },
+      vars: {
+        foo: { type: 'string' },
+        bar: { type: 'integer', default: 10 },
+        qux: { type: 'string' },
+      },
+    });
+
+    const process = instantiate(scenario, {
+      scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+      actors: {},
+      vars: {
+        foo: 'hello',
+      },
+    });
+
+    expect(process.vars).to.deep.eq({
+      foo: 'hello',
+      bar: 10,
+    });
   });
 });

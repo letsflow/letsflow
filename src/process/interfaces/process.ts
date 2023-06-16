@@ -47,6 +47,7 @@ export interface Action {
 
 export interface State {
   key: string;
+  timestamp: Date;
   title: string;
   description: string;
   instructions: Record<string, string>;

@@ -5,8 +5,8 @@ describe('ref', () => {
   const data = { name: 'Alice', age: 25, items: { a: 1, b: 2, c: 3 } };
 
   it('should apply jmespath expressions correctly', () => {
-    expect(ref('name', data)).to.equal('Alice');
-    expect(ref('age', data)).to.equal(25);
+    expect(ref('name', data)).to.eq('Alice');
+    expect(ref('age', data)).to.eq(25);
 
     expect(ref('items.*', data)).to.deep.equal([1, 2, 3]);
   });
@@ -21,32 +21,32 @@ describe('sub', () => {
   const data = { name: 'Alice', age: 25, items: { a: 1, b: 2, c: 3 } };
 
   it('should extract and replace expressions correctly', () => {
-    expect(sub('Hello, ${name}!', data)).to.equal('Hello, Alice!');
-    expect(sub('${age} years old.', data)).to.equal('25 years old.');
+    expect(sub('Hello, ${name}!', data)).to.eq('Hello, Alice!');
+    expect(sub('${age} years old.', data)).to.eq('25 years old.');
   });
 
   it('should extract expressions with {', () => {
-    expect(sub('${age} {{ years old }', data)).to.equal('25 {{ years old }');
+    expect(sub('${age} {{ years old }', data)).to.eq('25 {{ years old }');
   });
 
   it('should extract multiple expressions in a single string', () => {
-    expect(sub('Name: ${name}, Age: ${age}.', data)).to.equal('Name: Alice, Age: 25.');
+    expect(sub('Name: ${name}, Age: ${age}.', data)).to.eq('Name: Alice, Age: 25.');
   });
 
   it('should extract expression with quoted brackets', () => {
-    expect(sub("Value: ${'{'}", data)).to.equal('Value: {');
-    expect(sub("Value: ${'}'}", data)).to.equal('Value: }');
-    expect(sub("Value: ${'{}'}", data)).to.equal('Value: {}');
-    expect(sub("Value: ${'{'} and ${'}'}", data)).to.equal('Value: { and }');
+    expect(sub("Value: ${'{'}", data)).to.eq('Value: {');
+    expect(sub("Value: ${'}'}", data)).to.eq('Value: }');
+    expect(sub("Value: ${'{}'}", data)).to.eq('Value: {}');
+    expect(sub("Value: ${'{'} and ${'}'}", data)).to.eq('Value: { and }');
   });
 
   it('should extract expression with nested brackets', () => {
-    expect(sub('Nested: ${to_string(items.{x: a, y: b})}', data)).to.equal('Nested: {"x":1,"y":2}');
+    expect(sub('Nested: ${to_string(items.{x: a, y: b})}', data)).to.eq('Nested: {"x":1,"y":2}');
   });
 
   it('should extract expression with nested quoted brackets', () => {
     const result = sub("Nested: ${items.* | [].to_string(@) | join('{', @)}", data);
-    expect(result).to.equal('Nested: 1{2{3');
+    expect(result).to.eq('Nested: 1{2{3');
   });
 
   it('should handle errors for unmatched brackets', () => {
@@ -64,10 +64,10 @@ describe('applyFn', () => {
 
     const data = {};
 
-    expect(applyFn(subject1, data)).to.equal(subject1);
-    expect(applyFn(subject2, data)).to.equal(subject2);
-    expect(applyFn(subject3, data)).to.equal(subject3);
-    expect(applyFn(subject4, data)).to.equal(subject4);
+    expect(applyFn(subject1, data)).to.eq(subject1);
+    expect(applyFn(subject2, data)).to.eq(subject2);
+    expect(applyFn(subject3, data)).to.eq(subject3);
+    expect(applyFn(subject4, data)).to.eq(subject4);
   });
 
   it('should call ref function when encountering "<ref>" key', () => {
@@ -77,7 +77,7 @@ describe('applyFn', () => {
 
     const result = applyFn(subject, data);
 
-    expect(result).to.equal(expected);
+    expect(result).to.eq(expected);
   });
 
   it('should call sub function when encountering "<sub>" key', () => {
@@ -87,7 +87,7 @@ describe('applyFn', () => {
 
     const result = applyFn(subject, data);
 
-    expect(result).to.equal(expected);
+    expect(result).to.eq(expected);
   });
 
   it('should recursively apply the function to each item in an array', () => {

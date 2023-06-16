@@ -21,7 +21,7 @@ export function instantiate(scenario: NormalizedScenario, instructions: StartIns
     events: [event],
   };
 
-  const current = instantiateState(scenario, 'initial', process);
+  const current = instantiateState(scenario, 'initial', process, event.timestamp);
 
   return { ...process, current };
 }
@@ -30,8 +30,11 @@ function instantiateActors(
   schemas: Record<string, Schema>,
   actors: Record<string, Omit<Actor, 'title'>>,
 ): Record<string, Actor> {
-  for (const key in Object.keys(actors)) {
-    const found = Object.keys(schemas).some(([k]) => k === key || (k.endsWith('*') && key.startsWith(k.slice(0, -1))));
+  const definedActors = Object.keys(schemas);
+
+  for (const key of Object.keys(actors)) {
+    const found =
+      definedActors.includes(key) || definedActors.some((k) => k.endsWith('*') && key.startsWith(k.slice(0, -1)));
     if (!found) throw new Error(`Actor '${key}' not found in scenario`);
   }
 
@@ -49,17 +52,30 @@ function instantiateActors(
   return Object.fromEntries(entries);
 }
 
-export function instantiateState(scenario: NormalizedScenario, key: string, process: Omit<Process, 'current'>): State {
+export function instantiateState(
+  scenario: NormalizedScenario,
+  key: string,
+  process: Omit<Process, 'current'>,
+  timestamp: Date,
+): State {
   const state = scenario.states[key];
   if (!state) throw new Error(`State '${key}' not found in scenario`);
 
   const actionKeys = 'actions' in state ? state.actions : [];
   const actions = Object.fromEntries(
-    actionKeys.map((action) => [action, instantiateAction(scenario.actions[action], process)]),
+    actionKeys.map((k) => {
+      if (!(k in scenario.actions)) {
+        throw new Error(`Action '${k}' is used in state '${key}', but not defined in the scenario`);
+      }
+
+      const action = instantiateAction(scenario.actions[k], process);
+      return [k, action];
+    }),
   );
 
   return {
     key,
+    timestamp,
     title: applyFn(state.title, process),
     description: applyFn(state.description, process),
     instructions: applyFn(state.instructions, process),

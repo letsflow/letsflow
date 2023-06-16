@@ -21,6 +21,7 @@ export function normalize(input: Scenario): NormalizedScenario {
   normalizeActors(scenario.actors);
   normalizeActions(scenario.actions, Object.keys(scenario.actors));
   normalizeStates(scenario.states);
+  addImplicitEndStates(scenario.states as Record<string, State | EndState>);
   normalizeSchemas(scenario.vars, true);
 
   return scenario as NormalizedScenario;
@@ -99,9 +100,24 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
             transitions: normalizeTransitions(state),
           }
         : {
-            title: state.title ?? keyToTitle(key),
+            title: state.title ?? keyToTitle(key.replace(/^\(|\)$/g, '')),
             description: state.description ?? '',
           };
+  }
+}
+
+function addImplicitEndStates(states: Record<string, State | EndState>): void {
+  const endStates = Object.values(states)
+    .map((state) => ('transitions' in state ? state.transitions : []))
+    .flat()
+    .map((transition) => transition.goto)
+    .filter((goto) => goto.match(/^\(.+\)$/));
+
+  for (const key of endStates) {
+    states[key] ??= {
+      title: keyToTitle(key.replace(/^\(|\)$/g, '')),
+      description: '',
+    };
   }
 }
 

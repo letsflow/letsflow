@@ -54,6 +54,10 @@ describe('normalize scenario', () => {
               },
             ],
           },
+          '(done)': {
+            title: 'done',
+            description: '',
+          },
         },
         vars: {},
       });
