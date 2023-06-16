@@ -15,6 +15,7 @@ export function instantiate(scenario: NormalizedScenario, instructions: StartIns
 
   const process: Omit<Process, 'current'> = {
     id: event.id,
+    title: scenario.title,
     scenario,
     actors: instantiateActors(scenario.actors, event.actors),
     vars: { ...defaultVars(scenario.vars), ...event.vars },

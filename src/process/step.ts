@@ -61,7 +61,7 @@ export function step(input: Process, action: string, actor: string, response?: a
 
 function assertStep(process: Process, current: Required<ExplicitState>, action: string, actor: string) {
   if (!current.actions.includes(action)) {
-    throw new Error(`Action '${action}' not allowed in state '${process.current.key}'`);
+    throw new Error(`Action '${action}' is not allowed in state '${process.current.key}'`);
   }
 
   if (!Object.keys(process.actors).includes(actor)) {
@@ -73,7 +73,7 @@ function assertStep(process: Process, current: Required<ExplicitState>, action: 
   }
 
   if (!process.scenario.actions[action].actor.includes(actor)) {
-    throw new Error(`Actor '${actor} is not allowed to perform action '${action}'`);
+    throw new Error(`Actor '${actor}' is not allowed to perform action '${action}'`);
   }
 }
 
@@ -107,10 +107,8 @@ export function timeout(process: Process) {
 }
 
 function update(process: Process, path: string, data: any, merge: boolean): void {
-  const root = path.split('.')[0];
-
-  if (root !== 'actors' && root !== 'vars') {
-    return; // Disallowed update instructions are quietly ignored
+  if (!['title', 'actors', 'vars'].includes(path.split('.')[0])) {
+    throw new Error(`Not allowed to set '${path}' through update instructions`);
   }
 
   if (merge) {
