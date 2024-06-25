@@ -1,5 +1,5 @@
 {
-  "name": "@letsflow/api",
+  "name": "@letsflow/core",
   "version": "0.0.0",
   "description": "Shared library for LetsFlow",
   "author": "Arnold Daniels <arnold@jasny.net>",
@@ -12,6 +12,10 @@
     "./scenario": {
       "types": "./lib/scenario/index.d.ts",
       "default": "./lib/scenario/index.js"
+    },
+    "./process": {
+      "types": "./lib/process/index.d.ts",
+      "default": "./lib/process/index.js"
     },
     "./schemas": {
       "types": "./lib/schemas/index.d.ts",

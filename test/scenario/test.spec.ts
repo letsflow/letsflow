@@ -4,6 +4,7 @@ import { expect } from 'chai';
 
 const scenarioYaml = `
 title: Quote
+description: Provide a quote to a client
 actors:
   company:
   client:
@@ -110,6 +111,7 @@ describe('import scenario', () => {
 
     expect(scenario).to.deep.eq({
       title: 'Quote',
+      description: 'Provide a quote to a client',
       actors: {
         company: null,
         client: {
@@ -275,21 +277,21 @@ describe('import scenario', () => {
       actions: {
         accept: {
           $schema: 'https://specs.letsflow.io/v1.0.0/action',
-          actor: 'client',
+          actor: ['client'],
           description: '',
           title: 'accept',
           update: [],
         },
         cancel: {
           $schema: 'https://specs.letsflow.io/v1.0.0/action',
-          actor: 'company',
+          actor: ['company'],
           description: '',
           title: 'cancel',
           update: [],
         },
         introduce_company: {
           $schema: 'https://example.com/schemas/message',
-          actor: 'company',
+          actor: ['company'],
           description: '',
           recipient: { '<ref>': 'actors.client' },
           template: 'introduce_company',
@@ -298,7 +300,7 @@ describe('import scenario', () => {
         },
         new_lead: {
           $schema: 'https://specs.letsflow.io/v1.0.0/action',
-          actor: 'company',
+          actor: ['company'],
           description: '',
           title: 'new lead',
           update: [
@@ -312,14 +314,14 @@ describe('import scenario', () => {
         },
         reject: {
           $schema: 'https://specs.letsflow.io/v1.0.0/action',
-          actor: 'client',
+          actor: ['client'],
           description: '',
           title: 'reject',
           update: [],
         },
         request_quote: {
           $schema: 'https://example.com/schemas/form',
-          actor: 'client',
+          actor: ['client'],
           description: '',
           form: 'general_quote',
           title: 'request quote',
@@ -334,7 +336,7 @@ describe('import scenario', () => {
         },
         send_quote: {
           $schema: 'https://example.com/schemas/reply',
-          actor: 'company',
+          actor: ['company'],
           description: '',
           recipient: { '<ref>': 'actors.client' },
           title: 'send quote',
@@ -342,7 +344,7 @@ describe('import scenario', () => {
         },
         send_reminder: {
           $schema: 'https://example.com/schemas/message',
-          actor: 'company',
+          actor: ['company'],
           description: '',
           recipient: { '<ref>': 'actors.client' },
           template: 'quote_reminder',
@@ -358,7 +360,7 @@ describe('import scenario', () => {
         },
         set_client_info: {
           $schema: 'https://example.com/schemas/form',
-          actor: 'company',
+          actor: ['company'],
           data: { '<ref>': 'actors.client' },
           data_schema: { '<ref>': 'scenario.actors.client' },
           description: '',
@@ -374,6 +376,18 @@ describe('import scenario', () => {
         },
       },
       states: {
+        '(canceled)': {
+          description: '',
+          title: 'canceled',
+        },
+        '(failed)': {
+          description: '',
+          title: 'failed',
+        },
+        '(success)': {
+          description: '',
+          title: 'success',
+        },
         initial: {
           actions: ['new_lead'],
           description: '',
