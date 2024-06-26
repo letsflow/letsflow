@@ -6,6 +6,12 @@
     "$schema": {
       "type": "string"
     },
+    "name": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
     "title": {
       "type": "string"
     },
@@ -49,6 +55,16 @@
     "title",
     "actions",
     "states"
+  ],
+  "anyOf": [
+    {
+      "not": {
+        "required": ["name"]
+      }
+    },
+    {
+      "required": ["name", "version"]
+    }
   ],
   "definitions": {
     "actor": {
@@ -112,6 +128,10 @@
           "items": {
             "$ref": "#/definitions/transition"
           }
+        },
+        "ui": {
+          "type": "object",
+          "additionalProperties": true
         }
       },
       "required": [
@@ -135,6 +155,10 @@
         },
         "goto": {
           "type": "string"
+        },
+        "ui": {
+          "type": "object",
+          "additionalProperties": true
         }
       },
       "required": [
@@ -159,6 +183,10 @@
         },
         "goto": {
           "type": "string"
+        },
+        "ui": {
+          "type": "object",
+          "additionalProperties": true
         }
       },
       "required": [

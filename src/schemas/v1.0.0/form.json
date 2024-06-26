@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.letsflow.io/v1.0.0/form",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["Control", "VerticalLayout", "HorizontalLayout", "Group"]
+    },
+    "scope": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "$ref": "#"
+      }
+    },
+    "rule": {
+      "type": "object",
+      "properties": {
+        "effect": {
+          "type": "string",
+          "enum": ["HIDE", "SHOW", "ENABLE", "DISABLE"]
+        },
+        "condition": {
+          "type": "object",
+          "properties": {
+            "scope": {
+              "type": "string"
+            },
+            "schema": {
+              "$ref": "https://json-schema.org/draft/2020-12/schema"
+            }
+          },
+          "required": ["scope", "schema"]
+        }
+      },
+      "required": ["effect", "condition"]
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

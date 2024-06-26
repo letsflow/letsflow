@@ -1,0 +1,225 @@
+{
+  "title": "Quote",
+  "description": "Provide a quote to a client",
+  "actors": {
+    "company": null,
+    "client": {
+      "properties": {
+        "name": "string",
+        "email": "string"
+      }
+    }
+  },
+  "actions": {
+    "new_lead": {
+      "actor": "company",
+      "response": {
+        "schema": {
+          "<ref>": "scenario.actors.client"
+        }
+      },
+      "update": "actors.client"
+    },
+    "request_quote": {
+      "$schema": "https://schemas.letsflow.io/v1.0.0/actions/form",
+      "actor": "client",
+      "response": {
+        "schema": {
+          "<ref>": "scenario.vars.quote_request"
+        },
+        "form": {
+          "type": "VerticalLayout",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/description",
+              "options": {
+                "multi": true
+              }
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/budget"
+            }
+          ]
+        }
+      },
+      "update": "vars.quote_request"
+    },
+    "create_quote": {
+      "actor": "company",
+      "client": {
+        "<ref>": "actors.client"
+      },
+      "request": {
+        "<ref>": "vars.quote_request.description"
+      },
+      "budget": {
+        "<ref>": "vars.quote_request.budget"
+      },
+      "response": {
+        "schema": {
+          "properties": {
+            "document": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "update": "vars.document"
+    },
+    "change_client_info": {
+      "actor": "company",
+      "response": {
+        "schema": {
+          "<ref>": "scenario.actors.client"
+        },
+        "data": {
+          "<ref>": "actors.client"
+        }
+      },
+      "update": {
+        "path": "actors.client",
+        "merge": true
+      },
+      "ui": {
+        "button": {
+          "placement": "top",
+          "title": "Change Client Info"
+        }
+      }
+    },
+    "accept": {
+      "actor": "client"
+    },
+    "reject": {
+      "actor": "client"
+    },
+    "cancel": {
+      "actor": "company",
+      "ui": {
+        "button": {
+          "placement": "top",
+          "title": "Cancel process"
+        }
+      }
+    }
+  },
+  "states": {
+    "*": {
+      "actions": [
+        "cancel",
+        "change_client_info"
+      ],
+      "transitions": [
+        {
+          "on": "cancel",
+          "goto": "(canceled)"
+        }
+      ]
+    },
+    "initial": {
+      "on": "new_lead",
+      "goto": "wait_on_client"
+    },
+    "wait_on_client": {
+      "actions": [
+        "request_quote"
+      ],
+      "notifications": [
+        {
+          "type": "email",
+          "recipient": {
+            "<ref>": "actors.client"
+          },
+          "message": {
+            "<ref>": "consts.introduction_email"
+          }
+        },
+        {
+          "after": "5 days",
+          "type": "email",
+          "recipient": {
+            "<ref>": "actors.client"
+          },
+          "message": {
+            "<ref>": "consts.reminder_email"
+          }
+        }
+      ],
+      "transitions": [
+        {
+          "on": "request_quote",
+          "goto": "wait_for_quote"
+        },
+        {
+          "after": "10 days",
+          "goto": "(failed)"
+        }
+      ]
+    },
+    "wait_for_quote": {
+      "on": "create_quote",
+      "goto": "review_quote",
+      "instructions": {
+        "company": {
+          "<sub>": "${actors.client.name}\n${vars.quote_request.description}\n"
+        }
+      }
+    },
+    "review_quote": {
+      "actions": [
+        "accept",
+        "reject"
+      ],
+      "instructions": {
+        "company": {
+          "<sub>": "${actors.client.name}\n${vars.quote_request.description}\n"
+        }
+      },
+      "transitions": [
+        {
+          "on": "accept",
+          "goto": "(success)"
+        },
+        {
+          "on": "reject",
+          "goto": "(failed)"
+        }
+      ]
+    }
+  },
+  "vars": {
+    "quote_request": {
+      "properties": {
+        "description": "string",
+        "budget": "number"
+      }
+    },
+    "document": "string"
+  },
+  "consts": {
+    "introduction_email": {
+      "subject": "Introduction",
+      "text": {
+        "<sub>": "Hi ${recipient.name},\nWe are excited to work with you.\n"
+      }
+    },
+    "reminder_email": {
+      "subject": "Reminder",
+      "text": {
+        "<sub>": "Hi ${recipient.name},\nJust a friendly reminder.\n"
+      }
+    }
+  },
+  "ui": {
+    "downloads": [
+      {
+        "name": "Quote",
+        "link": {
+          "<ref>": "vars.document"
+        }
+      }
+    ]
+  }
+}

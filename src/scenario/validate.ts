@@ -4,6 +4,7 @@ import scenarioSchema from '../schemas/v1.0.0/scenario.json';
 import actionSchema from '../schemas/v1.0.0/action.json';
 import fnSchema from '../schemas/v1.0.0/fn.json';
 import schemaSchema from '../schemas/v1.0.0/schema.json';
+import formSchema from '../schemas/v1.0.0/form.json';
 import { Scenario, State } from './interfaces/scenario';
 
 export interface ValidateFunction {
@@ -13,7 +14,7 @@ export interface ValidateFunction {
 
 const ajv = new Ajv();
 ajv.addKeyword('$anchor');
-ajv.addSchema([actionSchema, fnSchema, schemaSchema]);
+ajv.addSchema([actionSchema, fnSchema, formSchema, schemaSchema]);
 
 const validateSchema = ajv.compile(scenarioSchema);
 
@@ -85,7 +86,7 @@ function validateStates(scenario: Scenario): ErrorObject[] {
 }
 
 function validateTransitions(state: State, key: string, actions: string[], states: string[]): ErrorObject[] {
-  if (!('transitions' in state)) return [];
+  if (!('transitions' in state) || !Array.isArray(state.transitions)) return [];
 
   const errors: ErrorObject[] = [];
 

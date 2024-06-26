@@ -13,6 +13,8 @@ export interface NormalizedAction {
 
 export interface NormalizedScenario {
   $schema: string;
+  name?: string;
+  version?: string;
   title: string;
   description: string;
 
@@ -20,4 +22,7 @@ export interface NormalizedScenario {
   actions: Record<string, NormalizedAction>;
   states: Record<string, Required<ExplicitState> | Required<EndState>>;
   vars: Record<string, Schema>;
+  consts: Record<string, any>;
+
+  ui: Record<string, any>;
 }

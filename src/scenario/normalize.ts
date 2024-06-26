@@ -1,6 +1,17 @@
-import { Action, Scenario, UpdateInstruction, State, Transition, Schema, EndState } from './interfaces/scenario';
+import {
+  Action,
+  Scenario,
+  UpdateInstruction,
+  State,
+  Transition,
+  Schema,
+  EndState,
+  ExplicitState,
+} from './interfaces/scenario';
 import { NormalizedScenario } from './interfaces/normalized';
 import { actionJsonSchema, scenarioJsonSchema } from '../constants';
+
+type NormalizedState = Required<ExplicitState> | Required<EndState>;
 
 function keyToTitle(key: string): string {
   return key.replace(/\*$/, '').replace('_', ' ').trim();
@@ -23,6 +34,7 @@ export function normalize(input: Scenario): NormalizedScenario {
   normalizeStates(scenario.states);
   addImplicitEndStates(scenario.states as Record<string, State | EndState>);
   normalizeSchemas(scenario.vars, true);
+  scenario.ui ??= {};
 
   return scenario as NormalizedScenario;
 }
@@ -77,7 +89,9 @@ function normalizeActions(actions: Record<string, Action | null>, allActors: str
   }
 }
 
-function normalizeUpdateInstructions(instructions: UpdateInstruction | UpdateInstruction[]): UpdateInstruction[] {
+function normalizeUpdateInstructions(instructions: string | UpdateInstruction | UpdateInstruction[]): UpdateInstruction[] {
+  if (typeof instructions === 'string') instructions = { path: instructions };
+
   return (Array.isArray(instructions) ? instructions : [instructions]).map((instruction) => ({
     path: instruction.path,
     data: instruction.data || { '<ref>': 'response' },
@@ -98,11 +112,23 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
             instructions: state.instructions ?? {},
             actions: state.actions ?? determineActions(state),
             transitions: normalizeTransitions(state),
+            ui: state.ui ?? {},
           }
         : {
             title: state.title ?? keyToTitle(key.replace(/^\(|\)$/g, '')),
             description: state.description ?? '',
+            ui: state.ui ?? {},
           };
+  }
+
+  if ('*' in states) {
+    const anyState = states['*'] as NormalizedState;
+    delete states['*'];
+
+    Object.values(states as Record<string, NormalizedState>)
+      .forEach((state) => {
+        mergeStates(state, anyState);
+      });
   }
 }
 
@@ -117,6 +143,7 @@ function addImplicitEndStates(states: Record<string, State | EndState>): void {
     states[key] ??= {
       title: keyToTitle(key.replace(/^\(|\)$/g, '')),
       description: '',
+      ui: {},
     };
   }
 }
@@ -146,6 +173,16 @@ function normalizeTransitions(state: State): Array<Transition> {
   });
 
   return state.transitions;
+}
+
+function mergeStates(state: NormalizedState, partialState: NormalizedState): void {
+  if ('transitions' in state && 'transitions' in partialState) {
+    state.actions = dedup([...state.actions, ...partialState.actions]);
+    state.transitions.push(...partialState.transitions);
+  }
+
+  state.instructions = { ...partialState.instructions, ...state.instructions };
+  state.ui = { ...partialState.ui, ...state.ui };
 }
 
 function convertTimePeriodToSeconds(timePeriod: string): number {
@@ -182,4 +219,8 @@ function convertTimePeriodToSeconds(timePeriod: string): number {
     default:
       throw new Error('Invalid time period unit.');
   }
+}
+
+function dedup<T>(array: Array<T>): Array<T> {
+  return Array.from(new Set(array));
 }

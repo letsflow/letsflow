@@ -16,7 +16,7 @@ export interface Action {
   title?: string;
   description?: string | Fn;
   actor?: string | string[];
-  update?: UpdateInstruction | UpdateInstruction[];
+  update?: string | UpdateInstruction | UpdateInstruction[];
 
   [_: string]: any;
 }
@@ -35,6 +35,7 @@ interface BaseState {
   description?: string | Fn;
   instructions?: Record<string, string>;
   actions?: string[];
+  ui?: Record<string, any>;
 }
 
 interface SimpleState extends BaseState {
@@ -55,6 +56,7 @@ export interface EndState {
   title?: string | Fn;
   description?: string | Fn;
   instructions?: Record<string, string>;
+  ui?: Record<string, any>;
 }
 
 export type Transition = ActionTransition | TimeoutTransition;
@@ -73,6 +75,8 @@ interface TimeoutTransition {
 
 export interface Scenario {
   $schema?: string;
+  name?: string;
+  version?: string;
   title: string;
   description?: string;
 
@@ -80,4 +84,7 @@ export interface Scenario {
   actions: Record<string, Action | null>;
   states: Record<string, State | EndState | null>;
   vars?: Record<string, Schema>;
+  consts?: Record<string, any>;
+
+  ui?: Record<string, any>;
 }

@@ -1,0 +1,372 @@
+{
+  "title": "Quote",
+  "description": "Provide a quote to a client",
+  "actors": {
+    "company": {
+      "title": "company",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "client": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "title": "client",
+      "type": "object"
+    }
+  },
+  "actions": {
+    "new_lead": {
+      "actor": [
+        "company"
+      ],
+      "response": {
+        "schema": {
+          "<ref>": "scenario.actors.client"
+        }
+      },
+      "update": [
+        {
+          "path": "actors.client",
+          "data": {
+            "<ref>": "response"
+          },
+          "merge": false,
+          "if": true
+        }
+      ],
+      "$schema": "https://specs.letsflow.io/v1.0.0/action",
+      "title": "new lead",
+      "description": ""
+    },
+    "request_quote": {
+      "$schema": "https://schemas.letsflow.io/v1.0.0/actions/form",
+      "actor": [
+        "client"
+      ],
+      "response": {
+        "schema": {
+          "<ref>": "scenario.vars.quote_request"
+        },
+        "form": {
+          "type": "VerticalLayout",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/description",
+              "options": {
+                "multi": true
+              }
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/budget"
+            }
+          ]
+        }
+      },
+      "update": [
+        {
+          "path": "vars.quote_request",
+          "data": {
+            "<ref>": "response"
+          },
+          "merge": false,
+          "if": true
+        }
+      ],
+      "title": "request quote",
+      "description": ""
+    },
+    "create_quote": {
+      "actor": [
+        "company"
+      ],
+      "client": {
+        "<ref>": "actors.client"
+      },
+      "request": {
+        "<ref>": "vars.quote_request.description"
+      },
+      "budget": {
+        "<ref>": "vars.quote_request.budget"
+      },
+      "response": {
+        "schema": {
+          "properties": {
+            "document": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "update": [
+        {
+          "path": "vars.document",
+          "data": {
+            "<ref>": "response"
+          },
+          "merge": false,
+          "if": true
+        }
+      ],
+      "$schema": "https://specs.letsflow.io/v1.0.0/action",
+      "title": "create quote",
+      "description": ""
+    },
+    "change_client_info": {
+      "actor": [
+        "company"
+      ],
+      "response": {
+        "schema": {
+          "<ref>": "scenario.actors.client"
+        },
+        "data": {
+          "<ref>": "actors.client"
+        }
+      },
+      "update": [
+        {
+          "path": "actors.client",
+          "data": {
+            "<ref>": "response"
+          },
+          "merge": true,
+          "if": true
+        }
+      ],
+      "ui": {
+        "button": {
+          "placement": "top",
+          "title": "Change Client Info"
+        }
+      },
+      "$schema": "https://specs.letsflow.io/v1.0.0/action",
+      "title": "change client_info",
+      "description": ""
+    },
+    "accept": {
+      "actor": [
+        "client"
+      ],
+      "$schema": "https://specs.letsflow.io/v1.0.0/action",
+      "title": "accept",
+      "description": "",
+      "update": []
+    },
+    "reject": {
+      "actor": [
+        "client"
+      ],
+      "$schema": "https://specs.letsflow.io/v1.0.0/action",
+      "title": "reject",
+      "description": "",
+      "update": []
+    },
+    "cancel": {
+      "actor": [
+        "company"
+      ],
+      "ui": {
+        "button": {
+          "placement": "top",
+          "title": "Cancel process"
+        }
+      },
+      "$schema": "https://specs.letsflow.io/v1.0.0/action",
+      "title": "cancel",
+      "description": "",
+      "update": []
+    }
+  },
+  "states": {
+    "initial": {
+      "title": "initial",
+      "description": "",
+      "instructions": {},
+      "actions": [
+        "new_lead",
+        "cancel",
+        "change_client_info"
+      ],
+      "transitions": [
+        {
+          "on": "new_lead",
+          "if": true,
+          "goto": "wait_on_client"
+        },
+        {
+          "on": "cancel",
+          "goto": "(canceled)",
+          "if": true
+        }
+      ],
+      "ui": {}
+    },
+    "wait_on_client": {
+      "title": "wait on_client",
+      "description": "",
+      "instructions": {},
+      "actions": [
+        "request_quote",
+        "cancel",
+        "change_client_info"
+      ],
+      "transitions": [
+        {
+          "on": "request_quote",
+          "goto": "wait_for_quote",
+          "if": true
+        },
+        {
+          "after": 864000,
+          "goto": "(failed)",
+          "if": true
+        },
+        {
+          "on": "cancel",
+          "goto": "(canceled)",
+          "if": true
+        }
+      ],
+      "ui": {}
+    },
+    "wait_for_quote": {
+      "title": "wait for_quote",
+      "description": "",
+      "instructions": {
+        "company": {
+          "<sub>": "${actors.client.name}\n${vars.quote_request.description}\n"
+        }
+      },
+      "actions": [
+        "create_quote",
+        "cancel",
+        "change_client_info"
+      ],
+      "transitions": [
+        {
+          "on": "create_quote",
+          "if": true,
+          "goto": "review_quote"
+        },
+        {
+          "on": "cancel",
+          "goto": "(canceled)",
+          "if": true
+        }
+      ],
+      "ui": {}
+    },
+    "review_quote": {
+      "title": "review quote",
+      "description": "",
+      "instructions": {
+        "company": {
+          "<sub>": "${actors.client.name}\n${vars.quote_request.description}\n"
+        }
+      },
+      "actions": [
+        "accept",
+        "reject",
+        "cancel",
+        "change_client_info"
+      ],
+      "transitions": [
+        {
+          "on": "accept",
+          "goto": "(success)",
+          "if": true
+        },
+        {
+          "on": "reject",
+          "goto": "(failed)",
+          "if": true
+        },
+        {
+          "on": "cancel",
+          "goto": "(canceled)",
+          "if": true
+        }
+      ],
+      "ui": {}
+    },
+    "(canceled)": {
+      "title": "canceled",
+      "description": "",
+      "ui": {}
+    },
+    "(failed)": {
+      "title": "failed",
+      "description": "",
+      "ui": {}
+    },
+    "(success)": {
+      "title": "success",
+      "description": "",
+      "ui": {}
+    }
+  },
+  "vars": {
+    "quote_request": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "budget": {
+          "type": "number"
+        }
+      },
+      "type": "object",
+      "title": "quote request"
+    },
+    "document": {
+      "title": "document",
+      "type": "string"
+    }
+  },
+  "consts": {
+    "introduction_email": {
+      "subject": "Introduction",
+      "text": {
+        "<sub>": "Hi ${recipient.name},\nWe are excited to work with you.\n"
+      }
+    },
+    "reminder_email": {
+      "subject": "Reminder",
+      "text": {
+        "<sub>": "Hi ${recipient.name},\nJust a friendly reminder.\n"
+      }
+    }
+  },
+  "ui": {
+    "downloads": [
+      {
+        "name": "Quote",
+        "link": {
+          "<ref>": "vars.document"
+        }
+      }
+    ]
+  },
+  "$schema": "https://specs.letsflow.io/v1.0.0/scenario"
+}
