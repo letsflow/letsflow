@@ -1,4 +1,4 @@
-import { NormalizedScenario } from '../../scenario';
+import { NormalizedScenario, Schema } from '../../scenario';
 
 export interface Actor {
   id?: string;
@@ -38,9 +38,11 @@ export interface TimeoutEvent {
 
 export interface Action {
   $schema: string;
+  key: string;
   title: string;
   description: string;
   actor: string[];
+  responseSchema: Schema;
 
   [_: string]: any;
 }
@@ -51,7 +53,7 @@ export interface State {
   title: string;
   description: string;
   instructions: Record<string, string>;
-  actions: Record<string, Action>;
+  actions: Array<Action>;
 }
 
 export interface Process {

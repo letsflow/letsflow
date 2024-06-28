@@ -8,15 +8,15 @@ describe('import scenario', () => {
   let scenario: Scenario;
   let normalized: NormalizedScenario;
 
-  // Uncomment this block to generate the scenario.json and scenario-normalized.json file
-  before(async () => {
-    //const scenario = yaml.parse(scenarioYaml);
-    //await fs.writeFile(__dirname + '/test/scenario.json', JSON.stringify(scenario, null, 2));
-    //await fs.writeFile(__dirname + '/test/scenario-normalized.json', JSON.stringify(normalize(scenario), null, 2));
-  });
-
   before(async () => {
     scenarioYaml = await fs.readFile(__dirname + '/test/scenario.yaml', 'utf8');
+  });
+
+  // Uncomment this block to generate the scenario.json and scenario-normalized.json file
+  before(async () => {
+    //const parsed = yaml.parse(scenarioYaml);
+    //await fs.writeFile(__dirname + '/test/scenario.json', JSON.stringify(parsed, null, 2));
+    //await fs.writeFile(__dirname + '/test/scenario-normalized.json', JSON.stringify(normalize(parsed), null, 2));
   });
 
   before(async () => {

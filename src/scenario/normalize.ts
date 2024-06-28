@@ -8,10 +8,9 @@ import {
   EndState,
   ExplicitState,
 } from './interfaces/scenario';
-import { NormalizedScenario } from './interfaces/normalized';
+import { NormalizedScenario, NormalizedState } from './interfaces/normalized';
 import { actionJsonSchema, scenarioJsonSchema } from '../constants';
-
-type NormalizedState = Required<ExplicitState> | Required<EndState>;
+import { isFn } from '../process/fn';
 
 function keyToTitle(key: string): string {
   return key.replace(/\*$/, '').replace('_', ' ').trim();
@@ -34,7 +33,6 @@ export function normalize(input: Scenario): NormalizedScenario {
   normalizeStates(scenario.states);
   addImplicitEndStates(scenario.states as Record<string, State | EndState>);
   normalizeSchemas(scenario.vars, true);
-  scenario.ui ??= {};
 
   return scenario as NormalizedScenario;
 }
@@ -80,11 +78,16 @@ function normalizeActions(actions: Record<string, Action | null>, allActors: str
     const action = actions[key] as Action;
 
     action.$schema ??= actionJsonSchema;
+
     action.title ??= keyToTitle(key);
-    action.actor ??= allActors;
-    if (!Array.isArray(action.actor)) action.actor = [action.actor];
     action.description ??= '';
-    action.$schema ??= actionJsonSchema;
+
+    action.actor ??= allActors;
+    if (!Array.isArray(action.actor) && !isFn(action.actor)) action.actor = [action.actor];
+
+    action.responseSchema ??= {};
+    if (typeof action.responseSchema === 'string') action.responseSchema = { $ref: action.responseSchema };
+
     action.update = normalizeUpdateInstructions(action.update ?? []);
   }
 }
@@ -104,21 +107,19 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
   for (const key in states) {
     const state = (states[key] || {}) as State | EndState;
 
-    states[key] =
-      'goto' in state || 'transitions' in state
-        ? {
-            title: state.title ?? keyToTitle(key),
-            description: state.description ?? '',
-            instructions: state.instructions ?? {},
-            actions: state.actions ?? determineActions(state),
-            transitions: normalizeTransitions(state),
-            ui: state.ui ?? {},
-          }
-        : {
-            title: state.title ?? keyToTitle(key.replace(/^\(|\)$/g, '')),
-            description: state.description ?? '',
-            ui: state.ui ?? {},
-          };
+    state.title ??= keyToTitle(key);
+    state.description ??= '';
+    state.instructions ??= {};
+    state.notify ??= [];
+
+    if ('transitions' in state || 'goto' in state) {
+      state.actions ??= determineActions(state);
+      (state as ExplicitState).transitions = normalizeTransitions(state)
+    }
+
+    delete (state as any).on;
+    delete (state as any).after;
+    delete (state as any).goto;
   }
 
   if ('*' in states) {
@@ -143,7 +144,8 @@ function addImplicitEndStates(states: Record<string, State | EndState>): void {
     states[key] ??= {
       title: keyToTitle(key.replace(/^\(|\)$/g, '')),
       description: '',
-      ui: {},
+      instructions: {},
+      notify: [],
     };
   }
 }
@@ -152,7 +154,9 @@ function determineActions(state: State): string[] {
   if ('after' in state) return [];
   if ('on' in state) return [state.on];
 
-  return state.transitions.filter((transition) => 'on' in transition).map((transition) => (transition as any).on);
+  return state.transitions
+    .filter((transition) => 'on' in transition)
+    .map((transition) => (transition as any).on);
 }
 
 function normalizeTransitions(state: State): Array<Transition> {
@@ -176,13 +180,21 @@ function normalizeTransitions(state: State): Array<Transition> {
 }
 
 function mergeStates(state: NormalizedState, partialState: NormalizedState): void {
-  if ('transitions' in state && 'transitions' in partialState) {
-    state.actions = dedup([...state.actions, ...partialState.actions]);
-    state.transitions.push(...partialState.transitions);
+  const partial = structuredClone(partialState);
+
+  if ('transitions' in state && 'transitions' in partial) {
+    state.actions = dedup([...state.actions, ...partial.actions]);
+    state.transitions.push(...partial.transitions);
   }
 
-  state.instructions = { ...partialState.instructions, ...state.instructions };
-  state.ui = { ...partialState.ui, ...state.ui };
+  state.instructions = { ...partial.instructions, ...state.instructions };
+  state.notify.push(...partial.notify);
+
+  for (const key in partial) {
+    if (partial.hasOwnProperty(key) && !state.hasOwnProperty(key)) {
+      state[key] = partial[key];
+    }
+  }
 }
 
 function convertTimePeriodToSeconds(timePeriod: string): number {

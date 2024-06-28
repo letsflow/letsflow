@@ -5,11 +5,12 @@ export interface NormalizedAction {
   $schema: string;
   title: string;
   description: string | Fn;
-  actor: string[];
+  actor: Array<string | Fn>;
+  responseSchema: Schema | Fn;
   update: UpdateInstruction[];
-
-  [_: string]: any;
 }
+
+export type NormalizedState = Required<ExplicitState> | Required<EndState>;
 
 export interface NormalizedScenario {
   $schema: string;
@@ -20,9 +21,6 @@ export interface NormalizedScenario {
 
   actors: Record<string, Schema>;
   actions: Record<string, NormalizedAction>;
-  states: Record<string, Required<ExplicitState> | Required<EndState>>;
+  states: Record<string, NormalizedState>;
   vars: Record<string, Schema>;
-  consts: Record<string, any>;
-
-  ui: Record<string, any>;
 }

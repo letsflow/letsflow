@@ -13,36 +13,32 @@
   "actions": {
     "new_lead": {
       "actor": "company",
-      "response": {
-        "schema": {
-          "<ref>": "scenario.actors.client"
-        }
+      "responseSchema": {
+        "<ref>": "scenario.actors.client"
       },
       "update": "actors.client"
     },
     "request_quote": {
       "$schema": "https://schemas.letsflow.io/v1.0.0/actions/form",
       "actor": "client",
-      "response": {
-        "schema": {
-          "<ref>": "scenario.vars.quote_request"
-        },
-        "form": {
-          "type": "VerticalLayout",
-          "elements": [
-            {
-              "type": "Control",
-              "scope": "#/properties/description",
-              "options": {
-                "multi": true
-              }
-            },
-            {
-              "type": "Control",
-              "scope": "#/properties/budget"
+      "responseSchema": {
+        "<ref>": "scenario.vars.quote_request"
+      },
+      "form": {
+        "type": "VerticalLayout",
+        "elements": [
+          {
+            "type": "Control",
+            "scope": "#/properties/description",
+            "options": {
+              "multi": true
             }
-          ]
-        }
+          },
+          {
+            "type": "Control",
+            "scope": "#/properties/budget"
+          }
+        ]
       },
       "update": "vars.quote_request"
     },
@@ -57,12 +53,10 @@
       "budget": {
         "<ref>": "vars.quote_request.budget"
       },
-      "response": {
-        "schema": {
-          "properties": {
-            "document": {
-              "type": "string"
-            }
+      "responseSchema": {
+        "properties": {
+          "document": {
+            "type": "string"
           }
         }
       },
@@ -70,13 +64,11 @@
     },
     "change_client_info": {
       "actor": "company",
-      "response": {
-        "schema": {
-          "<ref>": "scenario.actors.client"
-        },
-        "data": {
-          "<ref>": "actors.client"
-        }
+      "responseSchema": {
+        "<ref>": "scenario.actors.client"
+      },
+      "data": {
+        "<ref>": "actors.client"
       },
       "update": {
         "path": "actors.client",
@@ -126,24 +118,24 @@
       "actions": [
         "request_quote"
       ],
-      "notifications": [
+      "notify": [
         {
-          "type": "email",
+          "method": "email",
           "recipient": {
             "<ref>": "actors.client"
           },
           "message": {
-            "<ref>": "consts.introduction_email"
+            "<ref>": "scenario.emails.introduction"
           }
         },
         {
           "after": "5 days",
-          "type": "email",
+          "method": "email",
           "recipient": {
             "<ref>": "actors.client"
           },
           "message": {
-            "<ref>": "consts.reminder_email"
+            "<ref>": "scenario.emails.reminder"
           }
         }
       ],
@@ -198,14 +190,14 @@
     },
     "document": "string"
   },
-  "consts": {
-    "introduction_email": {
+  "emails": {
+    "introduction": {
       "subject": "Introduction",
       "text": {
         "<sub>": "Hi ${recipient.name},\nWe are excited to work with you.\n"
       }
     },
-    "reminder_email": {
+    "reminder": {
       "subject": "Reminder",
       "text": {
         "<sub>": "Hi ${recipient.name},\nJust a friendly reminder.\n"

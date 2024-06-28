@@ -32,6 +32,11 @@
     },
     "states": {
       "type": "object",
+      "properties": {
+        "*": {
+          "$ref": "#/definitions/partialState"
+        }
+      },
       "patternProperties": {
         "^\\(.+\\)$": {
           "$ref": "#/definitions/endState"
@@ -108,6 +113,27 @@
         }
       ]
     },
+    "partialState": {
+      "oneOf": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/explicitState"
+            },
+            {
+              "type": "object",
+              "required": []
+            }
+          ]
+        },
+        {
+          "$ref": "#/definitions/simpleState"
+        },
+        {
+          "$ref": "#/definitions/timeoutState"
+        }
+      ]
+    },
     "explicitState": {
       "type": "object",
       "properties": {
@@ -116,6 +142,9 @@
         },
         "instructions": {
           "$ref": "#/definitions/instructions"
+        },
+        "notify": {
+          "$ref": "#/definitions/notify"
         },
         "actions": {
           "type": "array",
@@ -128,10 +157,6 @@
           "items": {
             "$ref": "#/definitions/transition"
           }
-        },
-        "ui": {
-          "type": "object",
-          "additionalProperties": true
         }
       },
       "required": [
@@ -147,6 +172,9 @@
         "instructions": {
           "$ref": "#/definitions/instructions"
         },
+        "notify": {
+          "$ref": "#/definitions/notify"
+        },
         "on": {
           "type": "string"
         },
@@ -155,10 +183,6 @@
         },
         "goto": {
           "type": "string"
-        },
-        "ui": {
-          "type": "object",
-          "additionalProperties": true
         }
       },
       "required": [
@@ -175,6 +199,9 @@
         "instructions": {
           "$ref": "#/definitions/instructions"
         },
+        "notify": {
+          "$ref": "#/definitions/notify"
+        },
         "after": {
           "$ref": "#/definitions/timePeriod"
         },
@@ -183,10 +210,6 @@
         },
         "goto": {
           "type": "string"
-        },
-        "ui": {
-          "type": "object",
-          "additionalProperties": true
         }
       },
       "required": [
@@ -199,6 +222,12 @@
       "properties": {
         "title": {
           "$ref": "#/definitions/stringFn"
+        },
+        "instructions": {
+          "$ref": "#/definitions/instructions"
+        },
+        "notify": {
+          "$ref": "#/definitions/notify"
         }
       },
       "nullable": true
@@ -247,6 +276,20 @@
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/stringFn"
+      }
+    },
+    "notify": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "method"
+        ]
       }
     },
     "stringFn": {

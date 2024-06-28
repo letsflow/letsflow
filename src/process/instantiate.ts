@@ -63,16 +63,13 @@ export function instantiateState(
   if (!state) throw new Error(`State '${key}' not found in scenario`);
 
   const actionKeys = 'actions' in state ? state.actions : [];
-  const actions = Object.fromEntries(
-    actionKeys.map((k) => {
-      if (!(k in scenario.actions)) {
-        throw new Error(`Action '${k}' is used in state '${key}', but not defined in the scenario`);
-      }
+  const actions = actionKeys.map((k) => {
+    if (!(k in scenario.actions)) {
+      throw new Error(`Action '${k}' is used in state '${key}', but not defined in the scenario`);
+    }
 
-      const action = instantiateAction(scenario.actions[k], process);
-      return [k, action];
-    }),
-  );
+    return instantiateAction(k, scenario.actions[k], process);
+  });
 
   return {
     key,
@@ -84,11 +81,11 @@ export function instantiateState(
   };
 }
 
-function instantiateAction(action: NormalizedAction, process: Omit<Process, 'current'>): Action {
+function instantiateAction(key: string, action: NormalizedAction, process: Omit<Process, 'current'>): Action {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { update, ...scenarioAction } = action;
 
-  return applyFn(scenarioAction, process);
+  return { ...applyFn(scenarioAction, process), key };
 }
 
 function defaultVars(vars: Record<string, any>): Record<string, any> {

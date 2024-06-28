@@ -36,6 +36,7 @@ describe('normalize scenario', () => {
             $schema: 'https://specs.letsflow.io/v1.0.0/action',
             title: 'complete',
             description: '',
+            responseSchema: {},
             actor: ['actor'],
             update: [],
           },
@@ -46,6 +47,7 @@ describe('normalize scenario', () => {
             description: '',
             instructions: {},
             actions: ['complete'],
+            notify: [],
             transitions: [
               {
                 on: 'complete',
@@ -57,6 +59,8 @@ describe('normalize scenario', () => {
           '(done)': {
             title: 'done',
             description: '',
+            instructions: {},
+            notify: [],
           },
         },
         vars: {},
@@ -173,6 +177,7 @@ describe('normalize scenario', () => {
             title: 'complete',
             description: '',
             actor: ['user', 'admin'],
+            responseSchema: {},
             update: [],
           },
         },
@@ -184,10 +189,7 @@ describe('normalize scenario', () => {
     it('should make an array of the `actor` property', () => {
       const scenario: Scenario = {
         title: '',
-        actors: {
-          user: {},
-          admin: {},
-        },
+        actors: {},
         actions: {
           complete: {
             actor: 'user',
@@ -200,36 +202,90 @@ describe('normalize scenario', () => {
         $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
-        actors: {
-          user: {
-            title: 'user',
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              title: { type: 'string' },
-            },
-          },
-          admin: {
-            title: 'admin',
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              title: { type: 'string' },
-            },
-          },
-        },
+        actors: {},
         actions: {
           complete: {
             $schema: 'https://specs.letsflow.io/v1.0.0/action',
             title: 'complete',
             description: '',
             actor: ['user'],
+            responseSchema: {},
             update: [],
           },
         },
         states: {},
         vars: {},
       });
+    });
+
+    it('should should not modify the `actor` property if it\'s a function', () => {
+      const scenario: Scenario = {
+        title: '',
+        actors: {},
+        actions: {
+          complete: {
+            actor: {
+              '<ref>': "users[?type=='bot']"
+            },
+          },
+        },
+        states: {},
+      };
+
+      const normalized = normalize(scenario);
+      expect(normalized.actions['complete'].actor).to.deep.eq({ "<ref>": "users[?type=='bot']" });
+    });
+
+    it('should normalize the response schema', () => {
+      const scenario: Scenario = {
+        title: '',
+        actors: {},
+        actions: {
+          complete: {
+            responseSchema: 'https://example.com/schemas/response.json',
+          },
+        },
+        states: {},
+      };
+
+      expect(normalize(scenario)).to.deep.eq({
+        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        title: '',
+        description: '',
+        actors: {},
+        actions: {
+          complete: {
+            $schema: 'https://specs.letsflow.io/v1.0.0/action',
+            title: 'complete',
+            description: '',
+            actor: [],
+            responseSchema: {
+              $ref: 'https://example.com/schemas/response.json',
+            },
+            update: [],
+          },
+        },
+        states: {},
+        vars: {},
+      });
+    });
+
+    it('should not modify the response schema if it\'s a function', () => {
+      const scenario: Scenario = {
+        title: '',
+        actors: {},
+        actions: {
+          complete: {
+            responseSchema: {
+              '<ref>': 'scenario.vars.foo',
+            },
+          },
+        },
+        states: {},
+      };
+
+      const normalized = normalize(scenario);
+      expect(normalized.actions['complete'].responseSchema).to.deep.eq({ '<ref>': 'scenario.vars.foo' });
     });
 
     it('should normalize the update instructions', () => {
@@ -277,6 +333,7 @@ describe('normalize scenario', () => {
             title: 'complete',
             description: '',
             actor: ['user', 'admin'],
+            responseSchema: {},
             update: [
               {
                 path: 'vars.foo',

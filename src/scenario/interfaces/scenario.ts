@@ -1,6 +1,7 @@
 import { Fn } from './fn';
 
 export interface Schema {
+  $ref?: string;
   type?: string;
   title?: string;
   default?: any;
@@ -15,10 +16,9 @@ export interface Action {
   $schema?: string;
   title?: string;
   description?: string | Fn;
-  actor?: string | string[];
+  actor?: string | Fn | Array<string | Fn>;
+  responseSchema?: string | Schema | Fn;
   update?: string | UpdateInstruction | UpdateInstruction[];
-
-  [_: string]: any;
 }
 
 export interface UpdateInstruction {
@@ -35,7 +35,7 @@ interface BaseState {
   description?: string | Fn;
   instructions?: Record<string, string>;
   actions?: string[];
-  ui?: Record<string, any>;
+  notify?: Array<Notification>
 }
 
 interface SimpleState extends BaseState {
@@ -56,7 +56,7 @@ export interface EndState {
   title?: string | Fn;
   description?: string | Fn;
   instructions?: Record<string, string>;
-  ui?: Record<string, any>;
+  notify?: Array<Notification>
 }
 
 export type Transition = ActionTransition | TimeoutTransition;
@@ -73,6 +73,11 @@ interface TimeoutTransition {
   goto: string;
 }
 
+interface Notification {
+  method: string;
+  [_: string]: any;
+}
+
 export interface Scenario {
   $schema?: string;
   name?: string;
@@ -84,7 +89,4 @@ export interface Scenario {
   actions: Record<string, Action | null>;
   states: Record<string, State | EndState | null>;
   vars?: Record<string, Schema>;
-  consts?: Record<string, any>;
-
-  ui?: Record<string, any>;
 }

@@ -26,44 +26,35 @@
           "type": "string"
         },
         {
+          "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+        },
+        {
           "type": "array",
           "items": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+              }
+            ]
           }
+        }
+      ]
+    },
+    "responseSchema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0.0/schema"
         },
         {
           "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
         }
       ]
-    },
-    "response": {
-      "type": "object",
-      "properties": {
-        "schema": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "https://schemas.letsflow.io/v1.0.0/schema"
-            },
-            {
-              "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
-            }
-          ]
-        },
-        "form": {
-          "anyOf": [
-            {
-              "$ref": "https://schemas.letsflow.io/v1.0.0/form"
-            },
-            {
-              "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
-            }
-          ]
-        },
-        "data": {}
-      }
     },
     "update": {
       "oneOf": [
@@ -80,10 +71,6 @@
           }
         }
       ]
-    },
-    "ui": {
-      "type": "object",
-      "additionalProperties": true
     }
   },
   "definitions": {

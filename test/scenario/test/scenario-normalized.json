@@ -38,10 +38,8 @@
       "actor": [
         "company"
       ],
-      "response": {
-        "schema": {
-          "<ref>": "scenario.actors.client"
-        }
+      "responseSchema": {
+        "<ref>": "scenario.actors.client"
       },
       "update": [
         {
@@ -62,26 +60,24 @@
       "actor": [
         "client"
       ],
-      "response": {
-        "schema": {
-          "<ref>": "scenario.vars.quote_request"
-        },
-        "form": {
-          "type": "VerticalLayout",
-          "elements": [
-            {
-              "type": "Control",
-              "scope": "#/properties/description",
-              "options": {
-                "multi": true
-              }
-            },
-            {
-              "type": "Control",
-              "scope": "#/properties/budget"
+      "responseSchema": {
+        "<ref>": "scenario.vars.quote_request"
+      },
+      "form": {
+        "type": "VerticalLayout",
+        "elements": [
+          {
+            "type": "Control",
+            "scope": "#/properties/description",
+            "options": {
+              "multi": true
             }
-          ]
-        }
+          },
+          {
+            "type": "Control",
+            "scope": "#/properties/budget"
+          }
+        ]
       },
       "update": [
         {
@@ -109,12 +105,10 @@
       "budget": {
         "<ref>": "vars.quote_request.budget"
       },
-      "response": {
-        "schema": {
-          "properties": {
-            "document": {
-              "type": "string"
-            }
+      "responseSchema": {
+        "properties": {
+          "document": {
+            "type": "string"
           }
         }
       },
@@ -136,13 +130,11 @@
       "actor": [
         "company"
       ],
-      "response": {
-        "schema": {
-          "<ref>": "scenario.actors.client"
-        },
-        "data": {
-          "<ref>": "actors.client"
-        }
+      "responseSchema": {
+        "<ref>": "scenario.actors.client"
+      },
+      "data": {
+        "<ref>": "actors.client"
       },
       "update": [
         {
@@ -171,6 +163,7 @@
       "$schema": "https://specs.letsflow.io/v1.0.0/action",
       "title": "accept",
       "description": "",
+      "responseSchema": {},
       "update": []
     },
     "reject": {
@@ -180,6 +173,7 @@
       "$schema": "https://specs.letsflow.io/v1.0.0/action",
       "title": "reject",
       "description": "",
+      "responseSchema": {},
       "update": []
     },
     "cancel": {
@@ -195,6 +189,7 @@
       "$schema": "https://specs.letsflow.io/v1.0.0/action",
       "title": "cancel",
       "description": "",
+      "responseSchema": {},
       "update": []
     }
   },
@@ -203,6 +198,7 @@
       "title": "initial",
       "description": "",
       "instructions": {},
+      "notify": [],
       "actions": [
         "new_lead",
         "cancel",
@@ -219,17 +215,34 @@
           "goto": "(canceled)",
           "if": true
         }
-      ],
-      "ui": {}
+      ]
     },
     "wait_on_client": {
-      "title": "wait on_client",
-      "description": "",
-      "instructions": {},
       "actions": [
         "request_quote",
         "cancel",
         "change_client_info"
+      ],
+      "notify": [
+        {
+          "method": "email",
+          "recipient": {
+            "<ref>": "actors.client"
+          },
+          "message": {
+            "<ref>": "scenario.emails.introduction"
+          }
+        },
+        {
+          "after": "5 days",
+          "method": "email",
+          "recipient": {
+            "<ref>": "actors.client"
+          },
+          "message": {
+            "<ref>": "scenario.emails.reminder"
+          }
+        }
       ],
       "transitions": [
         {
@@ -248,16 +261,19 @@
           "if": true
         }
       ],
-      "ui": {}
+      "title": "wait on_client",
+      "description": "",
+      "instructions": {}
     },
     "wait_for_quote": {
-      "title": "wait for_quote",
-      "description": "",
       "instructions": {
         "company": {
           "<sub>": "${actors.client.name}\n${vars.quote_request.description}\n"
         }
       },
+      "title": "wait for_quote",
+      "description": "",
+      "notify": [],
       "actions": [
         "create_quote",
         "cancel",
@@ -274,23 +290,20 @@
           "goto": "(canceled)",
           "if": true
         }
-      ],
-      "ui": {}
+      ]
     },
     "review_quote": {
-      "title": "review quote",
-      "description": "",
-      "instructions": {
-        "company": {
-          "<sub>": "${actors.client.name}\n${vars.quote_request.description}\n"
-        }
-      },
       "actions": [
         "accept",
         "reject",
         "cancel",
         "change_client_info"
       ],
+      "instructions": {
+        "company": {
+          "<sub>": "${actors.client.name}\n${vars.quote_request.description}\n"
+        }
+      },
       "transitions": [
         {
           "on": "accept",
@@ -308,22 +321,21 @@
           "if": true
         }
       ],
-      "ui": {}
+      "title": "review quote",
+      "description": "",
+      "notify": []
     },
     "(canceled)": {
       "title": "canceled",
-      "description": "",
-      "ui": {}
+      "description": ""
     },
     "(failed)": {
       "title": "failed",
-      "description": "",
-      "ui": {}
+      "description": ""
     },
     "(success)": {
       "title": "success",
-      "description": "",
-      "ui": {}
+      "description": ""
     }
   },
   "vars": {
@@ -344,14 +356,14 @@
       "type": "string"
     }
   },
-  "consts": {
-    "introduction_email": {
+  "emails": {
+    "introduction": {
       "subject": "Introduction",
       "text": {
         "<sub>": "Hi ${recipient.name},\nWe are excited to work with you.\n"
       }
     },
-    "reminder_email": {
+    "reminder": {
       "subject": "Reminder",
       "text": {
         "<sub>": "Hi ${recipient.name},\nJust a friendly reminder.\n"

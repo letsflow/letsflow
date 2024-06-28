@@ -4,8 +4,8 @@ import scenarioSchema from '../schemas/v1.0.0/scenario.json';
 import actionSchema from '../schemas/v1.0.0/action.json';
 import fnSchema from '../schemas/v1.0.0/fn.json';
 import schemaSchema from '../schemas/v1.0.0/schema.json';
-import formSchema from '../schemas/v1.0.0/form.json';
 import { Scenario, State } from './interfaces/scenario';
+import { isFn } from '../process/fn';
 
 export interface ValidateFunction {
   (data: any): boolean;
@@ -13,8 +13,8 @@ export interface ValidateFunction {
 }
 
 const ajv = new Ajv();
-ajv.addKeyword('$anchor');
-ajv.addSchema([actionSchema, fnSchema, formSchema, schemaSchema]);
+ajv.addKeyword('$anchor'); // Workaround for https://github.com/ajv-validator/ajv/issues/1854
+ajv.addSchema([actionSchema, fnSchema, schemaSchema]);
 
 const validateSchema = ajv.compile(scenarioSchema);
 
@@ -33,12 +33,19 @@ function validateActions(scenario: Scenario): ErrorObject[] {
   const errors: ErrorObject[] = [];
 
   Object.entries(scenario.actions || {}).forEach(([key, action]) => {
-    if (action === null || !action.actor) return;
-    const actionActors: string[] = Array.isArray(action.actor) ? action.actor : [action.actor];
+    if (action === null || !action.actor || isFn(action.actor)) return;
+
+    const actionActors = Array.isArray(action.actor) ? action.actor : [action.actor];
 
     for (const actor of actionActors) {
-      if (!actors.includes(actor)) {
-        errors.push(error(`/actions/${key}/actor`, 'must reference an actor', { value: actor, allowedValues: actors }));
+      if (!isFn(actor) && !actors.includes(actor)) {
+        errors.push(
+          error(
+            `/actions/${key}/actor`,
+            'must reference an actor',
+            { value: actor, allowedValues: actors }
+          )
+        );
       }
     }
   });
