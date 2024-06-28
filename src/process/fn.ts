@@ -1,7 +1,13 @@
-import jmespath from '@letsflow/jmespath';
+import jmespath, { TYPE_ANY, TYPE_BOOLEAN } from '@letsflow/jmespath';
 import { Fn } from '../scenario';
 
 type JSONData = Parameters<typeof jmespath.search>[0];
+
+jmespath.registerFunction(
+  'if',
+  ([cond, a, b]) => cond ? a : b,
+  [{ types: [TYPE_BOOLEAN] }, { types: [TYPE_ANY] }, { types: [TYPE_ANY], optional: true }],
+);
 
 export function applyFn(subject: any, data: Record<string, any>): any {
   if (typeof subject !== 'object' || subject === null || subject instanceof Date) {

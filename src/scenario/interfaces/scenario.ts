@@ -1,5 +1,11 @@
 import { Fn } from './fn';
 
+type Forbidden<T, K extends keyof any> = {
+  [P in keyof T]: P extends K ? never : T[P];
+} & {
+  [P in K]?: never;
+};
+
 export interface Schema {
   $ref?: string;
   type?: string;
@@ -19,6 +25,8 @@ export interface Action {
   actor?: string | Fn | Array<string | Fn>;
   responseSchema?: string | Schema | Fn;
   update?: string | UpdateInstruction | UpdateInstruction[];
+
+  [_: string]: any;
 }
 
 export interface UpdateInstruction {
@@ -33,9 +41,11 @@ export type State = ExplicitState | SimpleState | SimpleTimeoutState;
 interface BaseState {
   title?: string | Fn;
   description?: string | Fn;
-  instructions?: Record<string, string>;
+  instructions?: Record<string, string | Fn>;
   actions?: string[];
-  notify?: Array<Notification>
+  notify?: Array<Notification>;
+
+  [_: string]: any;
 }
 
 interface SimpleState extends BaseState {
@@ -52,12 +62,7 @@ export interface ExplicitState extends BaseState {
   transitions: Array<Transition>;
 }
 
-export interface EndState {
-  title?: string | Fn;
-  description?: string | Fn;
-  instructions?: Record<string, string>;
-  notify?: Array<Notification>
-}
+export type EndState = Forbidden<BaseState, 'actions' | 'transitions' | 'on' | 'after' | 'goto'>;
 
 export type Transition = ActionTransition | TimeoutTransition;
 
@@ -73,7 +78,7 @@ interface TimeoutTransition {
   goto: string;
 }
 
-interface Notification {
+export interface Notification {
   method: string;
   [_: string]: any;
 }
@@ -89,4 +94,6 @@ export interface Scenario {
   actions: Record<string, Action | null>;
   states: Record<string, State | EndState | null>;
   vars?: Record<string, Schema>;
+
+  [_: string]: any;
 }

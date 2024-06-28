@@ -4,7 +4,7 @@ import scenarioSchema from '../schemas/v1.0.0/scenario.json';
 import actionSchema from '../schemas/v1.0.0/action.json';
 import fnSchema from '../schemas/v1.0.0/fn.json';
 import schemaSchema from '../schemas/v1.0.0/schema.json';
-import { Scenario, State } from './interfaces/scenario';
+import { EndState, Scenario, State } from './interfaces/scenario';
 import { isFn } from '../process/fn';
 
 export interface ValidateFunction {
@@ -85,7 +85,7 @@ function validateStates(scenario: Scenario): ErrorObject[] {
       }
 
       const transitionErrors =
-        state !== null && 'transitions' in state ? validateTransitions(state, key, actions, states) : [];
+        state && !isEndState(state) ? validateTransitions(state, key, actions, states) : [];
 
       return [...errors, ...transitionErrors];
     })
@@ -120,7 +120,11 @@ function validateTransitions(state: State, key: string, actions: string[], state
   return errors;
 }
 
-function error(instancePath, message, params: Record<string, any> = {}): ErrorObject {
+export function isEndState(state: State | EndState): state is EndState {
+  return !('transitions' in state || 'goto' in state);
+}
+
+function error(instancePath: string, message: string, params: Record<string, any> = {}): ErrorObject {
   return {
     instancePath,
     keyword: '',

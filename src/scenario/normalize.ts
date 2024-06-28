@@ -11,13 +11,14 @@ import {
 import { NormalizedScenario, NormalizedState } from './interfaces/normalized';
 import { actionJsonSchema, scenarioJsonSchema } from '../constants';
 import { isFn } from '../process/fn';
+import { isEndState } from './validate';
 
 function keyToTitle(key: string): string {
   return key.replace(/\*$/, '').replace('_', ' ').trim();
 }
 
-export function normalize(input: Scenario): NormalizedScenario {
-  const scenario: Scenario = structuredClone(input);
+export function normalize<T extends Scenario>(input: T): NormalizedScenario {
+  const scenario = structuredClone(input);
 
   scenario.$schema ??= scenarioJsonSchema;
   if (scenario.$schema !== scenarioJsonSchema) {
@@ -105,16 +106,16 @@ function normalizeUpdateInstructions(instructions: string | UpdateInstruction | 
 
 function normalizeStates(states: Record<string, State | EndState | null>): void {
   for (const key in states) {
-    const state = (states[key] || {}) as State | EndState;
+    const state = (states[key] || {}) as ExplicitState | EndState;
 
     state.title ??= keyToTitle(key);
     state.description ??= '';
     state.instructions ??= {};
     state.notify ??= [];
 
-    if ('transitions' in state || 'goto' in state) {
+    if (!isEndState(state)) {
       state.actions ??= determineActions(state);
-      (state as ExplicitState).transitions = normalizeTransitions(state)
+      state.transitions = normalizeTransitions(state)
     }
 
     delete (state as any).on;

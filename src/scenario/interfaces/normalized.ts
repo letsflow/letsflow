@@ -8,6 +8,8 @@ export interface NormalizedAction {
   actor: Array<string | Fn>;
   responseSchema: Schema | Fn;
   update: UpdateInstruction[];
+
+  [_: string]: any;
 }
 
 export type NormalizedState = Required<ExplicitState> | Required<EndState>;
@@ -23,4 +25,6 @@ export interface NormalizedScenario {
   actions: Record<string, NormalizedAction>;
   states: Record<string, NormalizedState>;
   vars: Record<string, Schema>;
+
+  [_: string]: any;
 }

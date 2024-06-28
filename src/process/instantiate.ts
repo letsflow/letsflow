@@ -59,11 +59,14 @@ export function instantiateState(
   process: Omit<Process, 'current'>,
   timestamp: Date,
 ): State {
-  const state = scenario.states[key];
-  if (!state) throw new Error(`State '${key}' not found in scenario`);
+  const scenarioState = scenario.states[key];
+  if (!scenarioState) throw new Error(`State '${key}' not found in scenario`);
 
-  const actionKeys = 'actions' in state ? state.actions : [];
-  const actions = actionKeys.map((k) => {
+  const state = applyFn(scenarioState, process);
+
+  state.key = key;
+  state.timestamp = timestamp;
+  state.actions = (state.actions ?? []).map((k) => {
     if (!(k in scenario.actions)) {
       throw new Error(`Action '${k}' is used in state '${key}', but not defined in the scenario`);
     }
@@ -71,14 +74,7 @@ export function instantiateState(
     return instantiateAction(k, scenario.actions[k], process);
   });
 
-  return {
-    key,
-    timestamp,
-    title: applyFn(state.title, process),
-    description: applyFn(state.description, process),
-    instructions: applyFn(state.instructions, process),
-    actions,
-  };
+  return state;
 }
 
 function instantiateAction(key: string, action: NormalizedAction, process: Omit<Process, 'current'>): Action {

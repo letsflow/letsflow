@@ -3,4 +3,4 @@ export * from './interfaces/scenario';
 export * from './interfaces/normalized';
 
 export { normalize } from './normalize';
-export { validate } from './validate';
+export { validate, isEndState } from './validate';
