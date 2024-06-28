@@ -327,15 +327,21 @@
     },
     "(canceled)": {
       "title": "canceled",
-      "description": ""
+      "description": "",
+      "instructions": {},
+      "notify": []
     },
     "(failed)": {
       "title": "failed",
-      "description": ""
+      "description": "",
+      "instructions": {},
+      "notify": []
     },
     "(success)": {
       "title": "success",
-      "description": ""
+      "description": "",
+      "instructions": {},
+      "notify": []
     }
   },
   "vars": {

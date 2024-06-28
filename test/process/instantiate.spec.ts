@@ -43,13 +43,14 @@ describe('instantiate process', () => {
     expect(process.current.key).to.eq('initial');
     expect(process.current.title).to.eq('initial');
     expect(process.current.timestamp).to.eq(event.timestamp);
-    expect(process.current.actions).to.deep.eq({
-      complete: {
-        $schema: 'https://specs.letsflow.io/v1.0.0/action',
-        title: 'complete',
-        description: 'Complete some scenario',
-        actor: ['actor'],
-      },
+    expect(process.current.actions).to.have.length(1);
+    expect(process.current.actions[0]).to.deep.eq({
+      $schema: 'https://specs.letsflow.io/v1.0.0/action',
+      title: 'complete',
+      description: 'Complete some scenario',
+      actor: ['actor'],
+      responseSchema: {},
+      key: 'complete',
     });
   });
 
