@@ -1,7 +1,7 @@
 import * as YAML from 'yaml';
 import { stringifyString } from 'yaml/util';
 
-import type {
+import {
   DocumentOptions,
   ParseOptions,
   SchemaOptions,
@@ -24,8 +24,36 @@ const fnTag = (type: string): YAML.ScalarTag => ({
   },
 });
 
+function parseValue(value: any) {
+  const numValue: any = Number(value);
+  if (!isNaN(numValue)) {
+    return numValue;
+  }
+
+  if (value === 'true' || value === 'false') {
+    return value === 'true';
+  }
+
+  return value;
+}
+
+const constTag: YAML.ScalarTag = {
+  tag: '!const',
+  resolve(str) {
+    return { const: parseValue(str) };
+  },
+};
+
+const defaultTag: YAML.ScalarTag = {
+  tag: '!default',
+  resolve(str) {
+    const value = parseValue(str);
+    return { type: typeof value, default: value };
+  },
+};
+
 export const schema = new YAML.Schema({
-  customTags: [fnTag('ref'), fnTag('sub')],
+  customTags: [fnTag('ref'), fnTag('sub'), constTag, defaultTag],
 });
 
 export function stringify(data: any, options?: DocumentOptions & SchemaOptions & ParseOptions & CreateNodeOptions & ToStringOptions): string {

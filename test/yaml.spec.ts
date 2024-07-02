@@ -34,6 +34,26 @@ describe('yaml', () => {
         qux: { '<sub>': 'Hello, ${ name }!' },
       });
     });
+
+    it('should parse yaml with custom and default tags', () => {
+      const yamlString = `
+        foo: !const abc
+        bar: !const 10
+        rob: !default abc
+        qux: !default true
+        wam: !default 22
+      `;
+
+      const data = parse(yamlString);
+
+      expect(data).to.eql({
+        foo: { const: 'abc' },
+        bar: { const: 10 },
+        rob: { type: 'string', default: 'abc' },
+        qux: { type: 'boolean', default: true },
+        wam: { type: 'number', default: 22 },
+      });
+    });
   });
 
   describe('stringify', () => {
@@ -61,7 +81,7 @@ describe('yaml', () => {
       const data = {
         foo: { '<ref>': 'abc' },
         bar: { '<ref>': 'abc > 0' },
-        bor: { '<ref>': '!def' },
+        rob: { '<ref>': '!def' },
         qux: { '<sub>': 'Hello, ${ name }!' },
       };
 
@@ -71,7 +91,7 @@ describe('yaml', () => {
         `
         foo: !ref abc
         bar: !ref abc > 0
-        bor: !ref "!def"
+        rob: !ref "!def"
         qux: !sub Hello, \${ name }!
       `
           .replace(/^\s{8}/gm, '')
