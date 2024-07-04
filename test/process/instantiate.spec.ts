@@ -7,6 +7,7 @@ import { instantiateState } from '../../src/process/instantiate';
 describe('instantiate', () => {
   describe('scenario', () => {
     it('should instantiate', () => {
+      const scenarioId = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
       const scenario: NormalizedScenario = normalize({
         title: 'some scenario',
         actions: {
@@ -23,12 +24,12 @@ describe('instantiate', () => {
       });
 
       const process = instantiate(scenario, {
-        scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+        scenario: scenarioId,
         actors: {},
         vars: {},
       });
 
-      expect(process.scenario).to.deep.eq(scenario);
+      expect(process.scenario).to.deep.eq( { id: scenarioId, ...scenario } );
       expect(process.actors).to.deep.eq({
         actor: { title: 'actor' },
       });

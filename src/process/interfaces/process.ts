@@ -62,7 +62,7 @@ export interface State {
 export interface Process {
   id: string;
   title: string;
-  scenario: NormalizedScenario;
+  scenario: { id: string } & NormalizedScenario;
   actors: Record<string, Actor>;
   vars: Record<string, any>;
   current: State;
