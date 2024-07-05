@@ -84,6 +84,7 @@ interface TimeoutTransition {
 
 export interface Notify {
   service: string;
+  if?: boolean | Fn;
   [_: string]: any;
 }
 

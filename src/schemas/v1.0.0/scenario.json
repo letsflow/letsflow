@@ -299,6 +299,9 @@
         "properties": {
           "service": {
             "type": "string"
+          },
+          "if": {
+            "$ref": "#/definitions/booleanFn"
           }
         },
         "required": [
