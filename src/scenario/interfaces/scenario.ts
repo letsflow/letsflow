@@ -43,7 +43,7 @@ interface BaseState {
   description?: string | Fn;
   instructions?: Record<string, string | Fn>;
   actions?: string[];
-  notify?: Array<Notification>;
+  notify?: Array<Notify>;
 
   [_: string]: any;
 }
@@ -78,8 +78,8 @@ interface TimeoutTransition {
   goto: string;
 }
 
-export interface Notification {
-  method: string;
+export interface Notify {
+  service: string;
   [_: string]: any;
 }
 

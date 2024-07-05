@@ -225,7 +225,7 @@
       ],
       "notify": [
         {
-          "method": "email",
+          "service": "email",
           "recipient": {
             "<ref>": "actors.client"
           },
@@ -235,7 +235,7 @@
         },
         {
           "after": "5 days",
-          "method": "email",
+          "service": "email",
           "recipient": {
             "<ref>": "actors.client"
           },

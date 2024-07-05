@@ -74,11 +74,11 @@ states:
     actions:
       - request_quote
     notify:
-      - method: email
+      - service: email
         recipient: !ref actors.client
         message: !ref scenario.emails.introduction
       - after: 5 days
-        method: email
+        service: email
         recipient: !ref actors.client
         message: !ref scenario.emails.reminder
     transitions:

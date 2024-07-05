@@ -200,7 +200,7 @@ describe('instantiate', () => {
         ],
         notify: [
           {
-            method: 'email',
+            service: 'email',
             recipient: { '<ref>': 'actors.client'},
             message: { '<sub>': 'Welcome ${actors.client.name}' }
           }
@@ -232,7 +232,7 @@ describe('instantiate', () => {
 
       expect(current.notify).to.have.length(1);
       expect(current.notify[0]).to.deep.eq({
-        method: 'email',
+        service: 'email',
         recipient: {
           name: 'John Doe',
           email: 'john@example.com',

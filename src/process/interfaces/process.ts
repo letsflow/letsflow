@@ -1,4 +1,4 @@
-import { NormalizedScenario, Schema, Notification } from '../../scenario';
+import { NormalizedScenario, Schema, Notify } from '../../scenario';
 
 export interface Actor {
   id?: string;
@@ -53,7 +53,7 @@ export interface State {
   title: string;
   description: string;
   instructions: Record<string, string>;
-  notify: Array<Notification>;
+  notify: Array<Notify>;
   actions: Array<Action>;
 
   [_: string]: any;

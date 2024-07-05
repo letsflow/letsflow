@@ -283,12 +283,12 @@
       "items": {
         "type": "object",
         "properties": {
-          "method": {
+          "service": {
             "type": "string"
           }
         },
         "required": [
-          "method"
+          "service"
         ]
       }
     },
