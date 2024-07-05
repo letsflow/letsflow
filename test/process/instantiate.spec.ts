@@ -70,7 +70,7 @@ describe('instantiate', () => {
           },
           admin: {},
           support: {
-            requirements: { role: 'support-team' },
+            role: 'support-team',
           },
           'signer_*': {},
         },
@@ -105,7 +105,7 @@ describe('instantiate', () => {
 
       expect(process.actors.support).to.deep.eq({
         title: 'support',
-        requirements: { role: 'support-team' },
+        role: 'support-team',
       });
 
       expect(Object.keys(process.actors)).to.deep.eq(['user', 'admin', 'support']);

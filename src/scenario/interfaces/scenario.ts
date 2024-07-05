@@ -19,7 +19,7 @@ export interface Schema {
 }
 
 export interface ActorSchema extends Schema {
-  requirements?: Record<string, any>
+  role?: string | string[];
 }
 
 export interface Action {

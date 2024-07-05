@@ -85,9 +85,8 @@
                 "type": {
                   "const": "object"
                 },
-                "requirements": {
-                  "type": "object",
-                  "additionalProperties": true
+                "role": {
+                  "$ref": "#/definitions/multiString"
                 }
               }
             }
@@ -101,9 +100,8 @@
             {
               "type": "object",
               "properties": {
-                "requirements": {
-                  "type": "object",
-                  "additionalProperties": true
+                "role": {
+                  "$ref": "#/definitions/multiString"
                 }
               }
             }
@@ -316,6 +314,19 @@
         },
         {
           "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+        }
+      ]
+    },
+    "multiString": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       ]
     },

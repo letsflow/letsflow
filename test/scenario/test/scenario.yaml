@@ -3,8 +3,7 @@ description: Provide a quote to a client
 
 actors:
   company:
-    requirements:
-      role: support-team
+    role: support-team
   client:
     properties:
       name: string

@@ -47,7 +47,7 @@ function instantiateActors(
         ...defaultVars(schema.properties ?? {}),
         ...(actors[key] || {}),
         title: schema.title,
-        ...(schema.requirements ? { requirements: schema.requirements } : {}),
+        ...(schema.role ? { role: schema.role } : {}),
       },
     ]);
 

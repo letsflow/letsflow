@@ -13,9 +13,7 @@
           "type": "string"
         }
       },
-      "requirements": {
-        "role": "support-team"
-      }
+      "role": "support-team"
     },
     "client": {
       "properties": {
