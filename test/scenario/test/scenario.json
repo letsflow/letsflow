@@ -2,7 +2,11 @@
   "title": "Quote",
   "description": "Provide a quote to a client",
   "actors": {
-    "company": null,
+    "company": {
+      "requirements": {
+        "role": "support-team"
+      }
+    },
     "client": {
       "properties": {
         "name": "string",

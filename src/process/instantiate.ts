@@ -1,4 +1,4 @@
-import { NormalizedAction, NormalizedScenario, Schema } from '../scenario';
+import { NormalizedAction, NormalizedScenario, ActorSchema } from '../scenario';
 import { v4 as uuid } from 'uuid';
 import { Action, Actor, InstantiateEvent, Process, StartInstructions, State } from './interfaces/process';
 import { withHash } from './hash';
@@ -28,7 +28,7 @@ export function instantiate(scenario: NormalizedScenario, instructions: StartIns
 }
 
 function instantiateActors(
-  schemas: Record<string, Schema>,
+  schemas: Record<string, ActorSchema>,
   actors: Record<string, Omit<Actor, 'title'>>,
 ): Record<string, Actor> {
   const definedActors = Object.keys(schemas);
@@ -47,6 +47,7 @@ function instantiateActors(
         ...defaultVars(schema.properties ?? {}),
         ...(actors[key] || {}),
         title: schema.title,
+        ...(schema.requirements ? { requirements: schema.requirements } : {}),
       },
     ]);
 

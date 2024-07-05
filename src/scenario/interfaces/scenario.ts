@@ -18,6 +18,10 @@ export interface Schema {
   additionalProperties?: boolean | Record<string, any>;
 }
 
+export interface ActorSchema extends Schema {
+  requirements?: Record<string, any>
+}
+
 export interface Action {
   $schema?: string;
   title?: string;
@@ -90,7 +94,7 @@ export interface Scenario {
   title: string;
   description?: string;
 
-  actors?: Record<string, Schema | null>;
+  actors?: Record<string, ActorSchema | null>;
   actions: Record<string, Action | null>;
   states: Record<string, State | EndState | null>;
   vars?: Record<string, Schema>;

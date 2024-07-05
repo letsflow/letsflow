@@ -12,6 +12,9 @@
         "title": {
           "type": "string"
         }
+      },
+      "requirements": {
+        "role": "support-team"
       }
     },
     "client": {

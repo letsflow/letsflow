@@ -83,17 +83,31 @@
               "type": "object",
               "properties": {
                 "type": {
-                  "type": "string",
-                  "enum": [
-                    "object"
-                  ]
+                  "const": "object"
+                },
+                "requirements": {
+                  "type": "object",
+                  "additionalProperties": true
                 }
               }
             }
           ]
         },
         {
-          "$ref": "https://schemas.letsflow.io/v1.0.0/schema#object"
+          "allOf": [
+            {
+              "$ref": "https://schemas.letsflow.io/v1.0.0/schema#object"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "requirements": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          ]
         },
         {
           "type": "null"

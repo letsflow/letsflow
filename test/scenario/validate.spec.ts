@@ -170,10 +170,10 @@ describe('validate scenario', () => {
       expect(result).to.be.false;
       expect(validate.errors).to.be.deep.contain({
         instancePath: '/actors/user/type',
-        keyword: 'enum',
-        message: 'must be equal to one of the allowed values',
-        params: { allowedValues: ['object'] },
-        schemaPath: '#/oneOf/0/allOf/1/properties/type/enum',
+        keyword: 'const',
+        message: 'must be equal to constant',
+        params: { allowedValue: 'object' },
+        schemaPath: '#/oneOf/0/allOf/1/properties/type/const',
       });
     });
 

@@ -69,6 +69,9 @@ describe('instantiate', () => {
             },
           },
           admin: {},
+          support: {
+            requirements: { role: 'support-team' },
+          },
           'signer_*': {},
         },
         actions: {
@@ -100,7 +103,12 @@ describe('instantiate', () => {
         title: 'admin',
       });
 
-      expect(Object.keys(process.actors)).to.deep.eq(['user', 'admin']);
+      expect(process.actors.support).to.deep.eq({
+        title: 'support',
+        requirements: { role: 'support-team' },
+      });
+
+      expect(Object.keys(process.actors)).to.deep.eq(['user', 'admin', 'support']);
     });
 
     it('should instantiate vars', () => {
