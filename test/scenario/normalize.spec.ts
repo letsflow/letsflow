@@ -6,6 +6,7 @@ describe('normalize scenario', () => {
     it('should normalize a minimal scenario', () => {
       const scenario: Scenario = {
         title: 'minimal scenario',
+        tags: ['foo', 'bar'],
         actions: {
           complete: {},
         },
@@ -21,6 +22,7 @@ describe('normalize scenario', () => {
         $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
         title: 'minimal scenario',
         description: '',
+        tags: ['foo', 'bar'],
         actors: {
           actor: {
             title: 'actor',
@@ -87,6 +89,7 @@ describe('normalize scenario', () => {
         $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
+        tags: [],
         actors: {
           user_1: {
             title: 'user 1',
@@ -118,6 +121,7 @@ describe('normalize scenario', () => {
         $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
+        tags: [],
         actors: {
           user: {
             title: 'user',
@@ -153,6 +157,7 @@ describe('normalize scenario', () => {
         $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
+        tags: [],
         actors: {
           user: {
             title: 'user',
@@ -202,6 +207,7 @@ describe('normalize scenario', () => {
         $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
+        tags: [],
         actors: {},
         actions: {
           complete: {
@@ -218,14 +224,14 @@ describe('normalize scenario', () => {
       });
     });
 
-    it('should should not modify the `actor` property if it\'s a function', () => {
+    it("should should not modify the `actor` property if it's a function", () => {
       const scenario: Scenario = {
         title: '',
         actors: {},
         actions: {
           complete: {
             actor: {
-              '<ref>': "users[?type=='bot']"
+              '<ref>': "users[?type=='bot']",
             },
           },
         },
@@ -233,7 +239,7 @@ describe('normalize scenario', () => {
       };
 
       const normalized = normalize(scenario);
-      expect(normalized.actions['complete'].actor).to.deep.eq({ "<ref>": "users[?type=='bot']" });
+      expect(normalized.actions['complete'].actor).to.deep.eq({ '<ref>': "users[?type=='bot']" });
     });
 
     it('should normalize the response schema', () => {
@@ -252,6 +258,7 @@ describe('normalize scenario', () => {
         $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
+        tags: [],
         actors: {},
         actions: {
           complete: {
@@ -270,7 +277,7 @@ describe('normalize scenario', () => {
       });
     });
 
-    it('should not modify the response schema if it\'s a function', () => {
+    it("should not modify the response schema if it's a function", () => {
       const scenario: Scenario = {
         title: '',
         actors: {},
@@ -309,6 +316,7 @@ describe('normalize scenario', () => {
         $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
+        tags: [],
         actors: {
           user: {
             title: 'user',

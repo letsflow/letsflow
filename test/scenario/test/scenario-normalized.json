@@ -1,6 +1,7 @@
 {
   "title": "Quote",
   "description": "Provide a quote to a client",
+  "tags": [],
   "actors": {
     "company": {
       "title": "company",

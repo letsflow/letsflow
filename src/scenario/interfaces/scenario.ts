@@ -94,6 +94,7 @@ export interface Scenario {
   version?: string;
   title: string;
   description?: string;
+  tags?: string[];
 
   actors?: Record<string, ActorSchema | null>;
   actions: Record<string, Action | null>;

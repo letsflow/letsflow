@@ -26,6 +26,7 @@ export function normalize<T extends Scenario>(input: T): NormalizedScenario {
   }
 
   scenario.description ??= '';
+  scenario.tags ??= [];
   scenario.actors ??= { actor: { title: 'actor' } };
   scenario.vars ??= {};
 
@@ -93,7 +94,9 @@ function normalizeActions(actions: Record<string, Action | null>, allActors: str
   }
 }
 
-function normalizeUpdateInstructions(instructions: string | UpdateInstruction | UpdateInstruction[]): UpdateInstruction[] {
+function normalizeUpdateInstructions(
+  instructions: string | UpdateInstruction | UpdateInstruction[],
+): UpdateInstruction[] {
   if (typeof instructions === 'string') instructions = { path: instructions };
 
   return (Array.isArray(instructions) ? instructions : [instructions]).map((instruction) => ({
@@ -115,7 +118,7 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
 
     if (!isEndState(state)) {
       state.actions ??= determineActions(state);
-      state.transitions = normalizeTransitions(state)
+      state.transitions = normalizeTransitions(state);
     }
 
     delete (state as any).on;
@@ -127,10 +130,9 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
     const anyState = states['*'] as NormalizedState;
     delete states['*'];
 
-    Object.values(states as Record<string, NormalizedState>)
-      .forEach((state) => {
-        mergeStates(state, anyState);
-      });
+    Object.values(states as Record<string, NormalizedState>).forEach((state) => {
+      mergeStates(state, anyState);
+    });
   }
 }
 
@@ -155,9 +157,7 @@ function determineActions(state: State): string[] {
   if ('after' in state) return [];
   if ('on' in state) return [state.on];
 
-  return state.transitions
-    .filter((transition) => 'on' in transition)
-    .map((transition) => (transition as any).on);
+  return state.transitions.filter((transition) => 'on' in transition).map((transition) => (transition as any).on);
 }
 
 function normalizeTransitions(state: State): Array<Transition> {

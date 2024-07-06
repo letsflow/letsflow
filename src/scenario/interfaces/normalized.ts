@@ -20,6 +20,7 @@ export interface NormalizedScenario {
   version?: string;
   title: string;
   description: string;
+  tags: string[];
 
   actors: Record<string, Schema>;
   actions: Record<string, NormalizedAction>;
