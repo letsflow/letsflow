@@ -44,6 +44,7 @@ export interface Action {
   description: string;
   actor: string[];
   responseSchema: Schema;
+  if: boolean;
 
   [_: string]: any;
 }

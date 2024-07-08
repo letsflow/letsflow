@@ -4,7 +4,8 @@
   "type": "object",
   "properties": {
     "$schema": {
-      "type": "string"
+      "type": "string",
+      "const": "https://schemas.letsflow.io/v1.0.0/scenario"
     },
     "name": {
       "type": "string"
@@ -27,7 +28,7 @@
     "actors": {
       "type": "object",
       "additionalProperties": {
-        "$ref": "#/definitions/actor"
+        "$ref": "https://schemas.letsflow.io/v1.0.0/actor"
       }
     },
     "actions": {
@@ -78,46 +79,6 @@
     }
   ],
   "definitions": {
-    "actor": {
-      "oneOf": [
-        {
-          "allOf": [
-            {
-              "$ref": "https://json-schema.org/draft/2020-12/schema"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "const": "object"
-                },
-                "role": {
-                  "$ref": "#/definitions/multiString"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "allOf": [
-            {
-              "$ref": "https://schemas.letsflow.io/v1.0.0/schema#object"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "role": {
-                  "$ref": "#/definitions/multiString"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
     "state": {
       "oneOf": [
         {
@@ -320,19 +281,6 @@
         },
         {
           "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
-        }
-      ]
-    },
-    "multiString": {
-      "oneOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       ]
     },

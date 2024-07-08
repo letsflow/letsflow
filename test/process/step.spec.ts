@@ -244,9 +244,9 @@ describe('step', () => {
         actions: {
           complete: {
             update: [
-              { path: 'title', data: 'updated title' },
-              { path: 'actors.actor.title', data: 'Updated actor' },
-              { path: 'vars.foo', data: 'bar' },
+              { set: 'title', data: 'updated title' },
+              { set: 'actors.actor.title', data: 'Updated actor' },
+              { set: 'vars.foo', data: 'bar' },
             ],
           },
         },
@@ -288,7 +288,7 @@ describe('step', () => {
         title: 'some scenario',
         actions: {
           complete: {
-            update: { path: 'vars.foo' },
+            update: { set: 'vars.foo' },
           },
         },
         states: {
@@ -322,7 +322,7 @@ describe('step', () => {
         title: 'some scenario',
         actions: {
           complete: {
-            update: { path: 'current.key', data: '(whoops)' },
+            update: { set: 'current.key', data: '(whoops)' },
           },
         },
         states: {

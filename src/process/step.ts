@@ -7,7 +7,7 @@ import set from 'set-value';
 import { instantiateState } from './instantiate';
 
 interface InstantiatedUpdateInstructions {
-  path: string;
+  set: string;
   data: any;
   merge: boolean;
   if: boolean;
@@ -39,7 +39,7 @@ export function step(input: Process, action: string, actor: string, response?: a
   process.scenario.actions[action].update.forEach((scenarioInstructions) => {
     const instructions: InstantiatedUpdateInstructions = applyFn(scenarioInstructions, process);
     if (!instructions.if) return;
-    update(process, instructions.path, instructions.data, instructions.merge);
+    update(process, instructions.set, instructions.data, instructions.merge);
   });
 
   const next = current.transitions

@@ -28,13 +28,14 @@ export interface Action {
   description?: string | Fn;
   actor?: string | Fn | Array<string | Fn>;
   responseSchema?: string | Schema | Fn;
+  if?: boolean | Fn;
   update?: string | UpdateInstruction | UpdateInstruction[];
 
   [_: string]: any;
 }
 
 export interface UpdateInstruction {
-  path: string | Fn;
+  set: string | Fn;
   data?: any | Fn;
   merge?: boolean;
   if?: boolean | Fn;
@@ -88,7 +89,7 @@ export interface Notify {
   [_: string]: any;
 }
 
-export interface Scenario {
+export interface BaseScenario {
   $schema?: string;
   name?: string;
   version?: string;
@@ -97,9 +98,12 @@ export interface Scenario {
   tags?: string[];
 
   actors?: Record<string, ActorSchema | null>;
-  actions: Record<string, Action | null>;
-  states: Record<string, State | EndState | null>;
   vars?: Record<string, Schema>;
 
   [_: string]: any;
+}
+
+export interface Scenario extends BaseScenario {
+  actions: Record<string, Action | null>;
+  states: Record<string, State | EndState | null>;
 }

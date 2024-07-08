@@ -1,9 +1,10 @@
 {
+  "$schema": "https://schemas.letsflow.io/v1.0.0/scenario",
   "title": "Quote",
   "description": "Provide a quote to a client",
-  "tags": [],
   "actors": {
     "company": {
+      "role": "support-team",
       "title": "company",
       "type": "object",
       "properties": {
@@ -13,8 +14,7 @@
         "title": {
           "type": "string"
         }
-      },
-      "role": "support-team"
+      }
     },
     "client": {
       "properties": {
@@ -45,7 +45,7 @@
       },
       "update": [
         {
-          "path": "actors.client",
+          "set": "actors.client",
           "data": {
             "<ref>": "response"
           },
@@ -53,9 +53,10 @@
           "if": true
         }
       ],
-      "$schema": "https://specs.letsflow.io/v1.0.0/action",
+      "$schema": "https://schemas.letsflow.io/v1.0.0/action",
       "title": "new lead",
-      "description": ""
+      "description": "",
+      "if": true
     },
     "request_quote": {
       "$schema": "https://schemas.letsflow.io/v1.0.0/actions/form",
@@ -83,7 +84,7 @@
       },
       "update": [
         {
-          "path": "vars.quote_request",
+          "set": "vars.quote_request",
           "data": {
             "<ref>": "response"
           },
@@ -92,7 +93,8 @@
         }
       ],
       "title": "request quote",
-      "description": ""
+      "description": "",
+      "if": true
     },
     "create_quote": {
       "actor": [
@@ -116,7 +118,7 @@
       },
       "update": [
         {
-          "path": "vars.document",
+          "set": "vars.document",
           "data": {
             "<ref>": "response"
           },
@@ -124,9 +126,10 @@
           "if": true
         }
       ],
-      "$schema": "https://specs.letsflow.io/v1.0.0/action",
+      "$schema": "https://schemas.letsflow.io/v1.0.0/action",
       "title": "create quote",
-      "description": ""
+      "description": "",
+      "if": true
     },
     "change_client_info": {
       "actor": [
@@ -140,7 +143,7 @@
       },
       "update": [
         {
-          "path": "actors.client",
+          "set": "actors.client",
           "data": {
             "<ref>": "response"
           },
@@ -154,17 +157,19 @@
           "title": "Change Client Info"
         }
       },
-      "$schema": "https://specs.letsflow.io/v1.0.0/action",
+      "$schema": "https://schemas.letsflow.io/v1.0.0/action",
       "title": "change client_info",
-      "description": ""
+      "description": "",
+      "if": true
     },
     "accept": {
       "actor": [
         "client"
       ],
-      "$schema": "https://specs.letsflow.io/v1.0.0/action",
+      "$schema": "https://schemas.letsflow.io/v1.0.0/action",
       "title": "accept",
       "description": "",
+      "if": true,
       "responseSchema": {},
       "update": []
     },
@@ -172,9 +177,10 @@
       "actor": [
         "client"
       ],
-      "$schema": "https://specs.letsflow.io/v1.0.0/action",
+      "$schema": "https://schemas.letsflow.io/v1.0.0/action",
       "title": "reject",
       "description": "",
+      "if": true,
       "responseSchema": {},
       "update": []
     },
@@ -188,9 +194,10 @@
           "title": "Cancel process"
         }
       },
-      "$schema": "https://specs.letsflow.io/v1.0.0/action",
+      "$schema": "https://schemas.letsflow.io/v1.0.0/action",
       "title": "cancel",
       "description": "",
+      "if": true,
       "responseSchema": {},
       "update": []
     }
@@ -201,11 +208,6 @@
       "description": "",
       "instructions": {},
       "notify": [],
-      "actions": [
-        "new_lead",
-        "cancel",
-        "change_client_info"
-      ],
       "transitions": [
         {
           "on": "new_lead",
@@ -217,6 +219,11 @@
           "goto": "(canceled)",
           "if": true
         }
+      ],
+      "actions": [
+        "new_lead",
+        "cancel",
+        "change_client_info"
       ]
     },
     "wait_on_client": {
@@ -276,11 +283,6 @@
       "title": "wait for_quote",
       "description": "",
       "notify": [],
-      "actions": [
-        "create_quote",
-        "cancel",
-        "change_client_info"
-      ],
       "transitions": [
         {
           "on": "create_quote",
@@ -292,6 +294,11 @@
           "goto": "(canceled)",
           "if": true
         }
+      ],
+      "actions": [
+        "create_quote",
+        "cancel",
+        "change_client_info"
       ]
     },
     "review_quote": {
@@ -388,5 +395,5 @@
       }
     ]
   },
-  "$schema": "https://specs.letsflow.io/v1.0.0/scenario"
+  "tags": []
 }

@@ -48,9 +48,10 @@ describe('instantiate', () => {
       expect(process.current.timestamp).to.eq(event.timestamp);
       expect(process.current.actions).to.have.length(1);
       expect(process.current.actions[0]).to.deep.eq({
-        $schema: 'https://specs.letsflow.io/v1.0.0/action',
+        $schema: 'https://schemas.letsflow.io/v1.0.0/action',
         title: 'complete',
         description: 'Complete some scenario',
+        if: true,
         actor: ['actor'],
         responseSchema: {},
         key: 'complete',
@@ -164,6 +165,9 @@ describe('instantiate', () => {
           complete: {
             description: { '<sub>': 'Complete ${scenario.title}' },
           },
+          other: {
+            if: false,
+          }
         },
         states: {
           initial: {
@@ -198,7 +202,8 @@ describe('instantiate', () => {
           client: { '<sub>': 'Hello ${actors.client.name}' }
         },
         actions: [
-          'complete'
+          'complete',
+          'other',
         ],
         transitions: [
           {
@@ -230,9 +235,10 @@ describe('instantiate', () => {
 
       expect(current.actions).to.have.length(1);
       expect(current.actions[0]).to.deep.eq({
-        $schema: 'https://specs.letsflow.io/v1.0.0/action',
+        $schema: 'https://schemas.letsflow.io/v1.0.0/action',
         title: 'complete',
         description: 'Complete some scenario',
+        if: true,
         actor: ['client'],
         responseSchema: {},
         key: 'complete',

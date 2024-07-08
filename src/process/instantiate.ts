@@ -68,13 +68,15 @@ export function instantiateState(
 
   state.key = key;
   state.timestamp = timestamp;
-  state.actions = (state.actions ?? []).map((k) => {
-    if (!(k in scenario.actions)) {
-      throw new Error(`Action '${k}' is used in state '${key}', but not defined in the scenario`);
-    }
+  state.actions = (state.actions ?? [])
+    .map((k: string): Action => {
+      if (!(k in scenario.actions)) {
+        throw new Error(`Action '${k}' is used in state '${key}', but not defined in the scenario`);
+      }
 
-    return instantiateAction(k, scenario.actions[k], process);
-  });
+      return instantiateAction(k, scenario.actions[k], process);
+    })
+    .filter((action: Action) => action.if);
 
   return state;
 }

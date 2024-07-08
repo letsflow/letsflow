@@ -73,7 +73,7 @@
         "<ref>": "actors.client"
       },
       "update": {
-        "path": "actors.client",
+        "set": "actors.client",
         "merge": true
       },
       "ui": {

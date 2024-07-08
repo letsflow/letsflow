@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.letsflow.io/v1.0.0/actor",
+  "oneOf": [
+    {
+      "allOf": [
+        {
+          "$ref": "https://json-schema.org/draft/2020-12/schema"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "object"
+            },
+            "role": {
+              "$ref": "#/definitions/multiString"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "allOf": [
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0.0/schema#object"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "role": {
+              "$ref": "#/definitions/multiString"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "null"
+    }
+  ],
+  "definitions": {
+    "multiString": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  }
+}

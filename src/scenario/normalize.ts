@@ -9,7 +9,7 @@ import {
   ExplicitState,
 } from './interfaces/scenario';
 import { NormalizedScenario, NormalizedState } from './interfaces/normalized';
-import { actionJsonSchema, scenarioJsonSchema } from '../constants';
+import { actionSchema, scenarioSchema } from '../schemas/v1.0.0';
 import { isFn } from '../process/fn';
 import { isEndState } from './validate';
 
@@ -17,13 +17,17 @@ function keyToTitle(key: string): string {
   return key.replace(/\*$/, '').replace('_', ' ').trim();
 }
 
-export function normalize<T extends Scenario>(input: T): NormalizedScenario {
-  const scenario = structuredClone(input);
-
-  scenario.$schema ??= scenarioJsonSchema;
-  if (scenario.$schema !== scenarioJsonSchema) {
-    throw new Error(`Unsupported scenario schema: ${scenario.$schema}, only ${scenarioJsonSchema} is supported`);
+export function normalize<T extends Scenario>(scenario: T): NormalizedScenario {
+  switch (scenario.$id ?? scenarioSchema.$id) {
+    case scenarioSchema.$id:
+      return normalizeScenario(scenario as Scenario);
+    default:
+      throw new Error(`Unsupported schema: ${scenario.$id}`);
   }
+}
+
+function normalizeScenario<T extends Scenario>(input: T): NormalizedScenario {
+  const scenario = { $schema: scenarioSchema.$id, ...structuredClone(input) };
 
   scenario.description ??= '';
   scenario.tags ??= [];
@@ -32,7 +36,7 @@ export function normalize<T extends Scenario>(input: T): NormalizedScenario {
 
   normalizeActors(scenario.actors);
   normalizeActions(scenario.actions, Object.keys(scenario.actors));
-  normalizeStates(scenario.states);
+  normalizeStates(scenario.states, Object.keys(scenario.actions));
   addImplicitEndStates(scenario.states as Record<string, State | EndState>);
   normalizeSchemas(scenario.vars, true);
 
@@ -79,10 +83,11 @@ function normalizeActions(actions: Record<string, Action | null>, allActors: str
     if (actions[key] === null) actions[key] = {};
     const action = actions[key] as Action;
 
-    action.$schema ??= actionJsonSchema;
+    action.$schema ??= actionSchema.$id;
 
     action.title ??= keyToTitle(key);
     action.description ??= '';
+    action.if ??= true;
 
     action.actor ??= allActors;
     if (!Array.isArray(action.actor) && !isFn(action.actor)) action.actor = [action.actor];
@@ -97,17 +102,17 @@ function normalizeActions(actions: Record<string, Action | null>, allActors: str
 function normalizeUpdateInstructions(
   instructions: string | UpdateInstruction | UpdateInstruction[],
 ): UpdateInstruction[] {
-  if (typeof instructions === 'string') instructions = { path: instructions };
+  if (typeof instructions === 'string') instructions = { set: instructions };
 
   return (Array.isArray(instructions) ? instructions : [instructions]).map((instruction) => ({
-    path: instruction.path,
+    set: instruction.set,
     data: instruction.data || { '<ref>': 'response' },
     merge: instruction.merge || false,
     if: instruction.if || true,
   }));
 }
 
-function normalizeStates(states: Record<string, State | EndState | null>): void {
+function normalizeStates(states: Record<string, State | EndState | null>, allActions: string[]): void {
   for (const key in states) {
     const state = (states[key] || {}) as ExplicitState | EndState;
 
@@ -117,13 +122,13 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
     state.notify ??= [];
 
     if (!isEndState(state)) {
-      state.actions ??= determineActions(state);
       state.transitions = normalizeTransitions(state);
-    }
+      state.actions ??= determineActions(state as NormalizedState);
 
-    delete (state as any).on;
-    delete (state as any).after;
-    delete (state as any).goto;
+      delete (state as any).on;
+      delete (state as any).after;
+      delete (state as any).goto;
+    }
   }
 
   if ('*' in states) {
@@ -153,13 +158,6 @@ function addImplicitEndStates(states: Record<string, State | EndState>): void {
   }
 }
 
-function determineActions(state: State): string[] {
-  if ('after' in state) return [];
-  if ('on' in state) return [state.on];
-
-  return state.transitions.filter((transition) => 'on' in transition).map((transition) => (transition as any).on);
-}
-
 function normalizeTransitions(state: State): Array<Transition> {
   if ('on' in state) {
     return [{ on: state.on, if: true, goto: state.goto }];
@@ -178,6 +176,11 @@ function normalizeTransitions(state: State): Array<Transition> {
   });
 
   return state.transitions;
+}
+
+function determineActions(state: NormalizedState): string[] {
+  const transitions: Transition[] = state.transitions ?? [];
+  return transitions.filter((transition) => 'on' in transition).map((transition) => transition.on);
 }
 
 function mergeStates(state: NormalizedState, partialState: NormalizedState): void {

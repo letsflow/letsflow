@@ -215,11 +215,11 @@ describe('validate scenario', () => {
             actor: 'user',
             responses: {
               one: { title: 'one' },
-              two: { title: 'two', update: [{ path: 'vars.reason' }] },
+              two: { title: 'two', update: [{ set: 'vars.reason' }] },
               three: {
                 title: 'two',
                 update: {
-                  path: 'vars.reason',
+                  set: 'vars.reason',
                   data: { '<eval>': 'response | { message, code }' },
                   patch: true,
                   if: { '<eval>': "response.types.state | contains(@, 'WA')" },
@@ -239,7 +239,7 @@ describe('validate scenario', () => {
       expect(result).to.be.true;
     });
 
-    it('should fail if update instruction is missing path', () => {
+    it('should fail if update instruction is missing set', () => {
       const scenario = {
         title: '',
         actions: {
@@ -260,9 +260,9 @@ describe('validate scenario', () => {
       expect(validate.errors).to.deep.contain({
         instancePath: '/actions/next/update',
         keyword: 'required',
-        message: "must have required property 'path'",
+        message: "must have required property 'set'",
         params: {
-          missingProperty: 'path',
+          missingProperty: 'set',
         },
         schemaPath: '#/required',
       });
@@ -299,7 +299,7 @@ describe('validate scenario', () => {
       });
     });
 
-    it('should fail if update instruction is missing path', () => {
+    it('should fail if update instruction is missing set', () => {
       const scenario = {
         title: '',
         actions: {
@@ -320,9 +320,9 @@ describe('validate scenario', () => {
       expect(validate.errors).to.deep.contain({
         instancePath: '/actions/next/update',
         keyword: 'required',
-        message: "must have required property 'path'",
+        message: "must have required property 'set'",
         params: {
-          missingProperty: 'path',
+          missingProperty: 'set',
         },
         schemaPath: '#/required',
       });

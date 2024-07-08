@@ -19,7 +19,7 @@ describe('normalize scenario', () => {
       };
 
       expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
         title: 'minimal scenario',
         description: '',
         tags: ['foo', 'bar'],
@@ -35,9 +35,10 @@ describe('normalize scenario', () => {
         },
         actions: {
           complete: {
-            $schema: 'https://specs.letsflow.io/v1.0.0/action',
+            $schema: 'https://schemas.letsflow.io/v1.0.0/action',
             title: 'complete',
             description: '',
+            if: true,
             responseSchema: {},
             actor: ['actor'],
             update: [],
@@ -86,7 +87,7 @@ describe('normalize scenario', () => {
       };
 
       expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
         tags: [],
@@ -118,7 +119,7 @@ describe('normalize scenario', () => {
       };
 
       expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
         tags: [],
@@ -154,7 +155,7 @@ describe('normalize scenario', () => {
       };
 
       expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
         tags: [],
@@ -178,9 +179,10 @@ describe('normalize scenario', () => {
         },
         actions: {
           complete: {
-            $schema: 'https://specs.letsflow.io/v1.0.0/action',
+            $schema: 'https://schemas.letsflow.io/v1.0.0/action',
             title: 'complete',
             description: '',
+            if: true,
             actor: ['user', 'admin'],
             responseSchema: {},
             update: [],
@@ -204,16 +206,17 @@ describe('normalize scenario', () => {
       };
 
       expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
         tags: [],
         actors: {},
         actions: {
           complete: {
-            $schema: 'https://specs.letsflow.io/v1.0.0/action',
+            $schema: 'https://schemas.letsflow.io/v1.0.0/action',
             title: 'complete',
             description: '',
+            if: true,
             actor: ['user'],
             responseSchema: {},
             update: [],
@@ -255,16 +258,17 @@ describe('normalize scenario', () => {
       };
 
       expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
         tags: [],
         actors: {},
         actions: {
           complete: {
-            $schema: 'https://specs.letsflow.io/v1.0.0/action',
+            $schema: 'https://schemas.letsflow.io/v1.0.0/action',
             title: 'complete',
             description: '',
+            if: true,
             actor: [],
             responseSchema: {
               $ref: 'https://example.com/schemas/response.json',
@@ -305,7 +309,7 @@ describe('normalize scenario', () => {
         actions: {
           complete: {
             update: {
-              path: 'vars.foo',
+              set: 'vars.foo',
             },
           },
         },
@@ -313,7 +317,7 @@ describe('normalize scenario', () => {
       };
 
       expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
         title: '',
         description: '',
         tags: [],
@@ -337,14 +341,15 @@ describe('normalize scenario', () => {
         },
         actions: {
           complete: {
-            $schema: 'https://specs.letsflow.io/v1.0.0/action',
+            $schema: 'https://schemas.letsflow.io/v1.0.0/action',
             title: 'complete',
             description: '',
+            if: true,
             actor: ['user', 'admin'],
             responseSchema: {},
             update: [
               {
-                path: 'vars.foo',
+                set: 'vars.foo',
                 data: { '<ref>': 'response' },
                 merge: false,
                 if: true,

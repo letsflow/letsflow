@@ -43,6 +43,9 @@
         }
       ]
     },
+    "if": {
+      "$ref": "#/definitions/booleanFn"
+    },
     "responseSchema": {
       "anyOf": [
         {
@@ -77,7 +80,7 @@
     "updateInstruction": {
       "type": "object",
       "properties": {
-        "path": {
+        "set": {
           "oneOf": [
             {
               "type": "string"
@@ -92,18 +95,21 @@
           "type": "boolean"
         },
         "if": {
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
-            }
-          ]
+          "$ref": "#/definitions/booleanFn"
         }
       },
       "required": [
-        "path"
+        "set"
+      ]
+    },
+    "booleanFn": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+        }
       ]
     }
   }
