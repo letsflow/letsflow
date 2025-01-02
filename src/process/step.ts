@@ -90,7 +90,7 @@ export function step(input: Process, action: string, actor: StepActor | string =
 function validateStep(process: Process, current: Required<ExplicitState>, action: string, actor: StepActor): string[] {
   const errors: string[] = [];
 
-  if (!current.actions.includes(action)) {
+  if (!(current.transitions ?? []).some((tr) => 'on' in tr && tr.on === action)) {
     errors.push(`Action '${action}' is not allowed in state '${process.current.key}'`);
   }
 

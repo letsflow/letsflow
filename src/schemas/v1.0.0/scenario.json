@@ -67,8 +67,6 @@
     }
   },
   "required": [
-    "title",
-    "actions",
     "states"
   ],
   "anyOf": [
@@ -127,12 +125,6 @@
         },
         "notify": {
           "$ref": "#/definitions/notify"
-        },
-        "actions": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         },
         "transitions": {
           "type": "array",
@@ -226,7 +218,14 @@
               "$ref": "#/definitions/booleanFn"
             },
             "goto": {
-              "type": "string"
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           },
           "required": [

@@ -1,8 +1,8 @@
 import Ajv from 'ajv/dist/2020';
 import { ErrorObject } from 'ajv/dist/types';
-import { scenarioSchema, actionSchema, actorSchema, fnSchema, schemaSchema } from '../schemas/v1.0.0';
-import { EndState, Scenario, State } from './interfaces/scenario';
 import { isFn } from '../process/fn';
+import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from '../schemas/v1.0.0';
+import { EndState, Scenario, State } from './interfaces/scenario';
 
 export interface ValidateFunction {
   (data: any): boolean;
@@ -97,7 +97,12 @@ function validateTransitions(state: State, key: string, actions: string[], state
       );
     }
 
-    if ('goto' in transition && !states.includes(transition.goto) && !transition.goto.match(/^\(.*\)$/)) {
+    if (
+      'goto' in transition &&
+      transition.goto !== null &&
+      !states.includes(transition.goto) &&
+      !transition.goto.match(/^\(.*\)$/)
+    ) {
       errors.push(
         error(`/states/${key}/transitions/${index}/goto`, 'must reference a state', {
           value: transition.goto,

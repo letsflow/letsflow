@@ -218,20 +218,15 @@
           "on": "cancel",
           "goto": "(canceled)",
           "if": true
+        },
+        {
+          "on": "change_client_info",
+          "goto": null,
+          "if": true
         }
-      ],
-      "actions": [
-        "new_lead",
-        "cancel",
-        "change_client_info"
       ]
     },
     "wait_on_client": {
-      "actions": [
-        "request_quote",
-        "cancel",
-        "change_client_info"
-      ],
       "notify": [
         {
           "service": "email",
@@ -268,6 +263,11 @@
           "on": "cancel",
           "goto": "(canceled)",
           "if": true
+        },
+        {
+          "on": "change_client_info",
+          "goto": null,
+          "if": true
         }
       ],
       "title": "wait on_client",
@@ -293,21 +293,15 @@
           "on": "cancel",
           "goto": "(canceled)",
           "if": true
+        },
+        {
+          "on": "change_client_info",
+          "goto": null,
+          "if": true
         }
-      ],
-      "actions": [
-        "create_quote",
-        "cancel",
-        "change_client_info"
       ]
     },
     "review_quote": {
-      "actions": [
-        "accept",
-        "reject",
-        "cancel",
-        "change_client_info"
-      ],
       "instructions": {
         "company": {
           "<sub>": "${actors.client.name}\n${vars.quote_request.description}\n"
@@ -327,6 +321,11 @@
         {
           "on": "cancel",
           "goto": "(canceled)",
+          "if": true
+        },
+        {
+          "on": "change_client_info",
+          "goto": null,
           "if": true
         }
       ],

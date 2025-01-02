@@ -49,7 +49,6 @@ describe('normalize scenario', () => {
             title: 'initial',
             description: '',
             instructions: {},
-            actions: ['complete'],
             notify: [],
             transitions: [
               {

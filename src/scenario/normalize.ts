@@ -139,7 +139,6 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
 
     if (!isEndState(state)) {
       state.transitions = normalizeTransitions(state);
-      state.actions ??= determineActions(state as NormalizedState);
 
       delete (state as any).on;
       delete (state as any).after;
@@ -162,7 +161,7 @@ function addImplicitEndStates(states: Record<string, State | EndState>): void {
     .map((state) => ('transitions' in state ? state.transitions : []))
     .flat()
     .map((transition) => transition.goto)
-    .filter((goto) => goto.match(/^\(.+\)$/));
+    .filter((goto) => goto && goto.match(/^\(.+\)$/));
 
   for (const key of endStates) {
     states[key] ??= {
@@ -194,11 +193,6 @@ function normalizeTransitions(state: State): Array<Transition> {
   return state.transitions;
 }
 
-function determineActions(state: NormalizedState): string[] {
-  const transitions: Transition[] = state.transitions ?? [];
-  return transitions.filter((transition) => 'on' in transition).map((transition) => transition.on);
-}
-
 function normalizeResult(scenario: Scenario): void {
   if (!scenario.result) {
     scenario.result ??= {};
@@ -217,7 +211,6 @@ function mergeStates(state: NormalizedState, partialState: NormalizedState): voi
   const partial = structuredClone(partialState);
 
   if ('transitions' in state && 'transitions' in partial) {
-    state.actions = dedup([...state.actions, ...partial.actions]);
     state.transitions.push(...partial.transitions);
   }
 

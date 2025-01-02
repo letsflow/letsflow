@@ -62,18 +62,15 @@ actions:
 
 states:
   '*':
-    actions:
-      - cancel
-      - change_client_info
     transitions:
       - on: cancel
         goto: (canceled)
+      - on: change_client_info
+        goto: ~
   initial:
     on: new_lead
     goto: wait_on_client
   wait_on_client:
-    actions:
-      - request_quote
     notify:
       - service: email
         recipient: !ref actors.client
@@ -95,9 +92,6 @@ states:
         ${actors.client.name}
         ${vars.quote_request.description}
   review_quote:
-    actions:
-      - accept
-      - reject
     instructions:
       company: !sub |
         ${actors.client.name}

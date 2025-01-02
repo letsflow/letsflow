@@ -1,5 +1,5 @@
-import { Scenario, validate } from '../../src/scenario';
 import { expect } from 'chai';
+import { Scenario, validate } from '../../src/scenario';
 
 describe('validate scenario', () => {
   describe('scenario', () => {
@@ -21,33 +21,6 @@ describe('validate scenario', () => {
 
       expect(validate.errors).to.eq(null);
       expect(result).to.be.true;
-    });
-
-    it('show fail if title is missing', () => {
-      const scenario = {
-        actions: {
-          next: {},
-        },
-        states: {
-          initial: {
-            on: 'next',
-            goto: '(done)',
-          },
-        },
-      };
-
-      const result = validate(scenario);
-
-      expect(result).to.be.false;
-      expect(validate.errors).to.deep.contain({
-        instancePath: '',
-        keyword: 'required',
-        message: "must have required property 'title'",
-        params: {
-          missingProperty: 'title',
-        },
-        schemaPath: '#/required',
-      });
     });
   });
 

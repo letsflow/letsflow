@@ -101,14 +101,14 @@
   },
   "states": {
     "*": {
-      "actions": [
-        "cancel",
-        "change_client_info"
-      ],
       "transitions": [
         {
           "on": "cancel",
           "goto": "(canceled)"
+        },
+        {
+          "on": "change_client_info",
+          "goto": null
         }
       ]
     },
@@ -117,9 +117,6 @@
       "goto": "wait_on_client"
     },
     "wait_on_client": {
-      "actions": [
-        "request_quote"
-      ],
       "notify": [
         {
           "service": "email",
@@ -162,10 +159,6 @@
       }
     },
     "review_quote": {
-      "actions": [
-        "accept",
-        "reject"
-      ],
       "instructions": {
         "company": {
           "<sub>": "${actors.client.name}\n${vars.quote_request.description}\n"

@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { ActorSchema, NormalizedAction, NormalizedScenario } from '../scenario';
+import { ActorSchema, NormalizedAction, NormalizedScenario, Transition } from '../scenario';
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { Action, Actor, InstantiateEvent, Process, StartInstructions, State } from './interfaces/process';
@@ -15,7 +15,7 @@ export function instantiate(scenario: NormalizedScenario, instructions: StartIns
 
   const process: Omit<Process, 'current'> = {
     id: event.id,
-    title: scenario.title,
+    title: scenario.title ?? `Process ${event.id}`,
     tags: scenario.tags,
     scenario: { id: instructions.scenario, ...scenario },
     actors: instantiateActors(scenario.actors, event.actors),
@@ -69,7 +69,9 @@ export function instantiateState(
 
   state.key = key;
   state.timestamp = timestamp;
-  state.actions = (state.actions ?? [])
+  state.actions = ((state.transitions ?? []) as Transition[])
+    .filter((transition) => 'on' in transition)
+    .map((transition) => transition.on)
     .map((k: string): Action => {
       if (!(k in scenario.actions)) {
         throw new Error(`Action '${k}' is used in state '${key}', but not defined in the scenario`);
