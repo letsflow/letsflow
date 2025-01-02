@@ -47,7 +47,7 @@
         {
           "set": "actors.client",
           "data": {
-            "<ref>": "response"
+            "<ref>": "current.response"
           },
           "merge": false,
           "if": true
@@ -86,7 +86,7 @@
         {
           "set": "vars.quote_request",
           "data": {
-            "<ref>": "response"
+            "<ref>": "current.response"
           },
           "merge": false,
           "if": true
@@ -120,7 +120,7 @@
         {
           "set": "vars.document",
           "data": {
-            "<ref>": "response"
+            "<ref>": "current.response"
           },
           "merge": false,
           "if": true
@@ -145,7 +145,7 @@
         {
           "set": "actors.client",
           "data": {
-            "<ref>": "response"
+            "<ref>": "current.response"
           },
           "merge": true,
           "if": true
@@ -370,6 +370,9 @@
       "title": "document",
       "type": "string"
     }
+  },
+  "result": {
+    "type": "string"
   },
   "emails": {
     "introduction": {

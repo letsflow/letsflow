@@ -1,16 +1,16 @@
+import { isFn } from '../process/fn';
+import { actionSchema, scenarioSchema } from '../schemas/v1.0.0';
+import { NormalizedScenario, NormalizedState } from './interfaces/normalized';
 import {
   Action,
-  Scenario,
-  UpdateInstruction,
-  State,
-  Transition,
-  Schema,
   EndState,
   ExplicitState,
+  Scenario,
+  Schema,
+  State,
+  Transition,
+  UpdateInstruction,
 } from './interfaces/scenario';
-import { NormalizedScenario, NormalizedState } from './interfaces/normalized';
-import { actionSchema, scenarioSchema } from '../schemas/v1.0.0';
-import { isFn } from '../process/fn';
 import { isEndState } from './validate';
 
 function keyToTitle(key: string): string {
@@ -36,9 +36,10 @@ function normalizeScenario<T extends Scenario>(input: T): NormalizedScenario {
 
   normalizeActors(scenario.actors);
   normalizeActions(scenario.actions, Object.keys(scenario.actors));
-  normalizeStates(scenario.states, Object.keys(scenario.actions));
+  normalizeStates(scenario.states);
   addImplicitEndStates(scenario.states as Record<string, State | EndState>);
   normalizeSchemas(scenario.vars, true);
+  normalizeResult(scenario);
 
   return scenario as NormalizedScenario;
 }
@@ -53,6 +54,10 @@ function normalizeActors(items: Record<string, Schema | null>): void {
 
     normalizeSchemas(actor.properties);
 
+    if (typeof actor.additionalProperties === 'object') {
+      normalizeSchema(actor.additionalProperties);
+    }
+
     items[key] = actor;
   }
 }
@@ -64,17 +69,28 @@ function normalizeSchemas(schemas: Record<string, any>, setTitle = false): void 
       continue;
     }
 
-    schemas[key].type ??= 'object';
+    normalizeSchema(schemas[key]);
     if (setTitle) schemas[key].title ??= keyToTitle(key);
+  }
+}
 
-    if ('properties' in schemas[key]) {
-      normalizeSchemas(schemas[key].properties);
-    }
+function normalizeSchema(schema: Schema): void {
+  schema.type ??= 'object';
 
-    if ('additionalProperties' in schemas[key]) {
-      schemas[key].type ??= 'object';
-      normalizeSchemas(schemas[key].properties);
-    }
+  if (schema.properties) {
+    normalizeSchemas(schema.properties);
+  }
+
+  if (typeof schema.items === 'string') {
+    schema.items = { type: schema.items };
+  } else if (typeof schema.items === 'object') {
+    normalizeSchema(schema.items);
+  }
+
+  if (typeof schema.additionalProperties === 'string') {
+    schema.additionalProperties = { type: schema.additionalProperties };
+  } else if (typeof schema.additionalProperties === 'object') {
+    normalizeSchema(schema.additionalProperties);
   }
 }
 
@@ -106,13 +122,13 @@ function normalizeUpdateInstructions(
 
   return (Array.isArray(instructions) ? instructions : [instructions]).map((instruction) => ({
     set: instruction.set,
-    data: instruction.data || { '<ref>': 'response' },
+    data: instruction.data || { '<ref>': 'current.response' },
     merge: instruction.merge || false,
     if: instruction.if || true,
   }));
 }
 
-function normalizeStates(states: Record<string, State | EndState | null>, allActions: string[]): void {
+function normalizeStates(states: Record<string, State | EndState | null>): void {
   for (const key in states) {
     const state = (states[key] || {}) as ExplicitState | EndState;
 
@@ -181,6 +197,20 @@ function normalizeTransitions(state: State): Array<Transition> {
 function determineActions(state: NormalizedState): string[] {
   const transitions: Transition[] = state.transitions ?? [];
   return transitions.filter((transition) => 'on' in transition).map((transition) => transition.on);
+}
+
+function normalizeResult(scenario: Scenario): void {
+  if (!scenario.result) {
+    scenario.result ??= {};
+    return;
+  }
+
+  if (typeof scenario.result === 'string') {
+    scenario.result = { type: scenario.result };
+    return;
+  }
+
+  normalizeSchema(scenario.result);
 }
 
 function mergeStates(state: NormalizedState, partialState: NormalizedState): void {

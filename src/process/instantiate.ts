@@ -1,8 +1,8 @@
-import { NormalizedAction, NormalizedScenario, ActorSchema } from '../scenario';
 import { v4 as uuid } from 'uuid';
-import { Action, Actor, InstantiateEvent, Process, StartInstructions, State } from './interfaces/process';
-import { withHash } from './hash';
+import { ActorSchema, NormalizedAction, NormalizedScenario } from '../scenario';
 import { applyFn } from './fn';
+import { withHash } from './hash';
+import { Action, Actor, InstantiateEvent, Process, StartInstructions, State } from './interfaces/process';
 
 export function instantiate(scenario: NormalizedScenario, instructions: StartInstructions): Process {
   const event: InstantiateEvent = withHash({
@@ -20,6 +20,7 @@ export function instantiate(scenario: NormalizedScenario, instructions: StartIns
     scenario: { id: instructions.scenario, ...scenario },
     actors: instantiateActors(scenario.actors, event.actors),
     vars: { ...defaultVars(scenario.vars), ...event.vars },
+    result: scenario.result.default ?? null,
     events: [event],
   };
 
@@ -37,7 +38,7 @@ function instantiateActors(
   for (const key of Object.keys(actors)) {
     const found =
       definedActors.includes(key) || definedActors.some((k) => k.endsWith('*') && key.startsWith(k.slice(0, -1)));
-    if (!found) throw new Error(`Actor '${key}' not found in scenario`);
+    if (!found) throw new Error(`Invalid start instructions: Actor '${key}' not found in scenario`);
   }
 
   const entries = Object.entries(schemas)

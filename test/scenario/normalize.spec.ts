@@ -1,5 +1,5 @@
-import { Scenario, normalize } from '../../src/scenario';
 import { expect } from 'chai';
+import { normalize, Scenario } from '../../src/scenario';
 
 describe('normalize scenario', () => {
   describe('scenario', () => {
@@ -67,6 +67,7 @@ describe('normalize scenario', () => {
           },
         },
         vars: {},
+        result: {},
       });
     });
   });
@@ -105,6 +106,7 @@ describe('normalize scenario', () => {
         actions: {},
         states: {},
         vars: {},
+        result: {},
       });
     });
 
@@ -136,6 +138,7 @@ describe('normalize scenario', () => {
         actions: {},
         states: {},
         vars: {},
+        result: {},
       });
     });
   });
@@ -190,6 +193,7 @@ describe('normalize scenario', () => {
         },
         states: {},
         vars: {},
+        result: {},
       });
     });
 
@@ -224,6 +228,7 @@ describe('normalize scenario', () => {
         },
         states: {},
         vars: {},
+        result: {},
       });
     });
 
@@ -278,6 +283,7 @@ describe('normalize scenario', () => {
         },
         states: {},
         vars: {},
+        result: {},
       });
     });
 
@@ -350,7 +356,7 @@ describe('normalize scenario', () => {
             update: [
               {
                 set: 'vars.foo',
-                data: { '<ref>': 'response' },
+                data: { '<ref>': 'current.response' },
                 merge: false,
                 if: true,
               },
@@ -359,6 +365,7 @@ describe('normalize scenario', () => {
         },
         states: {},
         vars: {},
+        result: {},
       });
     });
   });

@@ -69,7 +69,15 @@
           }
         },
         "additionalProperties": {
-          "$ref": "#/definitions/simple"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/simple"
+            }
+          ],
+          "default": false
         }
       },
       "required": [

@@ -115,6 +115,8 @@ vars:
       budget: number
   document: string
 
+result: string
+
 emails:
   introduction:
     subject: Introduction

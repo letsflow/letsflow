@@ -36,13 +36,7 @@ function validateActions(scenario: Scenario): ErrorObject[] {
 
     for (const actor of actionActors) {
       if (!isFn(actor) && !actors.includes(actor)) {
-        errors.push(
-          error(
-            `/actions/${key}/actor`,
-            'must reference an actor',
-            { value: actor, allowedValues: actors }
-          )
-        );
+        errors.push(error(`/actions/${key}/actor`, 'must reference an actor', { value: actor, allowedValues: actors }));
       }
     }
   });
@@ -81,8 +75,7 @@ function validateStates(scenario: Scenario): ErrorObject[] {
         });
       }
 
-      const transitionErrors =
-        state && !isEndState(state) ? validateTransitions(state, key, actions, states) : [];
+      const transitionErrors = state && !isEndState(state) ? validateTransitions(state, key, actions, states) : [];
 
       return [...errors, ...transitionErrors];
     })

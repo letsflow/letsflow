@@ -1,8 +1,8 @@
 import { expect } from 'chai';
-import { ActionEvent, instantiate, step } from '../../src/process';
-import { normalize } from '../../src/scenario';
 import { uuid } from '../../src';
+import { ActionEvent, instantiate, step } from '../../src/process';
 import { hash } from '../../src/process/hash';
+import { normalize } from '../../src/scenario';
 
 describe('step', () => {
   describe('transition', () => {
@@ -23,7 +23,7 @@ describe('step', () => {
       const instructions = {
         scenario: uuid(scenario),
         actors: {
-          actor: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+          actor: {},
         },
       };
 
@@ -36,10 +36,7 @@ describe('step', () => {
       expect(event.previous).to.eq(process.events[0].hash);
       expect(event.response).to.be.undefined;
       expect(event.action).to.eq('complete');
-      expect(event.actor).to.deep.eq({
-        id: 'eb82534d-1b99-415f-8d32-096070ea3310',
-        key: 'actor',
-      });
+      expect(event.actor).to.deep.eq({ key: 'actor' });
       expect(eventHash).to.eq(hash(event));
 
       expect(process.current.key).to.eq('(done)');
@@ -71,7 +68,7 @@ describe('step', () => {
       const instructions = {
         scenario: uuid(scenario),
         actors: {
-          actor: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+          actor: {},
         },
       };
 
@@ -84,10 +81,7 @@ describe('step', () => {
       expect(event.previous).to.eq(process.events[0].hash);
       expect(event.response).to.be.undefined;
       expect(event.action).to.eq('next');
-      expect(event.actor).to.deep.eq({
-        id: 'eb82534d-1b99-415f-8d32-096070ea3310',
-        key: 'actor',
-      });
+      expect(event.actor).to.deep.eq({ key: 'actor' });
       expect(eventHash).to.eq(hash(event));
 
       expect(process.current.key).to.eq('second');
@@ -112,7 +106,7 @@ describe('step', () => {
       const instructions = {
         scenario: uuid(scenario),
         actors: {
-          actor: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+          actor: {},
         },
       };
 
@@ -125,10 +119,7 @@ describe('step', () => {
       expect(event.previous).to.eq(process.events[0].hash);
       expect(event.response).to.be.undefined;
       expect(event.action).to.eq('nop');
-      expect(event.actor).to.deep.eq({
-        id: 'eb82534d-1b99-415f-8d32-096070ea3310',
-        key: 'actor',
-      });
+      expect(event.actor).to.deep.eq({ key: 'actor' });
       expect(eventHash).to.eq(hash(event));
 
       expect(process.current.key).to.eq('initial');
@@ -152,7 +143,7 @@ describe('step', () => {
       const instructions = {
         scenario: uuid(scenario),
         actors: {
-          actor: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+          actor: {},
         },
       };
 
@@ -162,7 +153,7 @@ describe('step', () => {
       expect(() => step(process, 'complete', 'actor')).to.throw("Process is in end state '(done)'");
     });
 
-    it("should not perform an action that's not allowed in the state", () => {
+    it("should skip an action that's not allowed in the state", () => {
       const scenario = normalize({
         title: 'some scenario',
         actions: {
@@ -180,13 +171,22 @@ describe('step', () => {
       const instructions = {
         scenario: uuid(scenario),
         actors: {
-          actor: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+          actor: {},
         },
       };
 
       const newProcess = instantiate(scenario, instructions);
+      const process = step(newProcess, 'dance', 'actor');
 
-      expect(() => step(newProcess, 'dance', 'actor')).to.throw("Action 'dance' is not allowed in state 'initial'");
+      expect(process.current.key).to.eq('initial');
+      expect(process.events).to.have.length(2);
+
+      const event = process.events[1] as ActionEvent;
+      expect(event.timestamp).to.be.instanceof(Date);
+      expect(event.previous).to.eq(process.events[0].hash);
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq("Action 'dance' is not allowed in state 'initial'");
     });
   });
 
@@ -216,24 +216,62 @@ describe('step', () => {
     const instructions = {
       scenario: uuid(scenario),
       actors: {
-        user: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+        user: {},
       },
     };
 
-    const newProcess = instantiate(scenario, instructions);
-
     it('should check if an actor is defined', () => {
-      expect(() => step(newProcess, 'complete', 'captain')).to.throw("Actor 'captain' is not defined in the scenario");
+      const process = step(instantiate(scenario, instructions), 'complete', 'captain');
+      const event = process.events[1] as ActionEvent;
+
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq("Actor 'captain' is not defined in the scenario");
     });
 
     it('should check if an actor is assigned', () => {
-      expect(() => step(newProcess, 'complete', 'admin')).to.throw("Actor 'admin' is not assigned to a user");
+      const process = step(instantiate(scenario, instructions), 'complete', { key: 'admin', id: '1' });
+      const event = process.events[1] as ActionEvent;
+
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq("Actor 'admin' is not assigned to a user or role");
     });
 
     it('should check if an actor is allowed to perform an action', () => {
-      expect(() => step(newProcess, 'complete', 'user')).to.throw(
-        "Actor 'user' is not allowed to perform action 'complete'",
-      );
+      const process = step(instantiate(scenario, instructions), 'complete', 'user');
+      const event = process.events[1] as ActionEvent;
+
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq("Actor 'user' is not allowed to perform action 'complete'");
+    });
+
+    it('should allow an actor to perform an action based on the id', () => {
+      const newProcess = instantiate(scenario, {
+        scenario: uuid(scenario),
+        actors: {
+          admin: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+        },
+      });
+
+      const process = step(newProcess, 'complete', { key: 'admin', id: 'eb82534d-1b99-415f-8d32-096070ea3310' });
+
+      expect(process.current.key).to.eq('(done)');
+    });
+
+    it('should allow an actor to perform an action based on the role', () => {
+      const newProcess = instantiate(scenario, {
+        scenario: uuid(scenario),
+        actors: {
+          admin: { role: 'administrator' },
+        },
+      });
+
+      const actor = { key: 'admin', id: 'eb82534d-1b99-415f-8d32-096070ea3310', roles: ['administrator'] };
+      const process = step(newProcess, 'complete', actor);
+
+      expect(process.current.key).to.eq('(done)');
     });
   });
 
@@ -241,12 +279,16 @@ describe('step', () => {
     it('should apply update instructions', () => {
       const scenario = normalize({
         title: 'some scenario',
+        actors: {
+          client: {},
+        },
         actions: {
           complete: {
             update: [
               { set: 'title', data: 'updated title' },
-              { set: 'actors.actor.title', data: 'Updated actor' },
+              { set: 'actors.client.title', data: 'Updated actor' },
               { set: 'vars.foo', data: 'bar' },
+              { set: 'result', data: 42 },
             ],
           },
         },
@@ -264,26 +306,62 @@ describe('step', () => {
       const instructions = {
         scenario: uuid(scenario),
         actors: {
-          actor: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+          client: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
         },
       };
 
       const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'actor');
+      const process = step(newProcess, 'complete', 'client');
 
       expect(process.current.key).to.eq('(done)');
-
       expect(process.title).to.eq('updated title');
-
-      expect(process.actors.actor).to.deep.eq({
+      expect(process.actors.client).to.deep.eq({
         title: 'Updated actor',
         id: 'eb82534d-1b99-415f-8d32-096070ea3310',
       });
-
       expect(process.vars.foo).to.eq('bar');
     });
 
-    it('should use the response', () => {
+    it('should apply update instructions to the current actor using the response', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        actors: {
+          client: {},
+        },
+        actions: {
+          complete: {
+            update: [{ set: 'current.actor.title', data: { '<ref>': 'current.response.title' } }],
+          },
+        },
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+        vars: {
+          foo: { type: 'string' },
+        },
+      });
+
+      const instructions = {
+        scenario: uuid(scenario),
+        actors: {
+          client: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+        },
+      };
+
+      const newProcess = instantiate(scenario, instructions);
+      const process = step(newProcess, 'complete', 'client', { title: 'Updated actor' });
+
+      expect(process.current.key).to.eq('(done)');
+      expect(process.actors.client).to.deep.eq({
+        title: 'Updated actor',
+        id: 'eb82534d-1b99-415f-8d32-096070ea3310',
+      });
+    });
+
+    it('should implicitly use the response', () => {
       const scenario = normalize({
         title: 'some scenario',
         actions: {
@@ -305,7 +383,7 @@ describe('step', () => {
       const instructions = {
         scenario: uuid(scenario),
         actors: {
-          actor: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+          actor: {},
         },
       };
 
@@ -313,7 +391,6 @@ describe('step', () => {
       const process = step(newProcess, 'complete', 'actor', 'bar');
 
       expect(process.current.key).to.eq('(done)');
-
       expect(process.vars.foo).to.eq('bar');
     });
 
@@ -336,7 +413,7 @@ describe('step', () => {
       const instructions = {
         scenario: uuid(scenario),
         actors: {
-          actor: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+          actor: {},
         },
       };
 
@@ -344,6 +421,98 @@ describe('step', () => {
       expect(() => step(newProcess, 'complete', 'actor')).to.throw(
         "Not allowed to set 'current.key' through update instructions",
       );
+    });
+  });
+
+  describe('validate process after update', () => {
+    const scenario = normalize({
+      title: 'some scenario',
+      actors: {
+        client: {
+          properties: {
+            email: { type: 'string', pattern: '^\\w+@\\w+\\.\\w+$' },
+            age: { type: 'integer' },
+          },
+        },
+      },
+      actions: {
+        updateTitle: {
+          update: { set: 'title' },
+        },
+        updateActor: {
+          update: { set: 'current.actor' },
+        },
+        updateVars: {
+          update: { set: 'vars.foo' },
+        },
+        updateResult: {
+          update: { set: 'result' },
+        },
+      },
+      vars: {
+        foo: 'string',
+      },
+      result: {
+        type: 'array',
+        items: 'string',
+      },
+      states: {
+        initial: {
+          transitions: [
+            { on: 'updateTitle', goto: '(done)' },
+            { on: 'updateActor', goto: '(done)' },
+            { on: 'updateVars', goto: '(done)' },
+            { on: 'updateResult', goto: '(done)' },
+          ],
+        },
+      },
+    });
+
+    const instructions = {
+      scenario: uuid(scenario),
+      actors: {
+        client: {},
+      },
+    };
+
+    const newProcess = instantiate(scenario, instructions);
+
+    it('should validate the title', () => {
+      const process = step(newProcess, 'updateTitle', 'client', { foo: 'bar' });
+      const event = process.events[1] as ActionEvent;
+
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq('Title is invalid: must be a string');
+    });
+
+    it('should validate the actor', () => {
+      const process = step(newProcess, 'updateActor', 'client', { email: 'non-an-email', age: 'old' });
+      const event = process.events[1] as ActionEvent;
+
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq(
+        `Actor 'client' is invalid: data/email must match pattern "^\\w+@\\w+\\.\\w+$", data/age must be integer`,
+      );
+    });
+
+    it('should validate the vars', () => {
+      const process = step(newProcess, 'updateVars', 'client', 42);
+      const event = process.events[1] as ActionEvent;
+
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq("Variable 'foo' is invalid: data must be string");
+    });
+
+    it('should validate the result', () => {
+      const process = step(newProcess, 'updateResult', 'client', [42]);
+      const event = process.events[1] as ActionEvent;
+
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq('Result is invalid: data/0 must be string');
     });
   });
 });

@@ -26,6 +26,7 @@ export interface NormalizedScenario {
   actions: Record<string, NormalizedAction>;
   states: Record<string, NormalizedState>;
   vars: Record<string, Schema>;
+  result: Schema;
 
   [_: string]: any;
 }

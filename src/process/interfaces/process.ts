@@ -26,9 +26,11 @@ export interface ActionEvent {
   previous: string;
   timestamp: Date;
   action: string;
-  actor: { key: string; id: string };
+  actor: { key: string; id?: string };
   response?: any;
   hash: string;
+  skipped: boolean;
+  errors?: string[];
 }
 
 export interface TimeoutEvent {
@@ -63,6 +65,8 @@ export interface State {
   instructions: Record<string, string>;
   notify: Array<Notify>;
   actions: Array<Action>;
+  response?: any;
+  actor?: Actor;
 
   [_: string]: any;
 }
@@ -74,7 +78,7 @@ export interface Process {
   scenario: { id: string } & NormalizedScenario;
   actors: Record<string, Actor>;
   vars: Record<string, any>;
+  result: any;
   current: State;
-  response?: any;
   events: Array<InstantiateEvent | ActionEvent | TimeoutEvent>;
 }

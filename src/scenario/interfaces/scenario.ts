@@ -12,10 +12,10 @@ export interface Schema {
   title?: string;
   default?: any;
   description?: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, string | Schema>;
   required?: string[];
-  items?: any;
-  additionalProperties?: boolean | Record<string, any>;
+  items?: string | Schema;
+  additionalProperties?: boolean | string | Schema;
 }
 
 export interface ActorSchema extends Schema {
@@ -98,7 +98,8 @@ export interface BaseScenario {
   tags?: string[];
 
   actors?: Record<string, ActorSchema | null>;
-  vars?: Record<string, Schema>;
+  vars?: Record<string, string | Schema>;
+  result?: string | Schema;
 
   [_: string]: any;
 }
