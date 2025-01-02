@@ -55,6 +55,7 @@ interface BaseState {
 
 interface SimpleState extends BaseState {
   on: string;
+  by?: string | string[];
   goto: string;
 }
 
@@ -73,8 +74,9 @@ export type Transition = ActionTransition | TimeoutTransition;
 
 interface ActionTransition {
   on: string;
+  by?: string | string[];
   if?: boolean | Fn;
-  goto: string;
+  goto: string | null;
 }
 
 interface TimeoutTransition {
@@ -89,22 +91,20 @@ export interface Notify {
   [_: string]: any;
 }
 
-export interface BaseScenario {
+export interface Scenario {
   $schema?: string;
   name?: string;
   version?: string;
-  title: string;
+  title?: string;
   description?: string;
   tags?: string[];
 
   actors?: Record<string, ActorSchema | null>;
+  actions?: Record<string, Action | null>;
+  states: Record<string, State | EndState | null>;
+
   vars?: Record<string, string | Schema>;
   result?: string | Schema;
 
   [_: string]: any;
-}
-
-export interface Scenario extends BaseScenario {
-  actions: Record<string, Action | null>;
-  states: Record<string, State | EndState | null>;
 }

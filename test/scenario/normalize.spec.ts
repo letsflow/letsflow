@@ -7,9 +7,6 @@ describe('normalize scenario', () => {
       const scenario: Scenario = {
         title: 'minimal scenario',
         tags: ['foo', 'bar'],
-        actions: {
-          complete: {},
-        },
         states: {
           initial: {
             on: 'complete',
@@ -34,7 +31,7 @@ describe('normalize scenario', () => {
           },
         },
         actions: {
-          complete: {
+          'initial.complete': {
             $schema: 'https://schemas.letsflow.io/v1.0.0/action',
             title: 'complete',
             description: '',
@@ -53,6 +50,7 @@ describe('normalize scenario', () => {
             transitions: [
               {
                 on: 'complete',
+                by: ['*'],
                 if: true,
                 goto: '(done)',
               },
@@ -365,6 +363,194 @@ describe('normalize scenario', () => {
         states: {},
         vars: {},
         result: {},
+      });
+    });
+  });
+
+  describe('states', () => {
+    it('should normalize a simple state', () => {
+      const scenario: Scenario = {
+        states: {
+          initial: {
+            on: 'complete',
+            by: 'actor',
+            goto: '(done)',
+          },
+        },
+      };
+
+      const normalized = normalize(scenario);
+
+      expect(normalized.states.initial).to.deep.eq({
+        title: 'initial',
+        description: '',
+        instructions: {},
+        notify: [],
+        transitions: [
+          {
+            on: 'complete',
+            by: ['actor'],
+            if: true,
+            goto: '(done)',
+          },
+        ],
+      });
+
+      expect(normalized.actions).to.deep.eq({
+        'initial.complete': {
+          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          title: 'complete',
+          description: '',
+          if: true,
+          actor: ['actor'],
+          responseSchema: {},
+          update: [],
+        },
+      });
+    });
+
+    it('should normalize a timeout state', () => {
+      const scenario: Scenario = {
+        states: {
+          initial: {
+            after: '1m',
+            goto: '(done)',
+          },
+        },
+      };
+
+      expect(normalize(scenario).states.initial).to.deep.eq({
+        title: 'initial',
+        description: '',
+        instructions: {},
+        notify: [],
+        transitions: [
+          {
+            after: 60,
+            if: true,
+            goto: '(done)',
+          },
+        ],
+      });
+    });
+
+    it('should normalize a state with multiple transitions', () => {
+      const scenario: Scenario = {
+        actors: {
+          admin: {},
+          client: {},
+        },
+        states: {
+          initial: {
+            transitions: [
+              {
+                on: 'complete',
+                by: 'client',
+                goto: '(done)',
+              },
+              {
+                on: 'complete',
+                by: 'admin',
+                goto: '(ready)',
+              },
+              {
+                on: 'cancel',
+                goto: '(cancelled)',
+              },
+            ],
+          },
+        },
+      };
+
+      const normalized = normalize(scenario);
+
+      expect(normalized.states.initial).to.deep.eq({
+        title: 'initial',
+        description: '',
+        instructions: {},
+        notify: [],
+        transitions: [
+          {
+            on: 'complete',
+            by: ['client'],
+            if: true,
+            goto: '(done)',
+          },
+          {
+            on: 'complete',
+            by: ['admin'],
+            if: true,
+            goto: '(ready)',
+          },
+          {
+            on: 'cancel',
+            by: ['*'],
+            if: true,
+            goto: '(cancelled)',
+          },
+        ],
+      });
+
+      expect(normalized.actions).to.deep.eq({
+        'initial.complete': {
+          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          title: 'complete',
+          description: '',
+          if: true,
+          actor: ['client', 'admin'],
+          responseSchema: {},
+          update: [],
+        },
+        'initial.cancel': {
+          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          title: 'cancel',
+          description: '',
+          if: true,
+          actor: ['admin', 'client'],
+          responseSchema: {},
+          update: [],
+        },
+      });
+    });
+  });
+
+  describe('vars and result', () => {
+    it('should normalize a vars object', () => {
+      const scenario: Scenario = {
+        states: {},
+        vars: {
+          foo: 'string',
+          emails: {
+            type: 'array',
+            title: 'email addresses',
+            items: 'string',
+          },
+        },
+      };
+
+      expect(normalize(scenario).vars).to.deep.eq({
+        foo: {
+          title: 'foo',
+          type: 'string',
+        },
+        emails: {
+          type: 'array',
+          title: 'email addresses',
+          items: {
+            type: 'string',
+          },
+        },
+      });
+    });
+
+    it('should normalize a result schema', () => {
+      const scenario: Scenario = {
+        states: {},
+        result: 'string',
+      };
+
+      expect(normalize(scenario).result).to.deep.eq({
+        type: 'string',
       });
     });
   });

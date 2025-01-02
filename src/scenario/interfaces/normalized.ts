@@ -1,5 +1,5 @@
 import { Fn } from './fn';
-import { EndState, ExplicitState, Schema, UpdateInstruction } from './scenario';
+import { ActorSchema, EndState, ExplicitState, Schema, UpdateInstruction } from './scenario';
 
 export interface NormalizedAction {
   $schema: string;
@@ -12,7 +12,24 @@ export interface NormalizedAction {
   [_: string]: any;
 }
 
-export type NormalizedState = Required<ExplicitState> | Required<EndState>;
+interface NormalizedExplicitTransition {
+  on: string;
+  by: string[];
+  if: boolean | Fn;
+  goto: string | null;
+}
+
+interface NormalizedTimeoutTransition {
+  after: string;
+  if: boolean | Fn;
+  goto: string | null;
+}
+
+export type NormalizedTransition = NormalizedExplicitTransition | NormalizedTimeoutTransition;
+
+export type NormalizedState =
+  | Required<Omit<ExplicitState, 'transitions'> & { transitions: NormalizedTransition[] }>
+  | Required<EndState>;
 
 export interface NormalizedScenario {
   $schema: string;
@@ -22,7 +39,7 @@ export interface NormalizedScenario {
   description: string;
   tags: string[];
 
-  actors: Record<string, Schema>;
+  actors: Record<string, ActorSchema>;
   actions: Record<string, NormalizedAction>;
   states: Record<string, NormalizedState>;
   vars: Record<string, Schema>;

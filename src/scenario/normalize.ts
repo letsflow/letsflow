@@ -3,6 +3,7 @@ import { actionSchema, scenarioSchema } from '../schemas/v1.0.0';
 import { NormalizedScenario, NormalizedState } from './interfaces/normalized';
 import {
   Action,
+  ActorSchema,
   EndState,
   ExplicitState,
   Scenario,
@@ -29,22 +30,26 @@ export function normalize<T extends Scenario>(scenario: T): NormalizedScenario {
 function normalizeScenario<T extends Scenario>(input: T): NormalizedScenario {
   const scenario = { $schema: scenarioSchema.$id, ...structuredClone(input) };
 
+  scenario.title ??= '';
   scenario.description ??= '';
   scenario.tags ??= [];
   scenario.actors ??= { actor: { title: 'actor' } };
+  scenario.actions ??= {};
   scenario.vars ??= {};
 
   normalizeActors(scenario.actors);
   normalizeActions(scenario.actions, Object.keys(scenario.actors));
   normalizeStates(scenario.states);
-  addImplicitEndStates(scenario.states as Record<string, State | EndState>);
   normalizeSchemas(scenario.vars, true);
   normalizeResult(scenario);
+
+  addImplicitActions(scenario as NormalizedScenario);
+  addImplicitEndStates(scenario.states as Record<string, State | EndState>);
 
   return scenario as NormalizedScenario;
 }
 
-function normalizeActors(items: Record<string, Schema | null>): void {
+function normalizeActors(items: Record<string, ActorSchema | null>): void {
   for (const key in items) {
     const actor = items[key] || {};
 
@@ -106,10 +111,14 @@ function normalizeActions(actions: Record<string, Action | null>, allActors: str
     action.if ??= true;
 
     action.actor ??= allActors;
-    if (!Array.isArray(action.actor) && !isFn(action.actor)) action.actor = [action.actor];
+    if (!Array.isArray(action.actor) && !isFn(action.actor)) {
+      action.actor = [action.actor];
+    }
 
     action.responseSchema ??= {};
-    if (typeof action.responseSchema === 'string') action.responseSchema = { $ref: action.responseSchema };
+    if (typeof action.responseSchema === 'string') {
+      action.responseSchema = { $ref: action.responseSchema };
+    }
 
     action.update = normalizeUpdateInstructions(action.update ?? []);
   }
@@ -141,6 +150,7 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
       state.transitions = normalizeTransitions(state);
 
       delete (state as any).on;
+      delete (state as any).by;
       delete (state as any).after;
       delete (state as any).goto;
     }
@@ -153,6 +163,46 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
     Object.values(states as Record<string, NormalizedState>).forEach((state) => {
       mergeStates(state, anyState);
     });
+  }
+}
+
+function addImplicitActions(scenario: NormalizedScenario): void {
+  const allActors = Object.keys(scenario.actors);
+
+  const actions = Object.entries(scenario.states)
+    .filter(([, state]) => !isEndState(state))
+    .map(([key, state]) => {
+      const actions = state.transitions
+        .filter((tr) => 'on' in tr)
+        .map((tr) => [tr.on, allActors.filter((actor) => tr.by.includes(actor) || tr.by.includes('*'))] as const)
+        .filter(([action]) => !scenario.actions[action]);
+
+      const map = new Map<string, string[]>();
+      for (const [action, actors] of actions) {
+        if (!map.has(action)) map.set(action, []);
+        map.get(action)!.push(...actors);
+      }
+
+      return Array.from(map.entries()).map(([action, actors]) => [key, action, dedup(actors)] as const);
+    })
+    .flat();
+
+  for (const [state, action, actors] of actions) {
+    const key = `${state}.${action}`;
+
+    if (scenario.actions[key]) {
+      throw new Error(`Unable to create implicit action '${key}', because key is used for action in scenario`);
+    }
+
+    scenario.actions[key] = {
+      $schema: actionSchema.$id,
+      title: keyToTitle(action),
+      description: '',
+      if: true,
+      actor: actors,
+      responseSchema: {},
+      update: [],
+    };
   }
 }
 
@@ -175,16 +225,21 @@ function addImplicitEndStates(states: Record<string, State | EndState>): void {
 
 function normalizeTransitions(state: State): Array<Transition> {
   if ('on' in state) {
-    return [{ on: state.on, if: true, goto: state.goto }];
+    const by = Array.isArray(state.by) ? state.by : [state.by ?? '*'];
+    return [{ on: state.on, by, if: true, goto: state.goto }];
   }
 
   if ('after' in state) {
-    return [{ after: state.after, if: true, goto: state.goto }];
+    return [{ after: convertTimePeriodToSeconds(state.after), if: true, goto: state.goto }];
   }
 
   state.transitions.forEach((transition) => {
     if ('after' in transition && typeof transition.after === 'string') {
       transition.after = convertTimePeriodToSeconds(transition.after);
+    }
+
+    if ('on' in transition && !Array.isArray(transition.by)) {
+      transition.by = [(transition.by ?? '*') as string];
     }
 
     transition.if ??= true;

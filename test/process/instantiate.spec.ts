@@ -1,8 +1,8 @@
-import { normalize, NormalizedScenario } from '../../src/scenario';
-import { instantiate, InstantiateEvent, Process } from '../../src/process';
 import { expect } from 'chai';
+import { instantiate, InstantiateEvent, Process } from '../../src/process';
 import { hash } from '../../src/process/hash';
 import { instantiateState } from '../../src/process/instantiate';
+import { normalize, NormalizedScenario } from '../../src/scenario';
 
 describe('instantiate', () => {
   describe('scenario', () => {
@@ -29,7 +29,7 @@ describe('instantiate', () => {
         vars: {},
       });
 
-      expect(process.scenario).to.deep.eq( { id: scenarioId, ...scenario } );
+      expect(process.scenario).to.deep.eq({ id: scenarioId, ...scenario });
       expect(process.actors).to.deep.eq({
         actor: { title: 'actor' },
       });
@@ -158,7 +158,7 @@ describe('instantiate', () => {
             properties: {
               name: 'string',
               email: 'string',
-            }
+            },
           },
         },
         actions: {
@@ -167,7 +167,7 @@ describe('instantiate', () => {
           },
           other: {
             if: false,
-          }
+          },
         },
         states: {
           initial: {
@@ -175,23 +175,20 @@ describe('instantiate', () => {
             goto: '(done)',
           },
         },
-        foo: 10
+        foo: 10,
       });
     });
 
     before(() => {
-      process = instantiate(
-        scenario,
-        {
-          scenario: 'basic',
-          actors: {
-            client: {
-              name: 'John Doe',
-              email: 'john@example.com',
-            }
-          }
-        }
-      );
+      process = instantiate(scenario, {
+        scenario: 'basic',
+        actors: {
+          client: {
+            name: 'John Doe',
+            email: 'john@example.com',
+          },
+        },
+      });
     });
 
     it('should instantiate a state', () => {
@@ -199,39 +196,38 @@ describe('instantiate', () => {
         title: 'Next state',
         description: { '<sub>': 'Complete by ${actors.client.name}' },
         instructions: {
-          client: { '<sub>': 'Hello ${actors.client.name}' }
+          client: { '<sub>': 'Hello ${actors.client.name}' },
         },
-        actions: [
-          'complete',
-          'other',
-        ],
+        actions: ['complete', 'other'],
         transitions: [
           {
             on: 'complete',
-            goto: '(done)'
-          }
+            by: ['*'],
+            if: true,
+            goto: '(done)',
+          },
         ],
         notify: [
           {
             service: 'email',
-            recipient: { '<ref>': 'actors.client'},
-            message: { '<sub>': 'Welcome ${actors.client.name}' }
-          }
+            recipient: { '<ref>': 'actors.client' },
+            message: { '<sub>': 'Welcome ${actors.client.name}' },
+          },
         ],
-        foo: { '<ref>': 'scenario.foo'},
+        foo: { '<ref>': 'scenario.foo' },
         bar: 'abc',
-      }
+      };
       const timestamp = new Date();
 
       const current = instantiateState(scenario, 'next', process, timestamp);
 
       expect(current.key).to.eq('next');
       expect(current.title).to.eq('Next state');
-      expect(current.description).to.eq('Complete by John Doe')
+      expect(current.description).to.eq('Complete by John Doe');
       expect(current.timestamp).to.eq(timestamp);
 
       expect(current.instructions).to.have.key('client');
-      expect(current.instructions.client).to.eq('Hello John Doe')
+      expect(current.instructions.client).to.eq('Hello John Doe');
 
       expect(current.actions).to.have.length(1);
       expect(current.actions[0]).to.deep.eq({
@@ -250,9 +246,9 @@ describe('instantiate', () => {
         recipient: {
           name: 'John Doe',
           email: 'john@example.com',
-          title: 'client'
+          title: 'client',
         },
-        message: 'Welcome John Doe'
+        message: 'Welcome John Doe',
       });
 
       expect(current.foo).to.eq(10);

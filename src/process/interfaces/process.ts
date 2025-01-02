@@ -2,7 +2,7 @@ import { NormalizedScenario, Schema } from '../../scenario';
 
 export interface Actor {
   id?: string;
-  role: string | string[];
+  role?: string | string[];
   title: string;
   [key: string]: any;
 }

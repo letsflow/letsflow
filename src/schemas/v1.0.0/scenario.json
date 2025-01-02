@@ -152,6 +152,9 @@
         "on": {
           "type": "string"
         },
+        "by": {
+          "$ref": "#/definitions/multiString"
+        },
         "if": {
           "type": "null"
         },
@@ -213,6 +216,9 @@
           "properties": {
             "on": {
               "type": "string"
+            },
+            "by": {
+              "$ref": "#/definitions/multiString"
             },
             "if": {
               "$ref": "#/definitions/booleanFn"
@@ -293,6 +299,19 @@
         },
         {
           "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+        }
+      ]
+    },
+    "multiString": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       ]
     },

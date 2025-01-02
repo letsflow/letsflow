@@ -211,17 +211,26 @@
       "transitions": [
         {
           "on": "new_lead",
+          "by": [
+            "*"
+          ],
           "if": true,
           "goto": "wait_on_client"
         },
         {
           "on": "cancel",
           "goto": "(canceled)",
+          "by": [
+            "*"
+          ],
           "if": true
         },
         {
           "on": "change_client_info",
           "goto": null,
+          "by": [
+            "*"
+          ],
           "if": true
         }
       ]
@@ -252,6 +261,9 @@
         {
           "on": "request_quote",
           "goto": "wait_for_quote",
+          "by": [
+            "*"
+          ],
           "if": true
         },
         {
@@ -262,11 +274,17 @@
         {
           "on": "cancel",
           "goto": "(canceled)",
+          "by": [
+            "*"
+          ],
           "if": true
         },
         {
           "on": "change_client_info",
           "goto": null,
+          "by": [
+            "*"
+          ],
           "if": true
         }
       ],
@@ -286,17 +304,26 @@
       "transitions": [
         {
           "on": "create_quote",
+          "by": [
+            "*"
+          ],
           "if": true,
           "goto": "review_quote"
         },
         {
           "on": "cancel",
           "goto": "(canceled)",
+          "by": [
+            "*"
+          ],
           "if": true
         },
         {
           "on": "change_client_info",
           "goto": null,
+          "by": [
+            "*"
+          ],
           "if": true
         }
       ]
@@ -311,21 +338,33 @@
         {
           "on": "accept",
           "goto": "(success)",
+          "by": [
+            "*"
+          ],
           "if": true
         },
         {
           "on": "reject",
           "goto": "(failed)",
+          "by": [
+            "*"
+          ],
           "if": true
         },
         {
           "on": "cancel",
           "goto": "(canceled)",
+          "by": [
+            "*"
+          ],
           "if": true
         },
         {
           "on": "change_client_info",
           "goto": null,
+          "by": [
+            "*"
+          ],
           "if": true
         }
       ],

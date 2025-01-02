@@ -31,29 +31,28 @@ export function instantiate(scenario: NormalizedScenario, instructions: StartIns
 
 function instantiateActors(
   schemas: Record<string, ActorSchema>,
-  actors: Record<string, Omit<Actor, 'title'>>,
+  actors: Record<string, Omit<Actor, 'title' | 'role'>>,
 ): Record<string, Actor> {
-  const definedActors = Object.keys(schemas);
+  const keys = dedup([
+    ...Object.keys(schemas).filter((key) => !key.endsWith('*')),
+    ...Object.keys(actors),
+  ]);
 
-  for (const key of Object.keys(actors)) {
-    const found =
-      definedActors.includes(key) || definedActors.some((k) => k.endsWith('*') && key.startsWith(k.slice(0, -1)));
-    if (!found) throw new Error(`Invalid start instructions: Actor '${key}' not found in scenario`);
+  const result: Record<string, Actor> = {};
+
+  for (const key of keys) {
+    const schema = schemas[key] ?? schemas[key.replace(/\d+$/, '*')];
+    if (!schema) throw new Error(`Invalid start instructions: Actor '${key}' not found in scenario`);
+
+    result[key] = {
+      title: schema.title ?? key,
+      ...defaultVars(schema.properties ?? {}),
+      ...(actors[key] || {}),
+      ...(schema.role ? { role: schema.role } : {}),
+    } as Actor;
   }
 
-  const entries = Object.entries(schemas)
-    .filter(([key]) => !key.endsWith('*'))
-    .map(([key, schema]) => [
-      key,
-      {
-        ...defaultVars(schema.properties ?? {}),
-        ...(actors[key] || {}),
-        title: schema.title,
-        ...(schema.role ? { role: schema.role } : {}),
-      },
-    ]);
-
-  return Object.fromEntries(entries);
+  return result;
 }
 
 export function instantiateState(
@@ -73,11 +72,11 @@ export function instantiateState(
     .filter((transition) => 'on' in transition)
     .map((transition) => transition.on)
     .map((k: string): Action => {
-      if (!(k in scenario.actions)) {
+      const action = scenario.actions[`${key}.${k}`] ?? scenario.actions[k];
+      if (!action) {
         throw new Error(`Action '${k}' is used in state '${key}', but not defined in the scenario`);
       }
-
-      return instantiateAction(k, scenario.actions[k], process);
+      return instantiateAction(k, action, process);
     })
     .filter((action: Action) => action.if);
 
@@ -97,4 +96,8 @@ function defaultVars(vars: Record<string, any>): Record<string, any> {
     .filter(([, value]) => value !== undefined);
 
   return Object.fromEntries(defaults);
+}
+
+function dedup<T>(array: Array<T>): Array<T> {
+  return Array.from(new Set(array));
 }

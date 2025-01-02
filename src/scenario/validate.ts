@@ -115,7 +115,7 @@ function validateTransitions(state: State, key: string, actions: string[], state
   return errors;
 }
 
-export function isEndState(state: State | EndState): state is EndState {
+export function isEndState(state: { transitions?: any; goto?: any }): state is EndState {
   return !('transitions' in state || 'goto' in state);
 }
 

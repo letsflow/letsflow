@@ -1,7 +1,7 @@
 import Ajv from 'ajv/dist/2020';
 import get from 'get-value';
 import set from 'set-value';
-import { ExplicitState, NormalizedScenario, Transition } from '../scenario';
+import { NormalizedScenario, NormalizedState, Transition } from '../scenario';
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { instantiateState } from './instantiate';
@@ -55,7 +55,10 @@ export function step(input: Process, action: string, actor: StepActor | string =
   process.current.response = response;
   process.current.actor = process.actors[actor.key];
 
-  for (const scenarioInstructions of process.scenario.actions[action].update) {
+  const currentAction =
+    process.scenario.actions[`${process.current.key}.${action}`] || process.scenario.actions[action];
+
+  for (const scenarioInstructions of currentAction.update) {
     const instructions: InstantiatedUpdateInstructions = applyFn(scenarioInstructions, process);
     if (!instructions.if) continue;
     update(process, instructions.set, instructions.data, instructions.merge);
@@ -71,23 +74,23 @@ export function step(input: Process, action: string, actor: StepActor | string =
   }
 
   const next = current.transitions
-    .filter((transition: Transition) => 'on' in transition)
-    .find((transition: Transition & { on: string }) => {
-      const tr: Transition & { on: string } = applyFn(transition, process);
-      return tr.if && tr.on === action;
+    .filter((transition) => 'on' in transition)
+    .find((transition) => {
+      const tr = applyFn(transition, process);
+      return tr.if && tr.on === action && includesActor(tr.by, actor.key);
     });
 
   process.current = instantiateState(
     process.scenario,
     next?.goto || process.current.key,
     process,
-    next ? event.timestamp : process.current.timestamp,
+    next?.goto ? event.timestamp : process.current.timestamp,
   );
 
   return process;
 }
 
-function validateStep(process: Process, current: Required<ExplicitState>, action: string, actor: StepActor): string[] {
+function validateStep(process: Process, current: NormalizedState, action: string, actor: StepActor): string[] {
   const errors: string[] = [];
 
   if (!(current.transitions ?? []).some((tr) => 'on' in tr && tr.on === action)) {
@@ -117,7 +120,14 @@ function validateStep(process: Process, current: Required<ExplicitState>, action
     }
   }
 
-  if (process.actors[actor.key] && !process.scenario.actions[action].actor.includes(actor.key)) {
+  const currentAction =
+    process.scenario.actions[`${process.current.key}.${action}`] || process.scenario.actions[action];
+
+  if (
+    process.actors[actor.key] &&
+    !currentAction.actor.includes(actor.key) &&
+    !currentAction.actor.includes(actor.key.replace(/\d+$/, '*'))
+  ) {
     errors.push(`Actor '${actor.key}' is not allowed to perform action '${action}'`);
   }
 
@@ -136,8 +146,8 @@ export function timeout(input: Process): Process {
   const timeout = timestamp.getTime() - process.current.timestamp.getTime();
 
   const next = (current.transitions ?? [])
-    .filter((transition: Transition) => 'after' in transition)
-    .find((transition: Transition & { after: number }) => {
+    .filter((transition) => 'after' in transition)
+    .find((transition) => {
       const tr: Transition & { after: number } = applyFn(transition, process);
       return tr.if && tr.after <= timeout;
     });
@@ -150,7 +160,7 @@ export function timeout(input: Process): Process {
   });
 
   process.events.push(event);
-  process.current = instantiateState(process.scenario, next.goto, process, event.timestamp);
+  process.current = instantiateState(process.scenario, next.goto || process.current.key, process, event.timestamp);
 
   return process;
 }
@@ -199,7 +209,7 @@ function validateActors(process: Process): string[] {
   }
 
   for (const key of Object.keys(process.scenario.actors)) {
-    if (!key.match(/\d+$/) && !process.actors[key]) {
+    if (!key.endsWith('*') && !process.actors[key]) {
       errors.push(`Actor '${key}' is missing`);
     }
   }
@@ -241,4 +251,8 @@ function validateResult(process: Process): string[] {
 
 function findSchema(scenario: NormalizedScenario, property: string, key: string) {
   return scenario[property][key] ? scenario[property][key] : scenario[property][key.replace(/\d+$/, '*')];
+}
+
+function includesActor(actors: string[], key: string): boolean {
+  return actors.includes(key) || actors.includes('*') || actors.includes(key.replace(/\d+$/, '*'));
 }

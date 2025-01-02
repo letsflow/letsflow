@@ -88,17 +88,110 @@ describe('step', () => {
       expect(process.current.timestamp.toISOString()).to.eq(process.events[1].timestamp.toISOString());
     });
 
-    it('should stay in the current state', () => {
+    it('should pick the transition based on the actor', () => {
       const scenario = normalize({
         title: 'some scenario',
-        actions: {
-          nop: {},
-          complete: {},
+        actors: {
+          actor: {},
+          admin: {},
         },
         states: {
           initial: {
-            actions: ['nop', 'complete'],
-            transitions: [{ on: 'complete', goto: '(done)' }],
+            transitions: [
+              { on: 'complete', by: 'actor', goto: '(failed)' },
+              { on: 'complete', by: 'admin', goto: '(done)' },
+            ],
+          },
+        },
+      });
+
+      const instructions = {
+        scenario: uuid(scenario),
+        actors: {
+          actor: {},
+          admin: {},
+        },
+      };
+
+      const newProcess = instantiate(scenario, instructions);
+      const process = step(newProcess, 'complete', 'admin');
+
+      expect(process.current.key).to.eq('(done)');
+    });
+
+    it('should pick the transition based on the actor with wildcard', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        actors: {
+          'party_*': {},
+          admin: {},
+        },
+        states: {
+          initial: {
+            transitions: [
+              { on: 'complete', by: 'admin', goto: '(failed)' },
+              { on: 'complete', by: 'party_*', goto: '(done)' },
+            ],
+          },
+        },
+      });
+
+      const instructions = {
+        scenario: uuid(scenario),
+        actors: {
+          party_1: {},
+          party_2: {},
+          admin: {},
+        },
+      };
+
+      const newProcess = instantiate(scenario, instructions);
+      const process = step(newProcess, 'complete', 'party_2');
+
+      expect(process.current.key).to.eq('(done)');
+    });
+
+    it('should pick the transition based on the if condition', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        vars: {
+          foo: 'integer',
+        },
+        states: {
+          initial: {
+            transitions: [
+              { on: 'complete', if: { '<ref>': 'vars.foo <= 10' }, goto: '(failed)' },
+              { on: 'complete', if: { '<ref>': 'vars.foo > 10' }, goto: '(done)' },
+            ],
+          },
+        },
+      });
+
+      const instructions = {
+        scenario: uuid(scenario),
+        actors: {
+          actor: {},
+        },
+        vars: {
+          foo: 42,
+        },
+      };
+
+      const newProcess = instantiate(scenario, instructions);
+      const process = step(newProcess, 'complete', 'actor');
+
+      expect(process.current.key).to.eq('(done)');
+    });
+
+    it('should stay in the current state', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        states: {
+          initial: {
+            transitions: [
+              { on: 'complete', goto: '(done)' },
+              { on: 'nop', goto: null },
+            ],
           },
         },
       });
