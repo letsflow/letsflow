@@ -48,7 +48,7 @@ interface BaseState {
   description?: string | Fn;
   instructions?: Record<string, string | Fn>;
   actions?: string[];
-  notify?: Array<Notify>;
+  notify?: string | Notify | Array<string | Notify>;
 
   [_: string]: any;
 }
@@ -87,8 +87,10 @@ interface TimeoutTransition {
 
 export interface Notify {
   service: string;
+  after?: string | number;
   if?: boolean | Fn;
-  [_: string]: any;
+  trigger?: string | Fn;
+  message?: string | Fn | Record<string, any>;
 }
 
 export interface Scenario {

@@ -238,7 +238,14 @@
     "wait_on_client": {
       "notify": [
         {
+          "service": "sms",
+          "after": 0,
+          "if": true
+        },
+        {
           "service": "email",
+          "after": 0,
+          "if": true,
           "recipient": {
             "<ref>": "actors.client"
           },
@@ -247,8 +254,9 @@
           }
         },
         {
-          "after": "5 days",
           "service": "email",
+          "after": 432000,
+          "if": true,
           "recipient": {
             "<ref>": "actors.client"
           },

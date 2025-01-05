@@ -512,6 +512,47 @@ describe('normalize scenario', () => {
         },
       });
     });
+
+    it('should normalize notify', () => {
+      const scenario: Scenario = {
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+            notify: 'foo',
+          },
+          second: {
+            on: 'complete',
+            goto: '(done)',
+            notify: ['foo', 'bar'],
+          },
+          third: {
+            on: 'complete',
+            goto: '(done)',
+            notify: {
+              service: 'foo',
+              if: { '<ref>': 'vars.foo' },
+              after: '5days',
+              trigger: 'complete',
+            },
+          },
+        },
+      };
+
+      expect(normalize(scenario).states.initial.notify).to.deep.eq([{ service: 'foo', after: 0, if: true }]);
+      expect(normalize(scenario).states.second.notify).to.deep.eq([
+        { service: 'foo', after: 0, if: true },
+        { service: 'bar', after: 0, if: true },
+      ]);
+      expect(normalize(scenario).states.third.notify).to.deep.eq([
+        {
+          service: 'foo',
+          if: { '<ref>': 'vars.foo' },
+          after: 432000,
+          trigger: 'complete',
+        },
+      ]);
+    });
   });
 
   describe('vars and result', () => {

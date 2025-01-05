@@ -210,8 +210,12 @@ describe('instantiate', () => {
         notify: [
           {
             service: 'email',
-            recipient: { '<ref>': 'actors.client' },
-            message: { '<sub>': 'Welcome ${actors.client.name}' },
+            after: 0,
+            if: true,
+            message: {
+              recipient: { '<ref>': 'actors.client' },
+              body: { '<sub>': 'Welcome ${actors.client.name}' },
+            },
           },
         ],
         foo: { '<ref>': 'scenario.foo' },
@@ -243,12 +247,16 @@ describe('instantiate', () => {
       expect(current.notify).to.have.length(1);
       expect(current.notify[0]).to.deep.eq({
         service: 'email',
-        recipient: {
-          name: 'John Doe',
-          email: 'john@example.com',
-          title: 'client',
+        after: 0,
+        if: true,
+        message: {
+          recipient: {
+            name: 'John Doe',
+            email: 'john@example.com',
+            title: 'client',
+          },
+          body: 'Welcome John Doe',
         },
-        message: 'Welcome John Doe',
       });
 
       expect(current.foo).to.eq(10);

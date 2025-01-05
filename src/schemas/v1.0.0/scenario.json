@@ -266,21 +266,64 @@
       }
     },
     "notify": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "service": {
-            "type": "string"
-          },
-          "if": {
-            "$ref": "#/definitions/booleanFn"
-          }
+      "oneOf": [
+        {
+          "type": "string"
         },
-        "required": [
-          "service"
-        ]
-      }
+        {
+          "$ref": "#/definitions/notifyExplicit"
+        },
+        {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/definitions/notifyExplicit"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "notifyExplicit": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "type": "string"
+        },
+        "if": {
+          "$ref": "#/definitions/booleanFn"
+        },
+        "after": {
+          "$ref": "#/definitions/timePeriod"
+        },
+        "trigger": {
+          "$ref": "#/definitions/stringFn"
+        },
+        "message": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "<ref>": false,
+                "<sub>": false
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "service"
+      ]
     },
     "stringFn": {
       "oneOf": [

@@ -72,6 +72,7 @@ states:
     goto: wait_on_client
   wait_on_client:
     notify:
+      - sms
       - service: email
         recipient: !ref actors.client
         message: !ref scenario.emails.introduction

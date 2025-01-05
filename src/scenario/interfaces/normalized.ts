@@ -25,11 +25,22 @@ interface NormalizedTimeoutTransition {
   goto: string | null;
 }
 
+export interface NormalizedNotify {
+  service: string;
+  after: number;
+  if: boolean | Fn;
+  trigger?: string | Fn;
+  message?: string | Fn | Record<string, any>;
+}
+
 export type NormalizedTransition = NormalizedExplicitTransition | NormalizedTimeoutTransition;
 
 export type NormalizedState =
-  | Required<Omit<ExplicitState, 'transitions'> & { transitions: NormalizedTransition[] }>
-  | Required<EndState>;
+  | (Required<Omit<ExplicitState, 'transitions' | 'notify'>> & {
+      transitions: NormalizedTransition[];
+      notify: NormalizedNotify[];
+    })
+  | (Required<Omit<EndState, 'notify'>> & { notify: Array<Omit<NormalizedNotify, 'trigger'>> });
 
 export interface NormalizedScenario {
   $schema: string;

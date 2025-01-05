@@ -1,11 +1,12 @@
 import { isFn } from '../process/fn';
 import { actionSchema, scenarioSchema } from '../schemas/v1.0.0';
-import { NormalizedScenario, NormalizedState } from './interfaces/normalized';
+import { NormalizedNotify, NormalizedScenario, NormalizedState } from './interfaces/normalized';
 import {
   Action,
   ActorSchema,
   EndState,
   ExplicitState,
+  Notify,
   Scenario,
   Schema,
   State,
@@ -144,7 +145,7 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
     state.title ??= keyToTitle(key);
     state.description ??= '';
     state.instructions ??= {};
-    state.notify ??= [];
+    state.notify = normalizeNotify(state.notify);
 
     if (!isEndState(state)) {
       state.transitions = normalizeTransitions(state);
@@ -164,6 +165,26 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
       mergeStates(state, anyState);
     });
   }
+}
+
+function normalizeNotify(notify?: string | Notify | Array<string | Notify>): NormalizedNotify[] {
+  if (!notify) return [];
+
+  if (!Array.isArray(notify)) {
+    notify = [notify];
+  }
+
+  return notify
+    .map((item) => (typeof item === 'string' ? { service: item } : item))
+    .map((item): NormalizedNotify => {
+      const { service, if: ifParam, after, ...rest } = item;
+      return {
+        service,
+        after: typeof after === 'string' ? convertTimePeriodToSeconds(after) : after ?? 0,
+        if: ifParam ?? true,
+        ...rest,
+      };
+    });
 }
 
 function addImplicitActions(scenario: NormalizedScenario): void {

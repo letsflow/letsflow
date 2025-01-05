@@ -118,6 +118,7 @@
     },
     "wait_on_client": {
       "notify": [
+        "sms",
         {
           "service": "email",
           "recipient": {

@@ -53,8 +53,10 @@ export interface Action {
 
 export interface Notify {
   service: string;
-  if?: boolean;
-  [_: string]: any;
+  after: number;
+  if: boolean;
+  trigger?: string;
+  message?: string | Record<string, any>;
 }
 
 export interface State {
