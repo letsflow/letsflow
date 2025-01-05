@@ -281,6 +281,49 @@ describe('step', () => {
       expect(event.errors).to.have.length(1);
       expect(event.errors![0]).to.eq("Action 'dance' is not allowed in state 'initial'");
     });
+
+    it('should skip an action that is not allowed by if condition', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        vars: {
+          foo: 'integer',
+        },
+        actions: {
+          complete: {
+            if: { '<ref>': 'vars.foo > 10' },
+          },
+        },
+        states: {
+          initial: {
+            transitions: [
+              { on: 'complete', goto: '(done)' },
+            ],
+          },
+        },
+      });
+
+      const instructions = {
+        scenario: uuid(scenario),
+        actors: {
+          actor: {},
+        },
+        vars: {
+          foo: 5,
+        },
+      };
+
+      const newProcess = instantiate(scenario, instructions);
+
+      const process = step(newProcess, 'complete', 'actor');
+
+      expect(process.current.key).to.eq('initial');
+      expect(process.events).to.have.length(2);
+
+      const event = process.events[1] as ActionEvent;
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq("Action 'complete' is not allowed due to if condition");
+    });
   });
 
   describe('assert actor', () => {

@@ -4,7 +4,7 @@ import set from 'set-value';
 import { NormalizedScenario, NormalizedState, Transition } from '../scenario';
 import { applyFn } from './fn';
 import { withHash } from './hash';
-import { instantiateState } from './instantiate';
+import { instantiateAction, instantiateState } from './instantiate';
 import { ActionEvent, Process, TimeoutEvent } from './interfaces/process';
 
 interface InstantiatedUpdateInstructions {
@@ -120,8 +120,10 @@ function validateStep(process: Process, current: NormalizedState, action: string
     }
   }
 
-  const currentAction =
-    process.scenario.actions[`${process.current.key}.${action}`] || process.scenario.actions[action];
+  const key = `${process.current.key}.${action}` in process.scenario.actions
+    ? `${process.current.key}.${action}`
+    : action;
+  const currentAction = instantiateAction(key, process.scenario.actions[key], process);
 
   if (
     process.actors[actor.key] &&
@@ -129,6 +131,10 @@ function validateStep(process: Process, current: NormalizedState, action: string
     !currentAction.actor.includes(actor.key.replace(/\d+$/, '*'))
   ) {
     errors.push(`Actor '${actor.key}' is not allowed to perform action '${action}'`);
+  }
+
+  if (!currentAction.if) {
+    errors.push(`Action '${action}' is not allowed due to if condition`);
   }
 
   return errors;

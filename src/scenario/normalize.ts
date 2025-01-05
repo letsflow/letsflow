@@ -112,7 +112,9 @@ function normalizeActions(actions: Record<string, Action | null>, allActors: str
     action.if ??= true;
 
     action.actor ??= allActors;
-    if (!Array.isArray(action.actor) && !isFn(action.actor)) {
+    if (actions.actor === null) {
+      action.actor = [];
+    } else if (!Array.isArray(action.actor) && !isFn(action.actor)) {
       action.actor = [action.actor];
     }
 

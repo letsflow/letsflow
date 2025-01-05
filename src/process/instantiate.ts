@@ -33,11 +33,7 @@ function instantiateActors(
   schemas: Record<string, ActorSchema>,
   actors: Record<string, Omit<Actor, 'title' | 'role'>>,
 ): Record<string, Actor> {
-  const keys = dedup([
-    ...Object.keys(schemas).filter((key) => !key.endsWith('*')),
-    ...Object.keys(actors),
-  ]);
-
+  const keys = dedup([...Object.keys(schemas).filter((key) => !key.endsWith('*')), ...Object.keys(actors)]);
   const result: Record<string, Actor> = {};
 
   for (const key of keys) {
@@ -64,7 +60,7 @@ export function instantiateState(
   const scenarioState = scenario.states[key];
   if (!scenarioState) throw new Error(`State '${key}' not found in scenario`);
 
-  const state = applyFn(scenarioState, process);
+  const state: State = applyFn(scenarioState, process);
 
   state.key = key;
   state.timestamp = timestamp;
@@ -83,11 +79,16 @@ export function instantiateState(
   return state;
 }
 
-function instantiateAction(key: string, action: NormalizedAction, process: Omit<Process, 'current'>): Action {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { update, ...scenarioAction } = action;
+export function instantiateAction(key: string, action: NormalizedAction, process: Omit<Process, 'current'>): Action {
+  const { update: _, ...scenarioAction } = action;
+  const processAction: Action = { ...applyFn(scenarioAction, process), key };
 
-  return { ...applyFn(scenarioAction, process), key };
+  // noinspection SuspiciousTypeOfGuard
+  if (typeof processAction.actor === 'string') {
+    processAction.actor = [processAction.actor];
+  }
+
+  return processAction;
 }
 
 function defaultVars(vars: Record<string, any>): Record<string, any> {

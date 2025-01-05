@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { instantiate, InstantiateEvent, Process } from '../../src/process';
 import { hash } from '../../src/process/hash';
-import { instantiateState } from '../../src/process/instantiate';
+import { instantiateAction, instantiateState } from '../../src/process/instantiate';
 import { normalize, NormalizedScenario } from '../../src/scenario';
 
 describe('instantiate', () => {
@@ -261,6 +261,65 @@ describe('instantiate', () => {
 
       expect(current.foo).to.eq(10);
       expect(current.bar).to.eq('abc');
+    });
+  });
+
+  describe('action', () => {
+    let scenario: NormalizedScenario;
+    let process: Process;
+
+    before(() => {
+      scenario = normalize({
+        title: 'some scenario',
+        actors: {
+          client: {},
+          admin: {}
+        },
+        actions: {
+          complete: {
+            description: { '<sub>': 'Complete ${scenario.title}' },
+            actor: { '<ref>': 'vars.act' },
+            if: { '<ref>': 'vars.amount > 100' },
+          },
+        },
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+        vars: {
+          act: {
+            type: 'string',
+            default: 'client'
+          },
+          amount: 'integer'
+        },
+      });
+    });
+
+    before(() => {
+      process = instantiate(scenario, {
+        scenario: 'basic',
+        vars: {
+          amount: 20,
+          act: 'admin'
+        },
+      });
+    });
+
+    it('should instantiate an action', () => {
+      const action = instantiateAction('complete', scenario.actions['complete'], process);
+
+      expect(action).to.deep.eq({
+        $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+        title: 'complete',
+        description: 'Complete some scenario',
+        if: false,
+        actor: ['admin'],
+        responseSchema: {},
+        key: 'complete',
+      });
     });
   });
 });

@@ -5,7 +5,7 @@ export interface NormalizedAction {
   $schema: string;
   title: string;
   description: string | Fn;
-  actor: Array<string | Fn>;
+  actor: Array<string | Fn> | Fn;
   responseSchema: Schema | Fn;
   update: UpdateInstruction[];
 
