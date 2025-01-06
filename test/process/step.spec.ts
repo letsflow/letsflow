@@ -240,10 +240,14 @@ describe('step', () => {
         },
       };
 
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'actor');
+      let process = instantiate(scenario, instructions);
+      process = step(process, 'complete', 'actor');
+      process = step(process, 'complete', 'actor');
 
-      expect(() => step(process, 'complete', 'actor')).to.throw("Process is in end state '(done)'");
+      const event = process.events[2] as ActionEvent;
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq("Action 'complete' is not allowed in state '(done)'");
     });
 
     it("should skip an action that's not allowed in the state", () => {

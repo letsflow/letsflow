@@ -5,7 +5,7 @@ import { NormalizedScenario, NormalizedTransition, Transition } from '../scenari
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { instantiateAction, instantiateState } from './instantiate';
-import { ActionEvent, Process, State, TimeoutEvent } from './interfaces/process';
+import { ActionEvent, Process, TimeoutEvent } from './interfaces/process';
 
 interface InstantiatedUpdateInstructions {
   set: string;
@@ -31,11 +31,7 @@ export function step(input: Process, action: string, actor: StepActor | string =
   const process = structuredClone(input);
   if (typeof actor === 'string') actor = { key: actor };
 
-  if (!('transitions' in process.scenario.states[process.current.key])) {
-    throw new Error(`Process is in end state '${process.current.key}'`);
-  }
-
-  const stepErrors = validateStep(process, process.current, action, actor);
+  const stepErrors = validateStep(process, action, actor);
 
   const event: ActionEvent = withHash({
     previous: process.events[process.events.length - 1].hash,
@@ -96,10 +92,11 @@ export function step(input: Process, action: string, actor: StepActor | string =
   return process;
 }
 
-function validateStep(process: Process, current: State, action: string, actor: StepActor): string[] {
+function validateStep(process: Process, action: string, actor: StepActor): string[] {
   const errors: string[] = [];
 
-  if (!(current.transitions ?? []).some((tr) => 'on' in tr && tr.on === action)) {
+  const transitions = process.scenario.states[process.current.key].transitions ?? [];
+  if (!transitions.some((tr) => 'on' in tr && tr.on === action)) {
     errors.push(`Action '${action}' is not allowed in state '${process.current.key}'`);
   }
 
@@ -144,7 +141,7 @@ function validateStep(process: Process, current: State, action: string, actor: S
 
   if (
     actor.key.startsWith('service:') &&
-    !current.notify.some((notify) => notify.service === service && notify.trigger === action)
+    !process.current.notify.some((notify) => notify.service === service && notify.trigger === action)
   ) {
     errors.push(`Service '${service}' is not expected to trigger action '${action}'`);
   }
