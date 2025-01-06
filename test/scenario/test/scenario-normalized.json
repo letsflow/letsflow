@@ -246,22 +246,26 @@
           "service": "email",
           "after": 0,
           "if": true,
-          "recipient": {
-            "<ref>": "actors.client"
-          },
           "message": {
-            "<ref>": "scenario.emails.introduction"
+            "recipient": {
+              "<ref>": "actors.client"
+            },
+            "template": {
+              "<ref>": "scenario.emails.introduction"
+            }
           }
         },
         {
           "service": "email",
           "after": 432000,
           "if": true,
-          "recipient": {
-            "<ref>": "actors.client"
-          },
           "message": {
-            "<ref>": "scenario.emails.reminder"
+            "recipient": {
+              "<ref>": "actors.client"
+            },
+            "template": {
+              "<ref>": "scenario.emails.reminder"
+            }
           }
         }
       ],

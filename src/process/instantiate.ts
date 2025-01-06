@@ -86,6 +86,8 @@ export function instantiateAction(key: string, action: NormalizedAction, process
   // noinspection SuspiciousTypeOfGuard
   if (typeof processAction.actor === 'string') {
     processAction.actor = [processAction.actor];
+  } else if (!processAction.actor) {
+    processAction.actor = [];
   }
 
   return processAction;

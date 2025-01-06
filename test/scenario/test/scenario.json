@@ -121,21 +121,25 @@
         "sms",
         {
           "service": "email",
-          "recipient": {
-            "<ref>": "actors.client"
-          },
           "message": {
-            "<ref>": "scenario.emails.introduction"
+            "recipient": {
+              "<ref>": "actors.client"
+            },
+            "template": {
+              "<ref>": "scenario.emails.introduction"
+            }
           }
         },
         {
           "after": "5 days",
           "service": "email",
-          "recipient": {
-            "<ref>": "actors.client"
-          },
           "message": {
-            "<ref>": "scenario.emails.reminder"
+            "recipient": {
+              "<ref>": "actors.client"
+            },
+            "template": {
+              "<ref>": "scenario.emails.reminder"
+            }
           }
         }
       ],

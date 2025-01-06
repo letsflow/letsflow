@@ -26,7 +26,7 @@ export interface Action {
   $schema?: string;
   title?: string;
   description?: string | Fn;
-  actor?: string | Fn | null | Array<string | Fn>;
+  actor?: string | Fn | Array<string | Fn>;
   responseSchema?: string | Schema | Fn;
   if?: boolean | Fn;
   update?: string | UpdateInstruction | UpdateInstruction[];

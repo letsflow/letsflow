@@ -74,12 +74,14 @@ states:
     notify:
       - sms
       - service: email
-        recipient: !ref actors.client
-        message: !ref scenario.emails.introduction
+        message:
+          recipient: !ref actors.client
+          template: !ref scenario.emails.introduction
       - after: 5 days
         service: email
-        recipient: !ref actors.client
-        message: !ref scenario.emails.reminder
+        message:
+          recipient: !ref actors.client
+          template: !ref scenario.emails.reminder
     transitions:
       - on: request_quote
         goto: wait_for_quote
