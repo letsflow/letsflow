@@ -27,13 +27,19 @@ ajv.addKeyword('$anchor'); // Workaround for https://github.com/ajv-validator/aj
  * Step the process forward by one action.
  * @return The updated process.
  */
-export function step(input: Process, action: string, actor: StepActor | string = 'actor', response?: any): Process {
+export function step(
+  input: Process,
+  action: string,
+  actor: StepActor | string = 'actor',
+  response?: any,
+  hashFn = withHash,
+): Process {
   const process = structuredClone(input);
   if (typeof actor === 'string') actor = { key: actor };
 
   const stepErrors = validateStep(process, action, actor);
 
-  const event: ActionEvent = withHash({
+  const event: ActionEvent = hashFn({
     previous: process.events[process.events.length - 1].hash,
     timestamp: new Date(),
     action,
@@ -76,7 +82,7 @@ export function step(input: Process, action: string, actor: StepActor | string =
 
   if (updateErrors.length > 0) {
     const reverted = structuredClone(input);
-    reverted.events.push(withHash({ ...event, skipped: true, errors: updateErrors }));
+    reverted.events.push(hashFn({ ...event, skipped: true, errors: updateErrors }));
     return reverted;
   }
 
@@ -157,7 +163,7 @@ function validateStep(process: Process, action: string, actor: StepActor): strin
  * Step the process forward in case of a timeout.
  * @return The updated process.
  */
-export function timeout(input: Process): Process {
+export function timeout(input: Process, hashFn = withHash): Process {
   const process = structuredClone(input);
   const current = process.scenario.states[process.current.key];
 
@@ -173,7 +179,7 @@ export function timeout(input: Process): Process {
 
   if (!next) return process; // No timeout transition
 
-  const event: TimeoutEvent = withHash({
+  const event: TimeoutEvent = hashFn({
     previous: process.events[process.events.length - 1].hash,
     timestamp,
   });
