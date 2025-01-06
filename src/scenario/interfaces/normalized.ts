@@ -12,7 +12,7 @@ export interface NormalizedAction {
   [_: string]: any;
 }
 
-interface NormalizedExplicitTransition {
+export interface NormalizedExplicitTransition {
   on: string;
   by: string[];
   if: boolean | Fn;

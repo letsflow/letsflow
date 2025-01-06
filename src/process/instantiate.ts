@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import { ActorSchema, NormalizedAction, NormalizedScenario, Transition } from '../scenario';
 import { applyFn } from './fn';
 import { withHash } from './hash';
-import { Action, Actor, InstantiateEvent, Process, StartInstructions, State } from './interfaces/process';
+import { Action, Actor, InstantiateEvent, Notify, Process, StartInstructions, State } from './interfaces/process';
 
 export function instantiate(scenario: NormalizedScenario, instructions: StartInstructions): Process {
   const event: InstantiateEvent = withHash({
@@ -55,7 +55,7 @@ export function instantiateState(
   scenario: NormalizedScenario,
   key: string,
   process: Omit<Process, 'current'>,
-  timestamp: Date,
+  timestamp?: Date,
 ): State {
   const scenarioState = scenario.states[key];
   if (!scenarioState) throw new Error(`State '${key}' not found in scenario`);
@@ -63,7 +63,7 @@ export function instantiateState(
   const state: State = applyFn(scenarioState, process);
 
   state.key = key;
-  state.timestamp = timestamp;
+  state.timestamp = timestamp ?? new Date();
   state.actions = ((state.transitions ?? []) as Transition[])
     .filter((transition) => 'on' in transition)
     .map((transition) => transition.on)
@@ -75,6 +75,7 @@ export function instantiateState(
       return instantiateAction(k, action, process);
     })
     .filter((action: Action) => action.if);
+  state.notify = (state.notify as Array<Notify & { if: boolean }>).filter((notify) => notify.if)
 
   return state;
 }

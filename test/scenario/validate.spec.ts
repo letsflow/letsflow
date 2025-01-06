@@ -212,7 +212,7 @@ describe('validate scenario', () => {
       expect(result).to.be.true;
     });
 
-    it('should fail if update instruction is missing set', () => {
+    it('should fail if update instruction is missing "set" property', () => {
       const scenario = {
         title: '',
         actions: {
@@ -263,10 +263,57 @@ describe('validate scenario', () => {
       expect(validate.errors).to.deep.contain({
         instancePath: '/actions/next/actor',
         keyword: '',
-        message: 'must reference an actor',
+        message: 'must reference an actor or service',
         params: {
           allowedValues: ['user'],
           value: 'admin',
+        },
+        schemaPath: '',
+      });
+    });
+
+    it('should succeed if action is referencing a service', () => {
+      const scenario = {
+        title: '',
+        actions: {
+          next: {
+            actor: 'service:email',
+          },
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)', notify: 'email' },
+        },
+      };
+
+      const result = validate(scenario);
+
+      expect(validate.errors).to.eq(null);
+      expect(result).to.be.true;
+    });
+
+    it('should fail if action is referencing a service that is not in the scenario', () => {
+      const scenario = {
+        title: '',
+        actions: {
+          next: {
+            actor: 'service:email',
+          },
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)', notify: 'sms' },
+        },
+      };
+
+      const result = validate(scenario);
+
+      expect(result).to.be.false;
+      expect(validate.errors).to.deep.contain({
+        instancePath: '/actions/next/actor',
+        keyword: '',
+        message: 'must reference an actor or service',
+        params: {
+          allowedValues: ['actor', 'service:sms'],
+          value: 'service:email',
         },
         schemaPath: '',
       });

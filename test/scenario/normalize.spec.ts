@@ -183,7 +183,7 @@ describe('normalize scenario', () => {
             title: 'complete',
             description: '',
             if: true,
-            actor: ['user', 'admin'],
+            actor: ['*'],
             responseSchema: {},
             update: [],
           },
@@ -271,7 +271,7 @@ describe('normalize scenario', () => {
             title: 'complete',
             description: '',
             if: true,
-            actor: [],
+            actor: ['*'],
             responseSchema: {
               $ref: 'https://example.com/schemas/response.json',
             },
@@ -348,7 +348,7 @@ describe('normalize scenario', () => {
             title: 'complete',
             description: '',
             if: true,
-            actor: ['user', 'admin'],
+            actor: ['*'],
             responseSchema: {},
             update: [
               {
@@ -528,7 +528,8 @@ describe('normalize scenario', () => {
           },
           third: {
             on: 'complete',
-            goto: '(done)',
+            by: 'service:foo',
+            goto: '(complete)',
             notify: {
               service: 'foo',
               if: { '<ref>': 'vars.foo' },
@@ -539,12 +540,14 @@ describe('normalize scenario', () => {
         },
       };
 
-      expect(normalize(scenario).states.initial.notify).to.deep.eq([{ service: 'foo', after: 0, if: true }]);
-      expect(normalize(scenario).states.second.notify).to.deep.eq([
+      const normalized = normalize(scenario);
+
+      expect(normalized.states.initial.notify).to.deep.eq([{ service: 'foo', after: 0, if: true }]);
+      expect(normalized.states.second.notify).to.deep.eq([
         { service: 'foo', after: 0, if: true },
         { service: 'bar', after: 0, if: true },
       ]);
-      expect(normalize(scenario).states.third.notify).to.deep.eq([
+      expect(normalized.states.third.notify).to.deep.eq([
         {
           service: 'foo',
           if: { '<ref>': 'vars.foo' },
@@ -552,6 +555,16 @@ describe('normalize scenario', () => {
           trigger: 'complete',
         },
       ]);
+
+      expect(normalized.actions['third.complete']).to.deep.eq({
+        $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+        title: 'complete',
+        description: '',
+        if: true,
+        actor: ['service:foo'],
+        responseSchema: {},
+        update: [],
+      });
     });
   });
 

@@ -2,7 +2,7 @@ import Ajv from 'ajv/dist/2020';
 import { ErrorObject } from 'ajv/dist/types';
 import { isFn } from '../process/fn';
 import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from '../schemas/v1.0.0';
-import { EndState, Scenario, State } from './interfaces/scenario';
+import { EndState, Notify, Scenario, State } from './interfaces/scenario';
 
 export interface ValidateFunction {
   (data: any): boolean;
@@ -26,7 +26,14 @@ export const validate: ValidateFunction = (scenario: any): boolean => {
 };
 
 function validateActions(scenario: Scenario): ErrorObject[] {
-  const actors = Object.keys(scenario.actors || {});
+  const actors = Object.keys(scenario.actors || { actor: {} });
+  const services = Object.values(scenario.states)
+    .filter((state): state is State => state !== null && 'notify' in state)
+    .map((state) => state.notify)
+    .flat()
+    .map((notify: Notify | string) => typeof notify === 'string' ? notify : notify.service)
+    .map((service) => `service:${service}`);
+  const allowedValues = [...actors, ...services];
   const errors: ErrorObject[] = [];
 
   Object.entries(scenario.actions || {}).forEach(([key, action]) => {
@@ -35,8 +42,8 @@ function validateActions(scenario: Scenario): ErrorObject[] {
     const actionActors = Array.isArray(action.actor) ? action.actor : [action.actor];
 
     for (const actor of actionActors) {
-      if (!isFn(actor) && !actors.includes(actor)) {
-        errors.push(error(`/actions/${key}/actor`, 'must reference an actor', { value: actor, allowedValues: actors }));
+      if (!isFn(actor) && actor !== '*' && !allowedValues.includes(actor)) {
+        errors.push(error(`/actions/${key}/actor`, 'must reference an actor or service', { value: actor, allowedValues: allowedValues }));
       }
     }
   });

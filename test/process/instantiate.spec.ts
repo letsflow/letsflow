@@ -52,7 +52,7 @@ describe('instantiate', () => {
         title: 'complete',
         description: 'Complete some scenario',
         if: true,
-        actor: ['actor'],
+        actor: ['*'],
         responseSchema: {},
         key: 'complete',
       });
@@ -239,7 +239,7 @@ describe('instantiate', () => {
         title: 'complete',
         description: 'Complete some scenario',
         if: true,
-        actor: ['client'],
+        actor: ['*'],
         responseSchema: {},
         key: 'complete',
       });
@@ -261,6 +261,23 @@ describe('instantiate', () => {
 
       expect(current.foo).to.eq(10);
       expect(current.bar).to.eq('abc');
+    });
+
+    it('should exclude a notify if condition is false', () => {
+      scenario.states.next = {
+        title: 'Next state',
+        notify: [
+          {
+            service: 'email',
+            after: 0,
+            if: false,
+          },
+        ],
+      };
+
+      const current = instantiateState(scenario, 'next', process);
+
+      expect(current.notify).to.have.length(0);
     });
   });
 

@@ -54,7 +54,6 @@ export interface Action {
 export interface Notify {
   service: string;
   after: number;
-  if: boolean;
   trigger?: string;
   message?: string | Record<string, any>;
 }

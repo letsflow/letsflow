@@ -411,6 +411,83 @@ describe('step', () => {
     });
   });
 
+  describe('notify service', () => {
+    it('should allow a service to trigger an action', () => {
+      const scenario = normalize({
+        states: {
+          initial: {
+            notify: {
+              service: 'my-app',
+              trigger: 'complete'
+            },
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const instructions = {
+        scenario: uuid(scenario),
+      };
+
+      const process = step(instantiate(scenario, instructions), 'complete', 'service:my-app');
+
+      expect(process.current.key).to.eq('(done)');
+    });
+
+    it('should not allow a service to perform action without a trigger', () => {
+      const scenario = normalize({
+        states: {
+          initial: {
+            notify: {
+              service: 'my-app',
+            },
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const instructions = {
+        scenario: uuid(scenario),
+      };
+
+      const process = step(instantiate(scenario, instructions), 'complete', 'service:my-app');
+      const event = process.events[1] as ActionEvent;
+
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq("Service 'my-app' is not expected to trigger action 'complete'");
+    });
+
+    it('should not allow a service to trigger an action when the notification is disabled', () => {
+      const scenario = normalize({
+        states: {
+          initial: {
+            notify: {
+              service: 'my-app',
+              trigger: 'complete',
+              if: false,
+            },
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const instructions = {
+        scenario: uuid(scenario),
+      };
+
+      const process = step(instantiate(scenario, instructions), 'complete', 'service:my-app');
+      const event = process.events[1] as ActionEvent;
+
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq("Service 'my-app' is not expected to trigger action 'complete'");
+    });
+  });
+
   describe('update instructions', () => {
     it('should apply update instructions', () => {
       const scenario = normalize({

@@ -1,6 +1,12 @@
 import { isFn } from '../process/fn';
 import { actionSchema, scenarioSchema } from '../schemas/v1.0.0';
-import { NormalizedNotify, NormalizedScenario, NormalizedState } from './interfaces/normalized';
+import {
+  NormalizedExplicitTransition,
+  NormalizedNotify,
+  NormalizedScenario,
+  NormalizedState,
+  NormalizedTransition,
+} from './interfaces/normalized';
 import {
   Action,
   ActorSchema,
@@ -39,7 +45,7 @@ function normalizeScenario<T extends Scenario>(input: T): NormalizedScenario {
   scenario.vars ??= {};
 
   normalizeActors(scenario.actors);
-  normalizeActions(scenario.actions, Object.keys(scenario.actors));
+  normalizeActions(scenario.actions);
   normalizeStates(scenario.states);
   normalizeSchemas(scenario.vars, true);
   normalizeResult(scenario);
@@ -100,7 +106,7 @@ function normalizeSchema(schema: Schema): void {
   }
 }
 
-function normalizeActions(actions: Record<string, Action | null>, allActors: string[]): void {
+function normalizeActions(actions: Record<string, Action | null>): void {
   for (const key in actions) {
     if (actions[key] === null) actions[key] = {};
     const action = actions[key] as Action;
@@ -111,7 +117,7 @@ function normalizeActions(actions: Record<string, Action | null>, allActors: str
     action.description ??= '';
     action.if ??= true;
 
-    action.actor ??= allActors;
+    action.actor ??= ['*'];
     if (!Array.isArray(action.actor) && !isFn(action.actor)) {
       action.actor = [action.actor];
     }
@@ -190,13 +196,18 @@ function normalizeNotify(notify?: string | Notify | Array<string | Notify>): Nor
 function addImplicitActions(scenario: NormalizedScenario): void {
   const allActors = Object.keys(scenario.actors);
 
+  const filterActors = (by: string[])=> [
+    ...(by.includes('*') ? allActors : allActors.filter((actor) => by.includes(actor) || by.includes(actor.replace(/\d+$/, '*')))),
+    ...by.filter((actor) => actor.startsWith('service:') && !allActors.includes(actor)),
+  ];
+
   const actions = Object.entries(scenario.states)
     .filter(([, state]) => !isEndState(state))
     .map(([key, state]) => {
       const actions = state.transitions
-        .filter((tr) => 'on' in tr)
-        .map((tr) => [tr.on, allActors.filter((actor) => tr.by.includes(actor) || tr.by.includes('*'))] as const)
-        .filter(([action]) => !scenario.actions[action]);
+        .filter((tr: NormalizedTransition): tr is NormalizedExplicitTransition => 'on' in tr)
+        .map((tr: NormalizedExplicitTransition) => [tr.on, filterActors(tr.by)] as const)
+        .filter(([action]: [string]) => !scenario.actions[action]);
 
       const map = new Map<string, string[]>();
       for (const [action, actors] of actions) {

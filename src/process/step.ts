@@ -1,11 +1,11 @@
 import Ajv from 'ajv/dist/2020';
 import get from 'get-value';
 import set from 'set-value';
-import { NormalizedScenario, NormalizedState, Transition } from '../scenario';
+import { NormalizedScenario, NormalizedTransition, Transition } from '../scenario';
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { instantiateAction, instantiateState } from './instantiate';
-import { ActionEvent, Process, TimeoutEvent } from './interfaces/process';
+import { ActionEvent, Process, State, TimeoutEvent } from './interfaces/process';
 
 interface InstantiatedUpdateInstructions {
   set: string;
@@ -31,10 +31,11 @@ export function step(input: Process, action: string, actor: StepActor | string =
   const process = structuredClone(input);
   if (typeof actor === 'string') actor = { key: actor };
 
-  const current = process.scenario.states[process.current.key];
-  if (!('transitions' in current)) throw new Error(`Process is in end state '${process.current.key}'`);
+  if (!('transitions' in process.scenario.states[process.current.key])) {
+    throw new Error(`Process is in end state '${process.current.key}'`);
+  }
 
-  const stepErrors = validateStep(process, current, action, actor);
+  const stepErrors = validateStep(process, process.current, action, actor);
 
   const event: ActionEvent = withHash({
     previous: process.events[process.events.length - 1].hash,
@@ -61,11 +62,21 @@ export function step(input: Process, action: string, actor: StepActor | string =
   for (const scenarioInstructions of currentAction.update) {
     const instructions: InstantiatedUpdateInstructions = applyFn(scenarioInstructions, process);
     if (!instructions.if) continue;
-    update(process, instructions.set, instructions.data, instructions.merge);
+    update(process, instructions.set, instructions.data, instructions.merge, actor.key);
   }
 
-  process.actors[actor.key] = process.current.actor; // Might have been updated by the instructions
   const updateErrors = validateUpdate(process);
+
+  const next: NormalizedTransition = process.scenario.states[process.current.key].transitions
+    .filter((transition: NormalizedTransition) => 'on' in transition)
+    .find((transition: NormalizedTransition): boolean => {
+      const tr = applyFn(transition, process);
+      return tr.if && tr.on === action && includesActor(tr.by, actor.key);
+    });
+
+  if (!next) {
+    updateErrors.push(`No transition found for action '${action}' in state '${process.current.key}'`);
+  }
 
   if (updateErrors.length > 0) {
     const reverted = structuredClone(input);
@@ -73,31 +84,26 @@ export function step(input: Process, action: string, actor: StepActor | string =
     return reverted;
   }
 
-  const next = current.transitions
-    .filter((transition) => 'on' in transition)
-    .find((transition) => {
-      const tr = applyFn(transition, process);
-      return tr.if && tr.on === action && includesActor(tr.by, actor.key);
-    });
-
-  process.current = instantiateState(
-    process.scenario,
-    next?.goto || process.current.key,
-    process,
-    next?.goto ? event.timestamp : process.current.timestamp,
-  );
+  if (next.goto !== null) {
+    process.current = instantiateState(
+      process.scenario,
+      next.goto,
+      process,
+      event.timestamp,
+    );
+  }
 
   return process;
 }
 
-function validateStep(process: Process, current: NormalizedState, action: string, actor: StepActor): string[] {
+function validateStep(process: Process, current: State, action: string, actor: StepActor): string[] {
   const errors: string[] = [];
 
   if (!(current.transitions ?? []).some((tr) => 'on' in tr && tr.on === action)) {
     errors.push(`Action '${action}' is not allowed in state '${process.current.key}'`);
   }
 
-  if (!process.actors[actor.key]) {
+  if (!actor.key.startsWith('service:') && !process.actors[actor.key]) {
     errors.push(`Actor '${actor.key}' is not defined in the scenario`);
   }
 
@@ -124,13 +130,23 @@ function validateStep(process: Process, current: NormalizedState, action: string
     ? `${process.current.key}.${action}`
     : action;
   const currentAction = instantiateAction(key, process.scenario.actions[key], process);
+  const service = actor.key.startsWith('service:') ? actor.key.split(':', 2)[1] : undefined;
 
   if (
     process.actors[actor.key] &&
     !currentAction.actor.includes(actor.key) &&
-    !currentAction.actor.includes(actor.key.replace(/\d+$/, '*'))
+    !currentAction.actor.includes(actor.key.replace(/\d+$/, '*')) &&
+    !currentAction.actor.includes('*')
   ) {
-    errors.push(`Actor '${actor.key}' is not allowed to perform action '${action}'`);
+    const actorDesc = actor.key.startsWith('service:') ? `Service '${service}'` : `Actor '${actor.key}'`;
+    errors.push(`${actorDesc} is not allowed to perform action '${action}'`);
+  }
+
+  if (
+    actor.key.startsWith('service:') &&
+    !current.notify.some((notify) => notify.service === service && notify.trigger === action)
+  ) {
+    errors.push(`Service '${service}' is not expected to trigger action '${action}'`);
   }
 
   if (!currentAction.if) {
@@ -152,8 +168,8 @@ export function timeout(input: Process): Process {
   const timeout = timestamp.getTime() - process.current.timestamp.getTime();
 
   const next = (current.transitions ?? [])
-    .filter((transition) => 'after' in transition)
-    .find((transition) => {
+    .filter((transition: NormalizedTransition) => 'after' in transition)
+    .find((transition: NormalizedTransition) => {
       const tr: Transition & { after: number } = applyFn(transition, process);
       return tr.if && tr.after <= timeout;
     });
@@ -166,12 +182,15 @@ export function timeout(input: Process): Process {
   });
 
   process.events.push(event);
-  process.current = instantiateState(process.scenario, next.goto || process.current.key, process, event.timestamp);
+
+  if (next.goto !== null) {
+    process.current = instantiateState(process.scenario, next.goto, process, event.timestamp);
+  }
 
   return process;
 }
 
-function update(process: Process, path: string, data: any, merge: boolean): void {
+function update(process: Process, path: string, data: any, merge: boolean, currentActor: string): void {
   if (!path.match(/^title$|^(vars|actors|result|current\.actor)(\.|$)/)) {
     throw new Error(`Not allowed to set '${path}' through update instructions`);
   }
@@ -187,6 +206,10 @@ function update(process: Process, path: string, data: any, merge: boolean): void
   }
 
   set(process, path, data);
+
+  if (path.match(/^current\.actor(\.|$)/) && !currentActor.startsWith('service:')) {
+    process.actors[currentActor] = process.current.actor!;
+  }
 }
 
 function validateUpdate(process: Process): string[] {
