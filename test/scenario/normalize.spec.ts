@@ -36,7 +36,7 @@ describe('normalize scenario', () => {
             title: 'complete',
             description: '',
             if: true,
-            responseSchema: {},
+            response: {},
             actor: ['actor'],
             update: [],
           },
@@ -184,7 +184,7 @@ describe('normalize scenario', () => {
             description: '',
             if: true,
             actor: ['*'],
-            responseSchema: {},
+            response: {},
             update: [],
           },
         },
@@ -219,7 +219,7 @@ describe('normalize scenario', () => {
             description: '',
             if: true,
             actor: ['user'],
-            responseSchema: {},
+            response: {},
             update: [],
           },
         },
@@ -272,7 +272,7 @@ describe('normalize scenario', () => {
             description: '',
             if: true,
             actor: ['*'],
-            responseSchema: {
+            response: {
               $ref: 'https://example.com/schemas/response.json',
             },
             update: [],
@@ -349,7 +349,7 @@ describe('normalize scenario', () => {
             description: '',
             if: true,
             actor: ['*'],
-            responseSchema: {},
+            response: {},
             update: [
               {
                 set: 'vars.foo',
@@ -403,7 +403,7 @@ describe('normalize scenario', () => {
           description: '',
           if: true,
           actor: ['actor'],
-          responseSchema: {},
+          response: {},
           update: [],
         },
       });
@@ -498,7 +498,7 @@ describe('normalize scenario', () => {
           description: '',
           if: true,
           actor: ['client', 'admin'],
-          responseSchema: {},
+          response: {},
           update: [],
         },
         'initial.cancel': {
@@ -507,7 +507,7 @@ describe('normalize scenario', () => {
           description: '',
           if: true,
           actor: ['admin', 'client'],
-          responseSchema: {},
+          response: {},
           update: [],
         },
       });
@@ -562,7 +562,7 @@ describe('normalize scenario', () => {
         description: '',
         if: true,
         actor: ['service:foo'],
-        responseSchema: {},
+        response: {},
         update: [],
       });
     });

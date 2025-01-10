@@ -40,7 +40,7 @@
       "actor": [
         "company"
       ],
-      "responseSchema": {
+      "response": {
         "<ref>": "scenario.actors.client"
       },
       "update": [
@@ -63,7 +63,7 @@
       "actor": [
         "client"
       ],
-      "responseSchema": {
+      "response": {
         "<ref>": "scenario.vars.quote_request"
       },
       "form": {
@@ -109,7 +109,7 @@
       "budget": {
         "<ref>": "vars.quote_request.budget"
       },
-      "responseSchema": {
+      "response": {
         "properties": {
           "document": {
             "type": "string"
@@ -135,7 +135,7 @@
       "actor": [
         "company"
       ],
-      "responseSchema": {
+      "response": {
         "<ref>": "scenario.actors.client"
       },
       "data": {
@@ -170,7 +170,7 @@
       "title": "accept",
       "description": "",
       "if": true,
-      "responseSchema": {},
+      "response": {},
       "update": []
     },
     "reject": {
@@ -181,7 +181,7 @@
       "title": "reject",
       "description": "",
       "if": true,
-      "responseSchema": {},
+      "response": {},
       "update": []
     },
     "cancel": {
@@ -198,7 +198,7 @@
       "title": "cancel",
       "description": "",
       "if": true,
-      "responseSchema": {},
+      "response": {},
       "update": []
     }
   },

@@ -53,7 +53,7 @@ describe('instantiate', () => {
         description: 'Complete some scenario',
         if: true,
         actor: ['*'],
-        responseSchema: {},
+        response: {},
         key: 'complete',
       });
     });
@@ -240,7 +240,7 @@ describe('instantiate', () => {
         description: 'Complete some scenario',
         if: true,
         actor: ['*'],
-        responseSchema: {},
+        response: {},
         key: 'complete',
       });
 
@@ -334,7 +334,7 @@ describe('instantiate', () => {
         description: 'Complete some scenario',
         if: false,
         actor: ['admin'],
-        responseSchema: {},
+        response: {},
         key: 'complete',
       });
     });

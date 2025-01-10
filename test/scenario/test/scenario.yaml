@@ -12,12 +12,12 @@ actors:
 actions:
   new_lead:
     actor: company
-    responseSchema: !ref scenario.actors.client
+    response: !ref scenario.actors.client
     update: actors.client
   request_quote:
     $schema: https://schemas.letsflow.io/v1.0.0/actions/form
     actor: client
-    responseSchema: !ref scenario.vars.quote_request
+    response: !ref scenario.vars.quote_request
     form:
       type: VerticalLayout
       elements:
@@ -33,14 +33,14 @@ actions:
     client: !ref actors.client
     request: !ref vars.quote_request.description
     budget: !ref vars.quote_request.budget
-    responseSchema:
+    response:
       properties:
         document:
           type: string
     update: vars.document
   change_client_info:
     actor: company
-    responseSchema: !ref scenario.actors.client
+    response: !ref scenario.actors.client
     data: !ref actors.client
     update:
       set: actors.client
