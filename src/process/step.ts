@@ -20,8 +20,8 @@ interface StepActor {
   roles?: string[];
 }
 
-const ajv = new Ajv({ allErrors: true });
-ajv.addKeyword('$anchor'); // Workaround for https://github.com/ajv-validator/ajv/issues/1854
+const defaultAjv = new Ajv({ allErrors: true });
+defaultAjv.addKeyword('$anchor'); // Workaround for https://github.com/ajv-validator/ajv/issues/1854
 
 /**
  * Step the process forward by one action.
@@ -32,23 +32,20 @@ export function step(
   action: string,
   actor: StepActor | string = 'actor',
   response?: any,
-  hashFn = withHash,
+  options: {
+    hashFn?: typeof withHash,
+    ajv?: Ajv,
+  } = {},
 ): Process {
   const process = structuredClone(input);
   if (typeof actor === 'string') actor = { key: actor };
 
+  const hashFn = options.hashFn ?? withHash;
+  const ajv = options.ajv ?? defaultAjv;
+
   const stepErrors = validateStep(process, action, actor);
 
-  const event: ActionEvent = hashFn({
-    previous: process.events[process.events.length - 1].hash,
-    timestamp: new Date(),
-    action,
-    actor: actor.id ? { id: actor.id, key: actor.key } : { key: actor.key },
-    response,
-    skipped: stepErrors.length > 0,
-    errors: stepErrors,
-  });
-
+  const event = hashFn(createEvent(process, action, actor, response, stepErrors));
   process.events.push(event);
 
   if (stepErrors.length > 0) {
@@ -67,7 +64,7 @@ export function step(
     update(process, instructions.set, instructions.data, instructions.merge, actor.key);
   }
 
-  const updateErrors = validateUpdate(process);
+  const updateErrors = validateUpdate(ajv, process);
 
   const next: NormalizedTransition = process.scenario.states[process.current.key].transitions
     .filter((transition: NormalizedTransition) => 'on' in transition)
@@ -77,7 +74,9 @@ export function step(
     });
 
   if (!next) {
-    updateErrors.push(`No transition found for action '${action}' in state '${process.current.key}'`);
+    updateErrors.push(
+      `No transition found for action '${action}' in state '${process.current.key}' for actor ${actor.key}`,
+    );
   }
 
   if (updateErrors.length > 0) {
@@ -86,16 +85,32 @@ export function step(
     return reverted;
   }
 
-  if (next.goto !== null) {
-    process.current = instantiateState(
-      process.scenario,
-      next.goto,
-      process,
-      event.timestamp,
-    );
-  }
+  process.current = instantiateState(
+    process.scenario,
+    next.goto ?? process.current.key,
+    process,
+    next.goto ? event.timestamp : process.current.timestamp,
+  );
 
   return process;
+}
+
+function createEvent(
+  process: Process,
+  action: string,
+  actor: StepActor,
+  response: any,
+  errors: string[],
+): Omit<ActionEvent, 'hash'> {
+  return {
+    previous: process.events[process.events.length - 1].hash,
+    timestamp: new Date(),
+    action,
+    actor: actor.id ? { id: actor.id, key: actor.key } : { key: actor.key },
+    response,
+    skipped: errors.length > 0,
+    errors,
+  }
 }
 
 function validateStep(process: Process, action: string, actor: StepActor): string[] {
@@ -215,8 +230,13 @@ function update(process: Process, path: string, data: any, merge: boolean, curre
   }
 }
 
-function validateUpdate(process: Process): string[] {
-  return [...validateTitle(process), ...validateActors(process), ...validateVars(process), ...validateResult(process)];
+function validateUpdate(ajv: Ajv, process: Process): string[] {
+  return [
+    ...validateTitle(process),
+    ...validateActors(ajv, process),
+    ...validateVars(ajv, process),
+    ...validateResult(ajv, process),
+  ];
 }
 
 function validateTitle(process: Process): string[] {
@@ -224,7 +244,7 @@ function validateTitle(process: Process): string[] {
   return typeof process.title === 'string' ? [] : ['Title is invalid: must be a string'];
 }
 
-function validateActors(process: Process): string[] {
+function validateActors(ajv: Ajv, process: Process): string[] {
   const errors: string[] = [];
 
   for (const [key, actor] of Object.entries(process.actors)) {
@@ -249,7 +269,7 @@ function validateActors(process: Process): string[] {
   return errors;
 }
 
-function validateVars(process: Process): string[] {
+function validateVars(ajv: Ajv, process: Process): string[] {
   const errors: string[] = [];
 
   for (const [key, value] of Object.entries(process.vars)) {
@@ -268,7 +288,7 @@ function validateVars(process: Process): string[] {
   return errors;
 }
 
-function validateResult(process: Process): string[] {
+function validateResult(ajv: Ajv, process: Process): string[] {
   const errors: string[] = [];
 
   if (process.result) {
