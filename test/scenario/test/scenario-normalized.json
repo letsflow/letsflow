@@ -414,6 +414,7 @@
         }
       },
       "type": "object",
+      "additionalProperties": false,
       "title": "quote request"
     },
     "document": {

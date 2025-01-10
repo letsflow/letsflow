@@ -87,7 +87,7 @@ function normalizeSchemas(schemas: Record<string, any>, setTitle = false): void 
 }
 
 function normalizeSchema(schema: Schema): void {
-  schema.type ??= 'object';
+  schema.type ??= 'items' in schema ? 'array' : 'object';
 
   if (schema.properties) {
     normalizeSchemas(schema.properties);
@@ -103,6 +103,10 @@ function normalizeSchema(schema: Schema): void {
     schema.additionalProperties = { type: schema.additionalProperties };
   } else if (typeof schema.additionalProperties === 'object') {
     normalizeSchema(schema.additionalProperties);
+  }
+  
+  if (schema.type === 'object') {
+    schema.additionalProperties ??= false;
   }
 }
 
