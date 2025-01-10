@@ -253,7 +253,7 @@ describe('normalize scenario', () => {
         actors: {},
         actions: {
           complete: {
-            responseSchema: 'https://example.com/schemas/response.json',
+            response: 'https://example.com/schemas/response.json',
           },
         },
         states: {},
@@ -290,7 +290,7 @@ describe('normalize scenario', () => {
         actors: {},
         actions: {
           complete: {
-            responseSchema: {
+            response: {
               '<ref>': 'scenario.vars.foo',
             },
           },
@@ -299,7 +299,7 @@ describe('normalize scenario', () => {
       };
 
       const normalized = normalize(scenario);
-      expect(normalized.actions['complete'].responseSchema).to.deep.eq({ '<ref>': 'scenario.vars.foo' });
+      expect(normalized.actions['complete'].response).to.deep.eq({ '<ref>': 'scenario.vars.foo' });
     });
 
     it('should normalize the update instructions', () => {

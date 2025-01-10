@@ -122,9 +122,9 @@ function normalizeActions(actions: Record<string, Action | null>): void {
       action.actor = [action.actor];
     }
 
-    action.responseSchema ??= {};
-    if (typeof action.responseSchema === 'string') {
-      action.responseSchema = { $ref: action.responseSchema };
+    action.response ??= {};
+    if (typeof action.response === 'string') {
+      action.response = { $ref: action.response };
     }
 
     action.update = normalizeUpdateInstructions(action.update ?? []);
@@ -232,7 +232,7 @@ function addImplicitActions(scenario: NormalizedScenario): void {
       description: '',
       if: true,
       actor: actors,
-      responseSchema: {},
+      response: {},
       update: [],
     };
   }

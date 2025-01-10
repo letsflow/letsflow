@@ -46,7 +46,7 @@
     "if": {
       "$ref": "#/definitions/booleanFn"
     },
-    "responseSchema": {
+    "response": {
       "anyOf": [
         {
           "type": "string"

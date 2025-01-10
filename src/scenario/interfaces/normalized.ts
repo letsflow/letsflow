@@ -6,7 +6,7 @@ export interface NormalizedAction {
   title: string;
   description: string | Fn;
   actor: Array<string | Fn> | Fn;
-  responseSchema: Schema | Fn;
+  response: Schema | Fn;
   update: Array<Required<UpdateInstruction>>;
 
   [_: string]: any;

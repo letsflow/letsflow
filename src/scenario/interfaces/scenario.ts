@@ -27,7 +27,7 @@ export interface Action {
   title?: string;
   description?: string | Fn;
   actor?: string | Fn | Array<string | Fn>;
-  responseSchema?: string | Schema | Fn;
+  response?: string | Schema | Fn;
   if?: boolean | Fn;
   update?: string | UpdateInstruction | UpdateInstruction[];
 
