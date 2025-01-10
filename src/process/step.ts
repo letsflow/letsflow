@@ -10,7 +10,7 @@ import { ActionEvent, Process, TimeoutEvent } from './interfaces/process';
 interface InstantiatedUpdateInstructions {
   set: string;
   data: any;
-  merge: boolean;
+  mode: 'replace' | 'merge' | 'append';
   if: boolean;
 }
 
@@ -61,7 +61,7 @@ export function step(
   for (const scenarioInstructions of currentAction.update) {
     const instructions: InstantiatedUpdateInstructions = applyFn(scenarioInstructions, process);
     if (!instructions.if) continue;
-    update(process, instructions.set, instructions.data, instructions.merge, actor.key);
+    update(process, instructions.set, instructions.data, instructions.mode, actor.key);
   }
 
   const updateErrors = validateUpdate(ajv, process);
@@ -208,12 +208,18 @@ export function timeout(input: Process, hashFn = withHash): Process {
   return process;
 }
 
-function update(process: Process, path: string, data: any, merge: boolean, currentActor: string): void {
+function update(
+  process: Process,
+  path: string,
+  data: any,
+  mode: 'replace' | 'merge' | 'append',
+  currentActor: string,
+): void {
   if (!path.match(/^title$|^(vars|actors|result|current\.actor)(\.|$)/)) {
     throw new Error(`Not allowed to set '${path}' through update instructions`);
   }
 
-  if (merge) {
+  if (mode === 'merge') {
     const current: any = get(process, path);
 
     if (Array.isArray(current) && Array.isArray(data)) {
@@ -223,9 +229,19 @@ function update(process: Process, path: string, data: any, merge: boolean, curre
     }
   }
 
+  if (mode === 'append') {
+    const current: any = get(process, path);
+
+    if (Array.isArray(current)) {
+      data = [...current, data];
+    } else {
+      data = [data];
+    }
+  }
+
   set(process, path, data);
 
-  if (path.match(/^current\.actor(\.|$)/) && !currentActor.startsWith('service:')) {
+  if (path.match(/^current\.actor(\.|$)/) && currentActor in process.actors) {
     process.actors[currentActor] = process.current.actor!;
   }
 }

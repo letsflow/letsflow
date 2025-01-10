@@ -91,8 +91,13 @@
           ]
         },
         "data": {},
-        "merge": {
-          "type": "boolean"
+        "mode": {
+          "type": "string",
+          "enum": [
+            "merge",
+            "replace",
+            "append"
+          ]
         },
         "if": {
           "$ref": "#/definitions/booleanFn"

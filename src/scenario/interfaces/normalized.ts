@@ -7,7 +7,7 @@ export interface NormalizedAction {
   description: string | Fn;
   actor: Array<string | Fn> | Fn;
   responseSchema: Schema | Fn;
-  update: UpdateInstruction[];
+  update: Array<Required<UpdateInstruction>>;
 
   [_: string]: any;
 }
