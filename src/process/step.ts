@@ -109,12 +109,21 @@ function createEvent(
     actor: actor.id ? { id: actor.id, key: actor.key } : { key: actor.key },
     response,
     skipped: errors.length > 0,
-    errors,
+    errors: errors.length > 0 ? errors : undefined,
   }
 }
 
 function validateStep(process: Process, action: string, actor: StepActor): string[] {
   const errors: string[] = [];
+
+  const key = `${process.current.key}.${action}` in process.scenario.actions
+    ? `${process.current.key}.${action}`
+    : action;
+
+  const currentAction = process.scenario.actions[key]
+    ? instantiateAction(key, process.scenario.actions[key], process)
+    : undefined;
+  const service = actor.key.startsWith('service:') ? actor.key.split(':', 2)[1] : undefined;
 
   const transitions = process.scenario.states[process.current.key].transitions ?? [];
   if (!transitions.some((tr) => 'on' in tr && tr.on === action)) {
@@ -144,14 +153,9 @@ function validateStep(process: Process, action: string, actor: StepActor): strin
     }
   }
 
-  const key = `${process.current.key}.${action}` in process.scenario.actions
-    ? `${process.current.key}.${action}`
-    : action;
-  const currentAction = instantiateAction(key, process.scenario.actions[key], process);
-  const service = actor.key.startsWith('service:') ? actor.key.split(':', 2)[1] : undefined;
-
   if (
     process.actors[actor.key] &&
+    currentAction &&
     !currentAction.actor.includes(actor.key) &&
     !currentAction.actor.includes(actor.key.replace(/\d+$/, '*')) &&
     !currentAction.actor.includes('*')
@@ -167,7 +171,7 @@ function validateStep(process: Process, action: string, actor: StepActor): strin
     errors.push(`Service '${service}' is not expected to trigger action '${action}'`);
   }
 
-  if (!currentAction.if) {
+  if (currentAction && !currentAction.if) {
     errors.push(`Action '${action}' is not allowed due to if condition`);
   }
 

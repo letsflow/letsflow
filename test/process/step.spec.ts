@@ -9,9 +9,6 @@ describe('step', () => {
     it('should step to end state', () => {
       const scenario = normalize({
         title: 'some scenario',
-        actions: {
-          complete: {},
-        },
         states: {
           initial: {
             on: 'complete',
@@ -35,6 +32,7 @@ describe('step', () => {
       expect(event.timestamp).to.be.instanceof(Date);
       expect(event.previous).to.eq(process.events[0].hash);
       expect(event.response).to.be.undefined;
+      expect(event.errors).to.be.undefined;
       expect(event.action).to.eq('complete');
       expect(event.actor).to.deep.eq({ key: 'actor' });
       expect(eventHash).to.eq(hash(event));
@@ -250,6 +248,35 @@ describe('step', () => {
       expect(event.errors![0]).to.eq("Action 'complete' is not allowed in state '(done)'");
     });
 
+    it('should skip an actions that is undefined', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const instructions = {
+        scenario: uuid(scenario),
+      };
+
+      const newProcess = instantiate(scenario, instructions);
+      const process = step(newProcess, 'dance', 'actor');
+
+      expect(process.current.key).to.eq('initial');
+      expect(process.events).to.have.length(2);
+
+      const event = process.events[1] as ActionEvent;
+      expect(event.timestamp).to.be.instanceof(Date);
+      expect(event.previous).to.eq(process.events[0].hash);
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq("Action 'dance' is not allowed in state 'initial'");
+    })
+
     it("should skip an action that's not allowed in the state", () => {
       const scenario = normalize({
         title: 'some scenario',
@@ -267,9 +294,6 @@ describe('step', () => {
 
       const instructions = {
         scenario: uuid(scenario),
-        actors: {
-          actor: {},
-        },
       };
 
       const newProcess = instantiate(scenario, instructions);
@@ -308,9 +332,6 @@ describe('step', () => {
 
       const instructions = {
         scenario: uuid(scenario),
-        actors: {
-          actor: {},
-        },
         vars: {
           foo: 5,
         },
