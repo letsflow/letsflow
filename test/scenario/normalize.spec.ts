@@ -579,6 +579,15 @@ describe('normalize scenario', () => {
             title: 'email addresses',
             items: 'string',
           },
+          test: {
+            properties: {
+              one: 'string',
+              two: {
+                type: 'number',
+                '!required': true,
+              } as any,
+            },
+          }
         },
       };
 
@@ -593,6 +602,20 @@ describe('normalize scenario', () => {
           items: {
             type: 'string',
           },
+        },
+        test: {
+          title: 'test',
+          type: 'object',
+          properties: {
+            one: {
+              type: 'string',
+            },
+            two: {
+              type: 'number',
+            },
+          },
+          required: ['two'],
+          additionalProperties: false,
         },
       });
     });

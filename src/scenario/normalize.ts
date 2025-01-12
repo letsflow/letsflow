@@ -89,8 +89,20 @@ function normalizeSchemas(schemas: Record<string, any>, setTitle = false): void 
 function normalizeSchema(schema: Schema): void {
   schema.type ??= 'items' in schema ? 'array' : 'object';
 
+  if ('!required' in schema) {
+    delete schema['!required'];
+  }
+
   if (schema.properties) {
+    const required = Object.entries(schema.properties)
+      .filter(([, { '!required': required }]: [string, any]) => !!required)
+      .map(([prop]) => prop);
+
     normalizeSchemas(schema.properties);
+
+    if (required) {
+      schema.required = dedup([...(schema.required ?? []), ...required]);
+    }
   }
 
   if (typeof schema.items === 'string') {
@@ -104,7 +116,7 @@ function normalizeSchema(schema: Schema): void {
   } else if (typeof schema.additionalProperties === 'object') {
     normalizeSchema(schema.additionalProperties);
   }
-  
+
   if (schema.type === 'object') {
     schema.additionalProperties ??= false;
   }

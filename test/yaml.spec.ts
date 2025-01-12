@@ -1,5 +1,5 @@
-import { parse, stringify } from '../src/yaml';
 import { expect } from 'chai';
+import { parse, stringify } from '../src/yaml';
 
 describe('yaml', () => {
   describe('parse', () => {
@@ -19,7 +19,7 @@ describe('yaml', () => {
       });
     });
 
-    it('should parse yaml with custom tags', () => {
+    it('should parse yaml with data function tags', () => {
       const yamlString = `
         foo: !ref abc
         bar: !ref abc > 0
@@ -35,7 +35,7 @@ describe('yaml', () => {
       });
     });
 
-    it('should parse yaml with custom and default tags', () => {
+    it('should parse yaml with const and default tags', () => {
       const yamlString = `
         foo: !const abc
         bar: !const 10
@@ -53,6 +53,22 @@ describe('yaml', () => {
         qux: { type: 'boolean', default: true },
         wam: { type: 'number', default: 22 },
       });
+    });
+  });
+
+  it('should parse yaml with required tags', () => {
+    const yamlString = `
+        foo: !required string
+        bar: !required
+          type: array
+          items: string
+      `;
+
+    const data = parse(yamlString);
+
+    expect(data).to.eql({
+      foo: { type: 'string', '!required': true },
+      bar: { type: 'array', items: 'string', '!required': true },
     });
   });
 
@@ -77,7 +93,7 @@ describe('yaml', () => {
       );
     });
 
-    it('should stringify yaml with custom tags', () => {
+    it('should stringify yaml with data function tags', () => {
       const data = {
         foo: { '<ref>': 'abc' },
         bar: { '<ref>': 'abc > 0' },
