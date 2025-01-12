@@ -16,6 +16,8 @@ export interface Schema {
   required?: string[];
   items?: string | Schema;
   additionalProperties?: boolean | string | Schema;
+
+  [_: string]: any;
 }
 
 export interface ActorSchema extends Schema {

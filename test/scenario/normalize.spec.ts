@@ -27,7 +27,14 @@ describe('normalize scenario', () => {
             properties: {
               id: { type: 'string' },
               title: { type: 'string' },
+              role: {
+                oneOf: [
+                  { type: 'string' },
+                  { type: 'array', items: { type: 'string' } },
+                ]
+              }
             },
+            additionalProperties: false,
           },
         },
         actions: {
@@ -84,26 +91,23 @@ describe('normalize scenario', () => {
         states: {},
       };
 
-      expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
-        title: '',
-        description: '',
-        tags: [],
-        actors: {
-          user_1: {
-            title: 'user 1',
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              title: { type: 'string' },
-              name: { type: 'string' },
-            },
+      expect(normalize(scenario).actors).to.deep.eq({
+        user_1: {
+          title: 'user 1',
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            title: { type: 'string' },
+            name: { type: 'string' },
+            role: {
+              oneOf: [
+                { type: 'string' },
+                { type: 'array', items: { type: 'string' } },
+              ]
+            }
           },
+          additionalProperties: false,
         },
-        actions: {},
-        states: {},
-        vars: {},
-        result: {},
       });
     });
 
@@ -117,25 +121,22 @@ describe('normalize scenario', () => {
         states: {},
       };
 
-      expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
-        title: '',
-        description: '',
-        tags: [],
-        actors: {
-          user: {
-            title: 'user',
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              title: { type: 'string' },
-            },
+      expect(normalize(scenario).actors).to.deep.eq({
+        user: {
+          title: 'user',
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            title: { type: 'string' },
+            role: {
+              oneOf: [
+                { type: 'string' },
+                { type: 'array', items: { type: 'string' } },
+              ]
+            }
           },
+          additionalProperties: false,
         },
-        actions: {},
-        states: {},
-        vars: {},
-        result: {},
       });
     });
   });
@@ -154,43 +155,16 @@ describe('normalize scenario', () => {
         states: {},
       };
 
-      expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
-        title: '',
-        description: '',
-        tags: [],
-        actors: {
-          user: {
-            title: 'user',
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              title: { type: 'string' },
-            },
-          },
-          admin: {
-            title: 'admin',
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              title: { type: 'string' },
-            },
-          },
+      expect(normalize(scenario).actions).to.deep.eq({
+        complete: {
+          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          title: 'complete',
+          description: '',
+          if: true,
+          actor: ['*'],
+          response: {},
+          update: [],
         },
-        actions: {
-          complete: {
-            $schema: 'https://schemas.letsflow.io/v1.0.0/action',
-            title: 'complete',
-            description: '',
-            if: true,
-            actor: ['*'],
-            response: {},
-            update: [],
-          },
-        },
-        states: {},
-        vars: {},
-        result: {},
       });
     });
 
@@ -206,26 +180,16 @@ describe('normalize scenario', () => {
         states: {},
       };
 
-      expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
-        title: '',
-        description: '',
-        tags: [],
-        actors: {},
-        actions: {
-          complete: {
-            $schema: 'https://schemas.letsflow.io/v1.0.0/action',
-            title: 'complete',
-            description: '',
-            if: true,
-            actor: ['user'],
-            response: {},
-            update: [],
-          },
+      expect(normalize(scenario).actions).to.deep.eq({
+        complete: {
+          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          title: 'complete',
+          description: '',
+          if: true,
+          actor: ['user'],
+          response: {},
+          update: [],
         },
-        states: {},
-        vars: {},
-        result: {},
       });
     });
 
@@ -247,6 +211,33 @@ describe('normalize scenario', () => {
       expect(normalized.actions['complete'].actor).to.deep.eq({ '<ref>': "users[?type=='bot']" });
     });
 
+    it('should normalize the response type', () => {
+      const scenario: Scenario = {
+        title: '',
+        actors: {},
+        actions: {
+          complete: {
+            response: 'string',
+          },
+        },
+        states: {},
+      };
+
+      expect(normalize(scenario).actions).to.deep.eq({
+        complete: {
+          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          title: 'complete',
+          description: '',
+          if: true,
+          actor: ['*'],
+          response: {
+            type: 'string',
+          },
+          update: [],
+        },
+      });
+    });
+
     it('should normalize the response schema', () => {
       const scenario: Scenario = {
         title: '',
@@ -259,28 +250,18 @@ describe('normalize scenario', () => {
         states: {},
       };
 
-      expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
-        title: '',
-        description: '',
-        tags: [],
-        actors: {},
-        actions: {
-          complete: {
-            $schema: 'https://schemas.letsflow.io/v1.0.0/action',
-            title: 'complete',
-            description: '',
-            if: true,
-            actor: ['*'],
-            response: {
-              $ref: 'https://example.com/schemas/response.json',
-            },
-            update: [],
+      expect(normalize(scenario).actions).to.deep.eq({
+        complete: {
+          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          title: 'complete',
+          description: '',
+          if: true,
+          actor: ['*'],
+          response: {
+            $ref: 'https://example.com/schemas/response.json',
           },
+          update: [],
         },
-        states: {},
-        vars: {},
-        result: {},
       });
     });
 
@@ -319,50 +300,23 @@ describe('normalize scenario', () => {
         states: {},
       };
 
-      expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
-        title: '',
-        description: '',
-        tags: [],
-        actors: {
-          user: {
-            title: 'user',
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              title: { type: 'string' },
+      expect(normalize(scenario).actions).to.deep.eq({
+        complete: {
+          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          title: 'complete',
+          description: '',
+          if: true,
+          actor: ['*'],
+          response: {},
+          update: [
+            {
+              set: 'vars.foo',
+              data: { '<ref>': 'current.response' },
+              mode: 'replace',
+              if: true,
             },
-          },
-          admin: {
-            title: 'admin',
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              title: { type: 'string' },
-            },
-          },
+          ],
         },
-        actions: {
-          complete: {
-            $schema: 'https://schemas.letsflow.io/v1.0.0/action',
-            title: 'complete',
-            description: '',
-            if: true,
-            actor: ['*'],
-            response: {},
-            update: [
-              {
-                set: 'vars.foo',
-                data: { '<ref>': 'current.response' },
-                mode: 'replace',
-                if: true,
-              },
-            ],
-          },
-        },
-        states: {},
-        vars: {},
-        result: {},
       });
     });
   });

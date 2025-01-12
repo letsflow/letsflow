@@ -13,8 +13,22 @@
         },
         "title": {
           "type": "string"
+        },
+        "role": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         }
-      }
+      },
+      "additionalProperties": false
     },
     "client": {
       "properties": {
@@ -29,10 +43,24 @@
         },
         "title": {
           "type": "string"
+        },
+        "role": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         }
       },
       "title": "client",
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false
     }
   },
   "actions": {
@@ -414,7 +442,6 @@
         }
       },
       "type": "object",
-      "required": [],
       "additionalProperties": false,
       "title": "quote request"
     },

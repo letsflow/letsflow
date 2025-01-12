@@ -62,9 +62,21 @@ function normalizeActors(items: Record<string, ActorSchema | null>): void {
 
     actor.title ??= keyToTitle(key);
     actor.type ??= 'object';
-    actor.properties = { ...(actor.properties ?? {}), id: { type: 'string' }, title: { type: 'string' } };
+    actor.properties = {
+      ...(actor.properties ?? {}),
+      id: 'string',
+      title: 'string',
+      role: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] },
+    };
+    actor.additionalProperties ??= false;
 
-    normalizeSchemas(actor.properties);
+    if (actor.properties) {
+      const { required } = normalizeSchemas(actor.properties);
+
+      if (required.length > 0) {
+        actor.required = dedup([...(actor.required ?? []), ...required]);
+      }
+    }
 
     if (typeof actor.additionalProperties === 'object') {
       normalizeSchema(actor.additionalProperties);
@@ -74,16 +86,45 @@ function normalizeActors(items: Record<string, ActorSchema | null>): void {
   }
 }
 
-function normalizeSchemas(schemas: Record<string, any>, setTitle = false): void {
+function normalizeSchemas(schemas: Record<string, any>, setTitle = false): { required: string[] } {
+  const required: string[] = [];
+
   for (const key in schemas) {
     if (typeof schemas[key] === 'string') {
-      schemas[key] = setTitle ? { title: keyToTitle(key), type: schemas[key] } : { type: schemas[key] };
+      schemas[key] = stringToSchema(schemas[key]);
+      if (setTitle) schemas[key].title = keyToTitle(key);
       continue;
     }
 
-    normalizeSchema(schemas[key]);
+    if (schemas[key]['!required']) {
+      required.push(key);
+    }
+
+    if ('allOf' in schemas[key]) {
+      schemas[key].allOf = normalizeListOfSchemas(schemas[key].allOf);
+    } else if ('oneOf' in schemas[key]) {
+      schemas[key].oneOf = normalizeListOfSchemas(schemas[key].oneOf);
+    } else if ('anyOf' in schemas[key]) {
+      schemas[key].anyOf = normalizeListOfSchemas(schemas[key].anyOf);
+    } else {
+      normalizeSchema(schemas[key]);
+    }
+
     if (setTitle) schemas[key].title ??= keyToTitle(key);
   }
+
+  return { required };
+}
+
+function normalizeListOfSchemas(schemas: Schema[]): Schema[] {
+  return schemas.map((item: any) => {
+    if (typeof item === 'string') {
+      return { type: item };
+    }
+
+    normalizeSchema(item);
+    return item;
+  });
 }
 
 function normalizeSchema(schema: Schema): void {
@@ -94,13 +135,9 @@ function normalizeSchema(schema: Schema): void {
   }
 
   if (schema.properties) {
-    const required = Object.entries(schema.properties)
-      .filter(([, { '!required': required }]: [string, any]) => !!required)
-      .map(([prop]) => prop);
+    const { required } = normalizeSchemas(schema.properties);
 
-    normalizeSchemas(schema.properties);
-
-    if (required) {
+    if (required.length > 0) {
       schema.required = dedup([...(schema.required ?? []), ...required]);
     }
   }
@@ -140,7 +177,7 @@ function normalizeActions(actions: Record<string, Action | null>): void {
 
     action.response ??= {};
     if (typeof action.response === 'string') {
-      action.response = { $ref: action.response };
+      action.response = stringToSchema(action.response);
     }
 
     action.update = normalizeUpdateInstructions(action.update ?? []);
@@ -307,7 +344,7 @@ function normalizeResult(scenario: Scenario): void {
   }
 
   if (typeof scenario.result === 'string') {
-    scenario.result = { type: scenario.result };
+    scenario.result = stringToSchema(scenario.result);
     return;
   }
 
@@ -329,6 +366,10 @@ function mergeStates(state: NormalizedState, partialState: NormalizedState): voi
       state[key] = partial[key];
     }
   }
+}
+
+function stringToSchema(schema: string): Schema {
+  return schema.match(/^https?:/) ? { $ref: schema } : { type: schema };
 }
 
 function convertTimePeriodToSeconds(timePeriod: string): number {
