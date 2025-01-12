@@ -170,7 +170,7 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
     state.notify = normalizeNotify(state.notify);
 
     if (!isEndState(state)) {
-      state.transitions = normalizeTransitions(state);
+      state.transitions = normalizeTransitions(key, state);
 
       delete (state as any).on;
       delete (state as any).by;
@@ -271,7 +271,7 @@ function addImplicitEndStates(states: Record<string, State | EndState>): void {
   }
 }
 
-function normalizeTransitions(state: State): Array<Transition> {
+function normalizeTransitions(key: string, state: State): Array<Transition> {
   if ('on' in state) {
     const by = Array.isArray(state.by) ? state.by : [state.by ?? '*'];
     return [{ on: state.on, by, if: true, goto: state.goto }];
@@ -281,7 +281,11 @@ function normalizeTransitions(state: State): Array<Transition> {
     return [{ after: convertTimePeriodToSeconds(state.after), if: true, goto: state.goto }];
   }
 
-  state.transitions.forEach((transition) => {
+  if ('goto' in state) {
+    throw new Error(`Invalid state '${key}': 'goto' without 'on' or 'after'`);
+  }
+
+  for (const transition of state.transitions) {
     if ('after' in transition && typeof transition.after === 'string') {
       transition.after = convertTimePeriodToSeconds(transition.after);
     }
@@ -291,7 +295,7 @@ function normalizeTransitions(state: State): Array<Transition> {
     }
 
     transition.if ??= true;
-  });
+  }
 
   return state.transitions;
 }
