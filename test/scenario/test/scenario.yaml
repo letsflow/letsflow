@@ -91,14 +91,14 @@ states:
     on: create_quote
     goto: review_quote
     instructions:
-      company: !sub |
-        ${actors.client.name}
-        ${vars.quote_request.description}
+      company: !tpl |
+        {{ actors.client.name }}
+        {{ vars.quote_request.description }}
   review_quote:
     instructions:
-      company: !sub |
-        ${actors.client.name}
-        ${vars.quote_request.description}
+      company: !tpl |
+        {{ actors.client.name }}
+        {{ vars.quote_request.description }}
     transitions:
       - on: accept
         goto: (success)
@@ -117,13 +117,13 @@ result: string
 emails:
   introduction:
     subject: Introduction
-    text: !sub |
-      Hi ${recipient.name},
+    text: !tpl |
+      Hi {{ recipient.name }},
       We are excited to work with you.
   reminder:
     subject: Reminder
-    text: !sub |
-      Hi ${recipient.name},
+    text: !tpl |
+      Hi {{ recipient.name }},
       Just a friendly reminder.
 
 ui:

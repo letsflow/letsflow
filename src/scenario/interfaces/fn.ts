@@ -5,5 +5,5 @@ interface FnRef {
 }
 
 interface FnSub {
-  '<sub>': string;
+  '<tpl>': string;
 }

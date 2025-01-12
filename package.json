@@ -29,6 +29,7 @@
     "ajv": "^8.16.0",
     "fast-json-stable-stringify": "^2.1.0",
     "get-value": "^3.0.1",
+    "mustache": "^4.2.0",
     "set-value": "^4.1.0",
     "uuid": "^10.0.0",
     "yaml": "^2.4.5"
@@ -37,6 +38,7 @@
     "@types/chai": "^4.3.16",
     "@types/get-value": "^3.0.5",
     "@types/mocha": "^10.0.7",
+    "@types/mustache": "^4.2.5",
     "@types/node": "^20.14.9",
     "@types/set-value": "^4.0.3",
     "@types/uuid": "^10.0.0",

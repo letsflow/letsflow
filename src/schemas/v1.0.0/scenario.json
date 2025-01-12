@@ -315,7 +315,7 @@
               "type": "object",
               "properties": {
                 "<ref>": false,
-                "<sub>": false
+                "<tpl>": false
               }
             }
           ]

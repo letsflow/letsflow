@@ -159,14 +159,14 @@
       "goto": "review_quote",
       "instructions": {
         "company": {
-          "<sub>": "${actors.client.name}\n${vars.quote_request.description}\n"
+          "<tpl>": "{{ actors.client.name }}\n{{ vars.quote_request.description }}\n"
         }
       }
     },
     "review_quote": {
       "instructions": {
         "company": {
-          "<sub>": "${actors.client.name}\n${vars.quote_request.description}\n"
+          "<tpl>": "{{ actors.client.name }}\n{{ vars.quote_request.description }}\n"
         }
       },
       "transitions": [
@@ -195,13 +195,13 @@
     "introduction": {
       "subject": "Introduction",
       "text": {
-        "<sub>": "Hi ${recipient.name},\nWe are excited to work with you.\n"
+        "<tpl>": "Hi {{ recipient.name }},\nWe are excited to work with you.\n"
       }
     },
     "reminder": {
       "subject": "Reminder",
       "text": {
-        "<sub>": "Hi ${recipient.name},\nJust a friendly reminder.\n"
+        "<tpl>": "Hi {{ recipient.name }},\nJust a friendly reminder.\n"
       }
     }
   },

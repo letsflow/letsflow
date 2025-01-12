@@ -23,7 +23,10 @@ describe('yaml', () => {
       const yamlString = `
         foo: !ref abc
         bar: !ref abc > 0
-        qux: !sub "Hello, \${ name }!"
+        qux: !tpl "Hello, {{ name }}!"
+        wam: !tpl
+          template: "Hello, {{ name }}!"
+          view: { name: "John" }
       `;
 
       const data = parse(yamlString);
@@ -31,7 +34,11 @@ describe('yaml', () => {
       expect(data).to.eql({
         foo: { '<ref>': 'abc' },
         bar: { '<ref>': 'abc > 0' },
-        qux: { '<sub>': 'Hello, ${ name }!' },
+        qux: { '<tpl>': 'Hello, {{ name }}!' },
+        wam: { '<tpl>': {
+          template: 'Hello, {{ name }}!',
+          view: { name: 'John' },
+        }},
       });
     });
 
@@ -62,6 +69,11 @@ describe('yaml', () => {
         bar: !required
           type: array
           items: string
+        wux: !required
+          type: object
+          properties:
+            one: string
+            two: number
       `;
 
     const data = parse(yamlString);
@@ -69,6 +81,14 @@ describe('yaml', () => {
     expect(data).to.eql({
       foo: { type: 'string', '!required': true },
       bar: { type: 'array', items: 'string', '!required': true },
+      wux: {
+        type: 'object',
+        properties: {
+          one: 'string',
+          two: 'number',
+        },
+        '!required': true,
+      },
     });
   });
 
@@ -98,7 +118,7 @@ describe('yaml', () => {
         foo: { '<ref>': 'abc' },
         bar: { '<ref>': 'abc > 0' },
         rob: { '<ref>': '!def' },
-        qux: { '<sub>': 'Hello, ${ name }!' },
+        qux: { '<tpl>': 'Hello, {{ name }}!' },
       };
 
       const yamlString = stringify(data);
@@ -108,7 +128,7 @@ describe('yaml', () => {
         foo: !ref abc
         bar: !ref abc > 0
         rob: !ref "!def"
-        qux: !sub Hello, \${ name }!
+        qux: !tpl Hello, {{ name }}!
       `
           .replace(/^\s{8}/gm, '')
           .trim(),

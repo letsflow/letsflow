@@ -3,7 +3,6 @@ import {
   CreateNodeOptions,
   DocumentOptions,
   ParseOptions,
-  Scalar,
   SchemaOptions,
   ToJSOptions,
   ToStringOptions,
@@ -13,7 +12,8 @@ import { stringifyString } from 'yaml/util';
 
 const fnTag = (type: string): YAML.ScalarTag => ({
   identify: (value) => {
-    return typeof value === 'object' && value !== null && `<${type}>` in value;
+    return typeof value === 'object' && value !== null && `<${type}>` in value
+      && typeof value[`<${type}>`] === 'string';
   },
   tag: `!${type}`,
   stringify(item: YAML.Scalar<Record<string, string>>, ctx, onComment, onChompKeep) {
@@ -25,17 +25,19 @@ const fnTag = (type: string): YAML.ScalarTag => ({
   },
 });
 
-function parseValue(value: any) {
-  const numValue: any = Number(value);
-  if (!isNaN(numValue)) {
-    return numValue;
-  }
+const tplExplicitTag: YAML.CollectionTag = {
+  tag: '!tpl',
+  collection: 'map',
+  resolve(map: YAMLMap.Parsed) {
+    const tplKey = new YAML.Scalar('<tpl>');
+    tplKey.range = [0, 0, 0];
 
-  if (value === 'true' || value === 'false') {
-    return value === 'true';
-  }
+    const wrappedMap = new YAMLMap();
+    wrappedMap.range = [0, 0, 0];
+    wrappedMap.items.push(new YAML.Pair(tplKey, map) as any);
 
-  return value;
+    return wrappedMap;
+  },
 }
 
 const constTag: YAML.ScalarTag = {
@@ -63,23 +65,34 @@ const requiredMapTag: YAML.CollectionTag = {
   tag: '!required',
   collection: 'map',
   resolve(map: YAMLMap.Parsed) {
-    const result: Record<string, any> = {};
-    for (const item of map.items) {
-      const key = item.key instanceof Scalar ? item.key.value : String(item.key);
-      const value = item.value instanceof Scalar ? item.value.value : item.value;
+    // Create a parsed scalar for the `required` property
+    const requiredKey = new YAML.Scalar('!required');
+    requiredKey.range = [0, 0, 0];
 
-      if (key && typeof key === 'string') {
-        result[key] = value;
-      }
-    }
+    const requiredValue = new YAML.Scalar(true);
+    requiredValue.range = [0, 0, 0];
 
-    result['!required'] = true;
-    return result;
+    map.items.push(new YAML.Pair(requiredKey, requiredValue) as any);
+
+    return map;
   },
 }
 
+function parseValue(value: any) {
+  const numValue: any = Number(value);
+  if (!isNaN(numValue)) {
+    return numValue;
+  }
+
+  if (value === 'true' || value === 'false') {
+    return value === 'true';
+  }
+
+  return value;
+}
+
 export const schema = new YAML.Schema({
-  customTags: [fnTag('ref'), fnTag('sub'), constTag, defaultTag, requiredScalarTag, requiredMapTag],
+  customTags: [fnTag('ref'), fnTag('tpl'), tplExplicitTag, constTag, defaultTag, requiredScalarTag, requiredMapTag],
 });
 
 export function stringify(data: any, options?: DocumentOptions & SchemaOptions & ParseOptions & CreateNodeOptions & ToStringOptions): string {

@@ -1,14 +1,14 @@
 import { expect } from 'chai';
-import { ref, sub, applyFn } from '../../src/process/fn';
+import { applyFn, ref, tpl } from '../../src/process/fn';
 
 describe('ref', () => {
-  const data = { name: 'Alice', age: 25, items: { a: 1, b: 2, c: 3 } };
+  const data = { name: 'Alice', age: 25, map: { a: 1, b: 2, c: 3 } };
 
   it('should apply jmespath expressions correctly', () => {
     expect(ref('name', data)).to.eq('Alice');
     expect(ref('age', data)).to.eq(25);
 
-    expect(ref('items.*', data)).to.deep.equal([1, 2, 3]);
+    expect(ref('map.*', data)).to.deep.equal([1, 2, 3]);
   });
 
   it('should auto quote string literals', () => {
@@ -17,41 +17,25 @@ describe('ref', () => {
   });
 });
 
-describe('sub', () => {
-  const data = { name: 'Alice', age: 25, items: { a: 1, b: 2, c: 3 } };
+describe('tpl', () => {
+  const data = { name: 'Alice', age: 25, map: { a: 1, b: 2, c: 3 }, list: ['one', 'two', 'three'] };
 
   it('should extract and replace expressions correctly', () => {
-    expect(sub('Hello, ${name}!', data)).to.eq('Hello, Alice!');
-    expect(sub('${age} years old.', data)).to.eq('25 years old.');
+    expect(tpl('Hello, {{name}}!', data)).to.eq('Hello, Alice!');
+    expect(tpl('{{ age }} years old.', data)).to.eq('25 years old.');
   });
 
-  it('should extract expressions with {', () => {
-    expect(sub('${age} {{ years old }', data)).to.eq('25 {{ years old }');
+  it('should loop over an array', () => {
+    expect(tpl('Items: {{#list}}{{.}} {{/list}}', data)).to.eq('Items: one two three ');
   });
 
   it('should extract multiple expressions in a single string', () => {
-    expect(sub('Name: ${name}, Age: ${age}.', data)).to.eq('Name: Alice, Age: 25.');
-  });
-
-  it('should extract expression with quoted brackets', () => {
-    expect(sub("Value: ${'{'}", data)).to.eq('Value: {');
-    expect(sub("Value: ${'}'}", data)).to.eq('Value: }');
-    expect(sub("Value: ${'{}'}", data)).to.eq('Value: {}');
-    expect(sub("Value: ${'{'} and ${'}'}", data)).to.eq('Value: { and }');
-  });
-
-  it('should extract expression with nested brackets', () => {
-    expect(sub('Nested: ${to_string(items.{x: a, y: b})}', data)).to.eq('Nested: {"x":1,"y":2}');
-  });
-
-  it('should extract expression with nested quoted brackets', () => {
-    const result = sub("Nested: ${items.* | [].to_string(@) | join('{', @)}", data);
-    expect(result).to.eq('Nested: 1{2{3');
+    expect(tpl('Name: {{ name }}, Age: {{ age }}.', data)).to.eq('Name: Alice, Age: 25.');
   });
 
   it('should handle errors for unmatched brackets', () => {
-    expect(() => sub('${name', data)).to.throw(Error);
-    expect(() => sub('${{name}', data)).to.throw(Error);
+    expect(() => tpl('{{name', data)).to.throw(Error);
+    expect(() => tpl('{{ {name }}', data)).to.throw(Error);
   });
 });
 
@@ -80,8 +64,8 @@ describe('applyFn', () => {
     expect(result).to.eq(expected);
   });
 
-  it('should call sub function when encountering "<sub>" key', () => {
-    const subject = { '<sub>': 'Hello, ${name}!' };
+  it('should call tpl function when encountering "<tpl>" key with a string', () => {
+    const subject = { '<tpl>': 'Hello, {{ name }}!' };
     const data = { name: 'Alice' };
     const expected = 'Hello, Alice!';
 
@@ -90,12 +74,21 @@ describe('applyFn', () => {
     expect(result).to.eq(expected);
   });
 
+  it('should call tpl function when encountering "<tpl>" key with template and data', () => {
+    const subject = { '<tpl>': { template: 'Hello, {{ name }}!', data: { name: 'Alice'} }};
+    const expected = 'Hello, Alice!';
+
+    const result = applyFn(subject, {});
+
+    expect(result).to.eq(expected);
+  });
+
   it('should recursively apply the function to each item in an array', () => {
     const subject = [
       { '<ref>': 'name' },
-      { '<sub>': 'Hello, ${name}!' },
+      { '<tpl>': 'Hello, {{ name }}!' },
       [1, 2, 3],
-      [{ '<ref>': 'age' }, { '<sub>': 'Age: ${age}' }],
+      [{ '<ref>': 'age' }, { '<tpl>': 'Age: {{ age }}' }],
     ];
     const expected = ['Alice', 'Hello, Alice!', [1, 2, 3], [25, 'Age: 25']];
     const data = { name: 'Alice', age: 25 };
@@ -109,11 +102,11 @@ describe('applyFn', () => {
     const subject = {
       person: {
         name: { '<ref>': 'name' },
-        greeting: { '<sub>': 'Hello, ${name}!' },
+        greeting: { '<tpl>': 'Hello, {{ name }}!' },
       },
       items: {
         a: { '<ref>': 'age' },
-        b: { '<sub>': 'Age: ${age}' },
+        b: { '<tpl>': 'Age: {{ age }}' },
       },
     };
     const expected = {
@@ -131,6 +124,16 @@ describe('applyFn', () => {
     const result = applyFn(subject, data);
 
     expect(result).to.deep.equal(expected);
+  });
+
+  it('should apply a <ref> function to the data of a <tpl> function', () => {
+    const subject = {
+      '<tpl>': { template: 'Hello, {{ name }}!', data: { '<ref>': 'data.person' }},
+    };
+    const expected = 'Hello, Alice!';
+    const data = { person: { name: 'Alice' } };
+
+    const result = applyFn(subject, { data });
   });
 });
 

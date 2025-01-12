@@ -12,7 +12,7 @@ describe('instantiate', () => {
         title: 'some scenario',
         actions: {
           complete: {
-            description: { '<sub>': 'Complete ${scenario.title}' },
+            description: { '<tpl>': 'Complete {{scenario.title}}' },
           },
         },
         states: {
@@ -163,7 +163,7 @@ describe('instantiate', () => {
         },
         actions: {
           complete: {
-            description: { '<sub>': 'Complete ${scenario.title}' },
+            description: { '<tpl>': 'Complete {{scenario.title}}' },
           },
           other: {
             if: false,
@@ -194,9 +194,9 @@ describe('instantiate', () => {
     it('should instantiate a state', () => {
       scenario.states.next = {
         title: 'Next state',
-        description: { '<sub>': 'Complete by ${actors.client.name}' },
+        description: { '<tpl>': 'Complete by {{actors.client.name}}' },
         instructions: {
-          client: { '<sub>': 'Hello ${actors.client.name}' },
+          client: { '<tpl>': 'Hello {{actors.client.name}}' },
         },
         actions: ['complete', 'other'],
         transitions: [
@@ -214,7 +214,7 @@ describe('instantiate', () => {
             if: true,
             message: {
               recipient: { '<ref>': 'actors.client' },
-              body: { '<sub>': 'Welcome ${actors.client.name}' },
+              body: { '<tpl>': 'Welcome {{actors.client.name}}' },
             },
           },
         ],
@@ -294,7 +294,7 @@ describe('instantiate', () => {
         },
         actions: {
           complete: {
-            description: { '<sub>': 'Complete ${scenario.title}' },
+            description: { '<tpl>': 'Complete {{scenario.title}}' },
             actor: { '<ref>': 'vars.act' },
             if: { '<ref>': 'vars.amount > 100' },
           },

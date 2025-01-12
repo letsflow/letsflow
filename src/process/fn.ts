@@ -2,6 +2,7 @@ import jmespath, { TYPE_ANY, TYPE_BOOLEAN, TYPE_STRING } from '@letsflow/jmespat
 import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex } from '@noble/hashes/utils';
 import stringify from 'fast-json-stable-stringify';
+import { render } from 'mustache';
 import { NIL, v5 as uuidv5 } from 'uuid';
 import { Fn } from '../scenario';
 
@@ -60,11 +61,17 @@ export function applyFn(subject: any, data: Record<string, any>): any {
   }
 
   if ('<ref>' in subject) {
-    return ref(subject['<ref>'], data);
+    return typeof subject['<ref>'] === 'string' ? ref(subject['<ref>'], data) : undefined;
   }
 
-  if ('<sub>' in subject) {
-    return sub(subject['<sub>'], data);
+  if ('<tpl>' in subject) {
+    if (typeof subject['<tpl>'] === 'string') {
+      return tpl(subject['<tpl>'], data);
+    }
+    if (typeof subject['<tpl>'] === 'object' && 'template' in subject['<tpl>']) {
+      return tpl(subject['<tpl>'].template, subject['<tpl>'].data ?? data);
+    }
+    return undefined;
   }
 
   return Object.fromEntries(Object.entries(subject).map(([key, value]) => [key, applyFn(value, data)]));
@@ -75,7 +82,8 @@ export function isFn(subject: any): subject is Fn {
     typeof subject === 'object' &&
     subject !== null &&
     !(subject instanceof Date) &&
-    ('<ref>' in subject || '<sub>' in subject)
+    !Array.isArray(subject) &&
+    ('<ref>' in subject || '<tpl>' in subject)
   );
 }
 
@@ -83,63 +91,6 @@ export function ref(expression: string, data: JSONData): any {
   return jmespath.search(data, expression);
 }
 
-export function sub(value: string, data: Record<string, any>): string {
-  return subApply(value, (expr): string => {
-    const value = jmespath.search(data, expr);
-
-    if (typeof value === 'object' && value !== null) {
-      throw new Error(`Cannot substitute: expression '${expr}' returned an object`);
-    }
-
-    return String(value ?? '');
-  });
-}
-
-function subApply(input: string, replace: (expr: string) => string): string {
-  let output = '';
-  let expression = '';
-  let dollarSeen = false;
-  let bracketCount = 0;
-  let isInQuotes = false;
-
-  for (const char of input) {
-    if (bracketCount > 0 && (char === "'" || char === '"' || char === '`')) {
-      isInQuotes = !isInQuotes;
-    }
-
-    if (char === '$' && bracketCount === 0) {
-      dollarSeen = true;
-      continue;
-    }
-
-    if (dollarSeen && char === '{' && !isInQuotes) {
-      bracketCount++;
-    } else if (bracketCount > 0 && char === '{' && !isInQuotes) {
-      bracketCount++;
-      expression += char;
-    } else if (bracketCount > 1 && char === '}' && !isInQuotes) {
-      bracketCount--;
-      expression += char;
-    } else if (bracketCount === 1 && char === '}' && !isInQuotes) {
-      bracketCount--;
-      output += replace(expression);
-      expression = '';
-    } else if (bracketCount > 0) {
-      expression += char;
-    } else {
-      if (dollarSeen) {
-        output += '$';
-        dollarSeen = false;
-      }
-      output += char;
-    }
-
-    dollarSeen = false;
-  }
-
-  if (bracketCount > 0) {
-    throw new Error('Invalid expression');
-  }
-
-  return output;
+export function tpl(value: string, data: Record<string, any>): string {
+  return render(value, data, undefined, { escape: (v) => v });
 }

@@ -16,12 +16,33 @@
     },
     {
       "properties": {
-        "<sub>": {
+        "<tpl>": {
           "type": "string"
         }
       },
       "required": [
-        "<sub>"
+        "<tpl>"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "<tpl>": {
+          "type": "object",
+          "properties": {
+            "template": {
+              "type": "string"
+            },
+            "data": {}
+          },
+          "required": [
+            "template"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "<tpl>"
       ],
       "additionalProperties": false
     }
