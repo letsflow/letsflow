@@ -1,14 +1,6 @@
 import * as YAML from 'yaml';
+import { CreateNodeOptions, DocumentOptions, ParseOptions, SchemaOptions, ToJSOptions, ToStringOptions } from 'yaml';
 import { stringifyString } from 'yaml/util';
-
-import {
-  DocumentOptions,
-  ParseOptions,
-  SchemaOptions,
-  ToJSOptions,
-  CreateNodeOptions,
-  ToStringOptions,
-} from 'yaml';
 
 const fnTag = (type: string): YAML.ScalarTag => ({
   identify: (value) => {
