@@ -142,7 +142,9 @@
           "document": {
             "type": "string"
           }
-        }
+        },
+        "type": "object",
+        "additionalProperties": false
       },
       "update": [
         {
@@ -446,8 +448,8 @@
       "title": "quote request"
     },
     "document": {
-      "title": "document",
-      "type": "string"
+      "type": "string",
+      "title": "document"
     }
   },
   "result": {

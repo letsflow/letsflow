@@ -128,6 +128,10 @@ function normalizeListOfSchemas(schemas: Schema[]): Schema[] {
 }
 
 function normalizeSchema(schema: Schema): void {
+  if ('$ref' in schema) {
+    return;
+  }
+
   schema.type ??= 'items' in schema ? 'array' : 'object';
 
   if ('!required' in schema) {
@@ -178,7 +182,8 @@ function normalizeActions(actions: Record<string, Action | null>): void {
     action.response ??= {};
     if (typeof action.response === 'string') {
       action.response = stringToSchema(action.response);
-    } else {
+    }
+    if (typeof action.response === 'object' && Object.keys(action.response).length > 0 && !isFn(action.response)) {
       normalizeSchema(action.response);
     }
 

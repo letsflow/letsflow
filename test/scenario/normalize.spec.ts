@@ -251,22 +251,54 @@ describe('normalize scenario', () => {
         title: '',
         actors: {},
         actions: {
-          complete: {
+          one: {
             response: 'string',
+          },
+          two: {
+            response: {
+              properties: {
+                foo: {
+                  type: 'string',
+                  '!required': true,
+                },
+                bar: 'number',
+              },
+            },
           },
         },
         states: {},
       };
 
       expect(normalize(scenario).actions).to.deep.eq({
-        complete: {
+        one: {
           $schema: 'https://schemas.letsflow.io/v1.0.0/action',
-          title: 'complete',
+          title: 'one',
           description: '',
           if: true,
           actor: ['*'],
           response: {
             type: 'string',
+          },
+          update: [],
+        },
+        two: {
+          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          title: 'two',
+          description: '',
+          if: true,
+          actor: ['*'],
+          response: {
+            type: 'object',
+            properties: {
+              foo: {
+                type: 'string',
+              },
+              bar: {
+                type: 'number',
+              },
+            },
+            required: ['foo'],
+            additionalProperties: false,
           },
           update: [],
         },
