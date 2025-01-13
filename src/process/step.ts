@@ -43,7 +43,7 @@ export function step(
   const hashFn = options.hashFn ?? withHash;
   const ajv = options.ajv ?? defaultAjv;
 
-  const stepErrors = validateStep(process, action, actor);
+  const stepErrors = validateStep(ajv, process, action, actor, response);
 
   const event = hashFn(createEvent(process, action, actor, response, stepErrors));
   process.events.push(event);
@@ -113,7 +113,7 @@ function createEvent(
   }
 }
 
-function validateStep(process: Process, action: string, actor: StepActor): string[] {
+function validateStep(ajv: Ajv, process: Process, action: string, actor: StepActor, response: any): string[] {
   const errors: string[] = [];
 
   const key = `${process.current.key}.${action}` in process.scenario.actions
@@ -173,6 +173,14 @@ function validateStep(process: Process, action: string, actor: StepActor): strin
 
   if (currentAction && !currentAction.if) {
     errors.push(`Action '${action}' is not allowed due to if condition`);
+  }
+
+  if (
+    currentAction?.response &&
+    Object.keys(currentAction.response).length > 0 &&
+    !ajv.validate(currentAction.response, response)
+  ) {
+    errors.push(`Response is invalid: ${ajv.errorsText()}`);
   }
 
   return errors;

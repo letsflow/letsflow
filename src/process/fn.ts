@@ -69,7 +69,7 @@ export function applyFn(subject: any, data: Record<string, any>): any {
       return tpl(subject['<tpl>'], data);
     }
     if (typeof subject['<tpl>'] === 'object' && 'template' in subject['<tpl>']) {
-      return tpl(subject['<tpl>'].template, subject['<tpl>'].data ?? data);
+      return tpl(applyFn(subject['<tpl>'].template, data), applyFn(subject['<tpl>'].data, data) ?? data);
     }
     return undefined;
   }

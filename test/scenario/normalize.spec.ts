@@ -139,6 +139,41 @@ describe('normalize scenario', () => {
         },
       });
     });
+
+    it('should set required properties', () => {
+      const scenario: Scenario = {
+        title: '',
+        actors: {
+          user: {
+            properties: {
+              name: { type: 'string', '!required': true },
+            },
+          },
+        },
+        actions: {},
+        states: {},
+      };
+
+      expect(normalize(scenario).actors).to.deep.eq({
+        user: {
+          title: 'user',
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            title: { type: 'string' },
+            name: { type: 'string' },
+            role: {
+              oneOf: [
+                { type: 'string' },
+                { type: 'array', items: { type: 'string' } },
+              ]
+            }
+          },
+          additionalProperties: false,
+          required: ['name']
+        },
+      });
+    })
   });
 
   describe('actions', () => {

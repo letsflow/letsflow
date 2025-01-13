@@ -128,12 +128,14 @@ describe('applyFn', () => {
 
   it('should apply a <ref> function to the data of a <tpl> function', () => {
     const subject = {
-      '<tpl>': { template: 'Hello, {{ name }}!', data: { '<ref>': 'data.person' }},
+      '<tpl>': { template: 'Hello, {{ name }}!', data: { '<ref>': 'persons.friend' }},
     };
     const expected = 'Hello, Alice!';
-    const data = { person: { name: 'Alice' } };
+    const data = { persons: { friend: { name: 'Alice' } } };
 
-    const result = applyFn(subject, { data });
+    const result = applyFn(subject, data);
+
+    expect(result).to.eq(expected);
   });
 });
 

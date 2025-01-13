@@ -338,7 +338,6 @@ describe('step', () => {
       };
 
       const newProcess = instantiate(scenario, instructions);
-
       const process = step(newProcess, 'complete', 'actor');
 
       expect(process.current.key).to.eq('initial');
@@ -348,6 +347,51 @@ describe('step', () => {
       expect(event.skipped).to.be.true;
       expect(event.errors).to.have.length(1);
       expect(event.errors![0]).to.eq("Action 'complete' is not allowed due to if condition");
+    });
+  });
+
+  describe('assert response', () => {
+    const scenario = normalize({
+      title: 'some scenario',
+      actions: {
+        complete: {
+          response: 'string',
+        },
+      },
+      states: {
+        initial: {
+          on: 'complete',
+          goto: '(done)',
+        },
+      },
+    });
+
+    it('should step to the next state if the response is valid', () => {
+      const instructions = {
+        scenario: uuid(scenario),
+      };
+
+      const newProcess = instantiate(scenario, instructions);
+      const process = step(newProcess, 'complete', 'actor', 'hello world');
+
+      expect(process.current.key).to.eq('(done)');
+    });
+
+    it('should skip the action if the response is invalid', () => {
+      const instructions = {
+        scenario: uuid(scenario),
+      };
+
+      const newProcess = instantiate(scenario, instructions);
+      const process = step(newProcess, 'complete', 'actor', { foo: 'bar' });
+
+      expect(process.current.key).to.eq('initial');
+      expect(process.events).to.have.length(2);
+
+      const event = process.events[1] as ActionEvent;
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq('Response is invalid: data must be string');
     });
   });
 
