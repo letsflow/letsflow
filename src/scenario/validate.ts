@@ -1,7 +1,8 @@
-import Ajv from 'ajv/dist/2020';
+import Ajv from 'ajv';
 import { ErrorObject } from 'ajv/dist/types';
+import { ajv as defaultAjv } from '../ajv';
 import { isFn } from '../process/fn';
-import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from '../schemas/v1.0.0';
+import { scenarioSchema } from '../schemas/v1.0.0';
 import { EndState, Notify, Scenario, State } from './interfaces/scenario';
 
 export interface ValidateFunction {
@@ -9,13 +10,10 @@ export interface ValidateFunction {
   errors?: null | ErrorObject[];
 }
 
-const ajv = new Ajv();
-ajv.addKeyword('$anchor'); // Workaround for https://github.com/ajv-validator/ajv/issues/1854
-ajv.addSchema([actionSchema, actorSchema, fnSchema, schemaSchema]);
+export const validate: ValidateFunction = (scenario: any, options: { ajv?: Ajv } = {}): boolean => {
+  const ajv = options.ajv ?? defaultAjv;
+  const validateSchema = ajv.compile(scenarioSchema);
 
-const validateSchema = ajv.compile(scenarioSchema);
-
-export const validate: ValidateFunction = (scenario: any): boolean => {
   validateSchema(scenario);
 
   const errors = [...(validateSchema.errors || []), ...validateActions(scenario), ...validateStates(scenario)];

@@ -1,11 +1,13 @@
 import Ajv from 'ajv/dist/2020';
 import get from 'get-value';
 import set from 'set-value';
-import { NormalizedScenario, NormalizedTransition, Transition } from '../scenario';
+import { ajv as defaultAjv } from '../ajv';
+import { NormalizedTransition, Transition } from '../scenario';
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { instantiateAction, instantiateState } from './instantiate';
 import { ActionEvent, Process, TimeoutEvent } from './interfaces/process';
+import { validateProcess } from './validate';
 
 interface InstantiatedUpdateInstructions {
   set: string;
@@ -19,9 +21,6 @@ interface StepActor {
   id?: string;
   roles?: string[];
 }
-
-const defaultAjv = new Ajv({ allErrors: true });
-defaultAjv.addKeyword('$anchor'); // Workaround for https://github.com/ajv-validator/ajv/issues/1854
 
 /**
  * Step the process forward by one action.
@@ -64,7 +63,7 @@ export function step(
     update(process, instructions.set, instructions.data, instructions.mode, actor.key);
   }
 
-  const updateErrors = validateUpdate(ajv, process);
+  const updateErrors = validateProcess(process, { ajv });
 
   const next: NormalizedTransition = process.scenario.states[process.current.key].transitions
     .filter((transition: NormalizedTransition) => 'on' in transition)
@@ -190,7 +189,9 @@ function validateStep(ajv: Ajv, process: Process, action: string, actor: StepAct
  * Step the process forward in case of a timeout.
  * @return The updated process.
  */
-export function timeout(input: Process, hashFn = withHash): Process {
+export function timeout(input: Process, options: { hashFn?: typeof withHash } = {}): Process {
+  const hashFn = options.hashFn ?? withHash;
+
   const process = structuredClone(input);
   const current = process.scenario.states[process.current.key];
 
@@ -256,81 +257,6 @@ function update(
   if (path.match(/^current\.actor(\.|$)/) && currentActor in process.actors) {
     process.actors[currentActor] = process.current.actor!;
   }
-}
-
-function validateUpdate(ajv: Ajv, process: Process): string[] {
-  return [
-    ...validateTitle(process),
-    ...validateActors(ajv, process),
-    ...validateVars(ajv, process),
-    ...validateResult(ajv, process),
-  ];
-}
-
-function validateTitle(process: Process): string[] {
-  // noinspection SuspiciousTypeOfGuard
-  return typeof process.title === 'string' ? [] : ['Title is invalid: must be a string'];
-}
-
-function validateActors(ajv: Ajv, process: Process): string[] {
-  const errors: string[] = [];
-
-  for (const [key, actor] of Object.entries(process.actors)) {
-    const schema = findSchema(process.scenario, 'actors', key);
-    if (!schema) {
-      errors.push(`Actor '${key}' is not defined in the scenario`);
-      continue;
-    }
-
-    const valid = ajv.validate(schema, actor);
-    if (!valid) {
-      errors.push(`Actor '${key}' is invalid: ${ajv.errorsText()}`);
-    }
-  }
-
-  for (const key of Object.keys(process.scenario.actors)) {
-    if (!key.endsWith('*') && !process.actors[key]) {
-      errors.push(`Actor '${key}' is missing`);
-    }
-  }
-
-  return errors;
-}
-
-function validateVars(ajv: Ajv, process: Process): string[] {
-  const errors: string[] = [];
-
-  for (const [key, value] of Object.entries(process.vars)) {
-    const schema = findSchema(process.scenario, 'vars', key);
-    if (!schema) {
-      errors.push(`Variable '${key}' is not defined in the scenario`);
-      continue;
-    }
-
-    const valid = ajv.validate(schema, value);
-    if (!valid) {
-      errors.push(`Variable '${key}' is invalid: ${ajv.errorsText()}`);
-    }
-  }
-
-  return errors;
-}
-
-function validateResult(ajv: Ajv, process: Process): string[] {
-  const errors: string[] = [];
-
-  if (process.result) {
-    const valid = ajv.validate(process.scenario.result, process.result);
-    if (!valid) {
-      errors.push(`Result is invalid: ${ajv.errorsText()}`);
-    }
-  }
-
-  return errors;
-}
-
-function findSchema(scenario: NormalizedScenario, property: string, key: string) {
-  return scenario[property][key] ? scenario[property][key] : scenario[property][key.replace(/\d+$/, '*')];
 }
 
 function includesActor(actors: string[], key: string): boolean {
