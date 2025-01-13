@@ -42,17 +42,19 @@ export function step(
   const hashFn = options.hashFn ?? withHash;
   const ajv = options.ajv ?? defaultAjv;
 
-  const stepErrors = validateStep(ajv, process, action, actor, response);
-
-  const event = hashFn(createEvent(process, action, actor, response, stepErrors));
+  const event = hashFn(createEvent(process, action, actor, response));
   process.events.push(event);
-
-  if (stepErrors.length > 0) {
-    return process;
-  }
 
   process.current.response = response;
   process.current.actor = process.actors[actor.key];
+
+  const stepErrors = validateStep(ajv, process, action, actor, response);
+
+  if (stepErrors.length > 0) {
+    const reverted = structuredClone(input);
+    reverted.events.push(hashFn({ ...event, skipped: true, errors: stepErrors }));
+    return reverted;
+  }
 
   const currentAction =
     process.scenario.actions[`${process.current.key}.${action}`] || process.scenario.actions[action];
@@ -99,7 +101,7 @@ function createEvent(
   action: string,
   actor: StepActor,
   response: any,
-  errors: string[],
+  errors: string[] = [],
 ): Omit<ActionEvent, 'hash'> {
   return {
     previous: process.events[process.events.length - 1].hash,
