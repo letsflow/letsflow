@@ -33,7 +33,13 @@
             "template": {
               "type": "string"
             },
-            "data": {}
+            "view": {},
+            "partials": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
           },
           "required": [
             "template"

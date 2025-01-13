@@ -378,7 +378,7 @@ describe('normalize scenario', () => {
           update: [
             {
               set: 'vars.foo',
-              data: { '<ref>': 'current.response' },
+              value: { '<ref>': 'current.response' },
               mode: 'replace',
               if: true,
             },

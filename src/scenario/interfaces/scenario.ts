@@ -38,7 +38,7 @@ export interface Action {
 
 export interface UpdateInstruction {
   set: string | Fn;
-  data?: any | Fn;
+  value?: any | Fn;
   mode?: 'replace' | 'merge' | 'append';
   if?: boolean | Fn;
 }

@@ -567,10 +567,10 @@ describe('step', () => {
         actions: {
           complete: {
             update: [
-              { set: 'title', data: 'updated title' },
-              { set: 'actors.client.title', data: 'Updated actor' },
-              { set: 'vars.foo', data: 'bar' },
-              { set: 'result', data: 42 },
+              { set: 'title', value: 'updated title' },
+              { set: 'actors.client.title', value: 'Updated actor' },
+              { set: 'vars.foo', value: 'bar' },
+              { set: 'result', value: 42 },
             ],
           },
         },
@@ -612,7 +612,7 @@ describe('step', () => {
         },
         actions: {
           complete: {
-            update: [{ set: 'current.actor.title', data: { '<ref>': 'current.response.title' } }],
+            update: [{ set: 'current.actor.title', value: { '<ref>': 'current.response.title' } }],
           },
         },
         states: {

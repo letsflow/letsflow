@@ -74,7 +74,7 @@
       "update": [
         {
           "set": "actors.client",
-          "data": {
+          "value": {
             "<ref>": "current.response"
           },
           "mode": "replace",
@@ -113,7 +113,7 @@
       "update": [
         {
           "set": "vars.quote_request",
-          "data": {
+          "value": {
             "<ref>": "current.response"
           },
           "mode": "replace",
@@ -149,7 +149,7 @@
       "update": [
         {
           "set": "vars.document",
-          "data": {
+          "value": {
             "<ref>": "current.response"
           },
           "mode": "replace",
@@ -174,7 +174,7 @@
       "update": [
         {
           "set": "actors.client",
-          "data": {
+          "value": {
             "<ref>": "current.response"
           },
           "mode": "replace",

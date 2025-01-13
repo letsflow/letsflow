@@ -198,7 +198,7 @@ function normalizeUpdateInstructions(
 
   return (Array.isArray(instructions) ? instructions : [instructions]).map((instruction) => ({
     set: instruction.set,
-    data: instruction.data ?? { '<ref>': 'current.response' },
+    value: instruction.value ?? { '<ref>': 'current.response' },
     mode: instruction.mode ?? 'replace',
     if: instruction.if ?? true,
   }));

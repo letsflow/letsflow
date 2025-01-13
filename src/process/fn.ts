@@ -69,7 +69,11 @@ export function applyFn(subject: any, data: Record<string, any>): any {
       return tpl(subject['<tpl>'], data);
     }
     if (typeof subject['<tpl>'] === 'object' && 'template' in subject['<tpl>']) {
-      return tpl(applyFn(subject['<tpl>'].template, data), applyFn(subject['<tpl>'].data, data) ?? data);
+      return tpl(
+        applyFn(subject['<tpl>'].template, data),
+        applyFn(subject['<tpl>'].view, data) ?? data,
+        applyFn(subject['<tpl>'].partials, data),
+      );
     }
     return undefined;
   }
@@ -91,6 +95,6 @@ export function ref(expression: string, data: JSONData): any {
   return jmespath.search(data, expression);
 }
 
-export function tpl(value: string, data: Record<string, any>): string {
-  return render(value, data, undefined, { escape: (v) => v });
+export function tpl(template: string, view: Record<string, any>, partials?: Record<string, string>): string {
+  return render(template, view, partials, { escape: (v) => v });
 }

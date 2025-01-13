@@ -11,7 +11,7 @@ import { validateProcess } from './validate';
 
 interface InstantiatedUpdateInstructions {
   set: string;
-  data: any;
+  value: any;
   mode: 'replace' | 'merge' | 'append';
   if: boolean;
 }
@@ -62,7 +62,7 @@ export function step(
   for (const scenarioInstructions of currentAction.update) {
     const instructions: InstantiatedUpdateInstructions = applyFn(scenarioInstructions, process);
     if (!instructions.if) continue;
-    update(process, instructions.set, instructions.data, instructions.mode, actor.key);
+    update(process, instructions.set, instructions.value, instructions.mode, actor.key);
   }
 
   const updateErrors = validateProcess(process, { ajv });
@@ -226,7 +226,7 @@ export function timeout(input: Process, options: { hashFn?: typeof withHash } = 
 function update(
   process: Process,
   path: string,
-  data: any,
+  value: any,
   mode: 'replace' | 'merge' | 'append',
   currentActor: string,
 ): void {
@@ -237,10 +237,10 @@ function update(
   if (mode === 'merge') {
     const current: any = get(process, path);
 
-    if (Array.isArray(current) && Array.isArray(data)) {
-      data = [...current, ...data];
-    } else if (typeof current === 'object' && typeof data === 'object') {
-      data = { ...current, ...data };
+    if (Array.isArray(current) && Array.isArray(value)) {
+      value = [...current, ...value];
+    } else if (typeof current === 'object' && typeof value === 'object') {
+      value = { ...current, ...value };
     }
   }
 
@@ -248,13 +248,13 @@ function update(
     const current: any = get(process, path);
 
     if (Array.isArray(current)) {
-      data = [...current, data];
+      value = [...current, value];
     } else {
-      data = [data];
+      value = [value];
     }
   }
 
-  set(process, path, data);
+  set(process, path, value);
 
   if (path.match(/^current\.actor(\.|$)/) && currentActor in process.actors) {
     process.actors[currentActor] = process.current.actor!;
