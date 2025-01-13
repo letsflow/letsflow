@@ -178,6 +178,8 @@ function normalizeActions(actions: Record<string, Action | null>): void {
     action.response ??= {};
     if (typeof action.response === 'string') {
       action.response = stringToSchema(action.response);
+    } else {
+      normalizeSchema(action.response);
     }
 
     action.update = normalizeUpdateInstructions(action.update ?? []);
