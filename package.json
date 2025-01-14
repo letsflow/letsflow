@@ -26,6 +26,10 @@
     },
     "./package.json": "./package.json"
   },
+  "files": [
+    "lib",
+    "src"
+  ],  
   "dependencies": {
     "@letsflow/jmespath": "^1.1.4-jasny.1",
     "@noble/hashes": "^1.4.0",
