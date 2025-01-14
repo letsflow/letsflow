@@ -1,9 +1,12 @@
 {
   "name": "@letsflow/core",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Shared library for LetsFlow",
   "author": "Arnold Daniels <arnold@jasny.net>",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./lib/index.d.ts",
@@ -24,7 +27,7 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@letsflow/jmespath": "../jmespath/",
+    "@letsflow/jmespath": "^1.1.4-jasny.1",
     "@noble/hashes": "^1.4.0",
     "ajv": "^8.16.0",
     "fast-json-stable-stringify": "^2.1.0",
