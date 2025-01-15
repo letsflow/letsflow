@@ -42,9 +42,7 @@ const tplExplicitTag: YAML.CollectionTag = {
 
 const constTag: YAML.ScalarTag = {
   tag: '!const',
-  resolve(str) {
-    return { const: parseValue(str) };
-  },
+  resolve: (str) => ({ const: parseValue(str) }),
 };
 
 const defaultTag: YAML.ScalarTag = {
@@ -55,11 +53,19 @@ const defaultTag: YAML.ScalarTag = {
   },
 };
 
+const formatTag: YAML.ScalarTag = {
+  tag: '!format',
+  resolve: (format) => ({ type: 'string', format }),
+}
+
+const patternTag: YAML.ScalarTag = {
+  tag: '!pattern',
+  resolve: (pattern) => ({ type: 'string', pattern }),
+}
+
 const requiredScalarTag: YAML.ScalarTag = {
   tag: '!required',
-  resolve(type) {
-    return { type, '!required': true };
-  },
+  resolve: (type) => ({ type, '!required': true }),
 }
 const requiredMapTag: YAML.CollectionTag = {
   tag: '!required',
@@ -92,7 +98,17 @@ function parseValue(value: any) {
 }
 
 export const schema = new YAML.Schema({
-  customTags: [fnTag('ref'), fnTag('tpl'), tplExplicitTag, constTag, defaultTag, requiredScalarTag, requiredMapTag],
+  customTags: [
+    fnTag('ref'),
+    fnTag('tpl'),
+    tplExplicitTag,
+    constTag,
+    formatTag,
+    patternTag,
+    defaultTag,
+    requiredScalarTag,
+    requiredMapTag,
+  ],
 });
 
 export function stringify(data: any, options?: DocumentOptions & SchemaOptions & ParseOptions & CreateNodeOptions & ToStringOptions): string {

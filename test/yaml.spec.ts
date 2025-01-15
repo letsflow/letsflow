@@ -61,10 +61,9 @@ describe('yaml', () => {
         wam: { type: 'number', default: 22 },
       });
     });
-  });
 
-  it('should parse yaml with required tags', () => {
-    const yamlString = `
+    it('should parse yaml with required tags', () => {
+      const yamlString = `
         foo: !required string
         bar: !required
           type: array
@@ -72,23 +71,42 @@ describe('yaml', () => {
         wux: !required
           type: object
           properties:
-            one: string
+            one: !required string
             two: number
       `;
 
-    const data = parse(yamlString);
+      const data = parse(yamlString);
 
-    expect(data).to.eql({
-      foo: { type: 'string', '!required': true },
-      bar: { type: 'array', items: 'string', '!required': true },
-      wux: {
-        type: 'object',
-        properties: {
-          one: 'string',
-          two: 'number',
+      expect(data).to.eql({
+        foo: { type: 'string', '!required': true },
+        bar: { type: 'array', items: 'string', '!required': true },
+        wux: {
+          type: 'object',
+          properties: {
+            one: { type: 'string', '!required': true },
+            two: 'number',
+          },
+          '!required': true,
         },
-        '!required': true,
-      },
+      });
+    });
+
+    it('should parse yaml with format and pattern tags', () => {
+      const yamlString = `
+        foo: !format uuid
+        bar: !format 'date-time'
+        rob: !pattern ^[a-zA-Z]{3}$
+        qux: !pattern '^\\d{13}$'
+      `;
+
+      const data = parse(yamlString);
+
+      expect(data).to.eql({
+        foo: { type: 'string', format: 'uuid' },
+        bar: { type: 'string', format: 'date-time' },
+        rob: { type: 'string', pattern: '^[a-zA-Z]{3}$' },
+        qux: { type: 'string', pattern: '^\\d{13}$' },
+      });
     });
   });
 
