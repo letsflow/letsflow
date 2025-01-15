@@ -681,7 +681,7 @@ describe('step', () => {
         title: 'some scenario',
         actions: {
           complete: {
-            update: { set: 'current.key', data: '(whoops)' },
+            update: { set: 'current.key', value: '(whoops)' },
           },
         },
         states: {

@@ -1,6 +1,7 @@
 import { isFn } from '../process/fn';
-import { actionSchema, scenarioSchema } from '../schemas/v1.0.0';
+import { actionSchema, scenarioSchema, schemaSchema } from '../schemas/v1.0.0';
 import {
+  NormalizedAction,
   NormalizedExplicitTransition,
   NormalizedNotify,
   NormalizedScenario,
@@ -21,16 +22,27 @@ import {
 } from './interfaces/scenario';
 import { isEndState } from './validate';
 
-function keyToTitle(key: string): string {
-  return key.replace(/\*$/, '').replace('_', ' ').trim();
-}
+type InferReturnType<T> = T extends Scenario ? NormalizedScenario : Schema;
 
-export function normalize<T extends Scenario>(scenario: T): NormalizedScenario {
-  switch (scenario.$id ?? scenarioSchema.$id) {
+export function normalize(input: Scenario): NormalizedScenario;
+export function normalize<T extends Scenario | Schema>(
+  input: T,
+  defaults: { $schema: string }
+): InferReturnType<T>;
+
+export function normalize(input: Scenario | Schema, defaults?: { $schema: string }): NormalizedScenario | Schema {
+  const ref = input.$schema ?? defaults?.$schema ?? scenarioSchema.$id;
+
+  switch (ref) {
     case scenarioSchema.$id:
-      return normalizeScenario(scenario as Scenario);
+      return normalizeScenario(input as Scenario);
+    case schemaSchema.$id:
+      const schema: Schema = { $schema: schemaSchema.$schema, ...structuredClone(input) };
+      return normalizeSchema(schema);
+    case schemaSchema.$schema:
+      return input as Schema;
     default:
-      throw new Error(`Unsupported schema: ${scenario.$id}`);
+      throw new Error(`Unsupported schema: ${ref}`);
   }
 }
 
@@ -56,34 +68,31 @@ function normalizeScenario<T extends Scenario>(input: T): NormalizedScenario {
   return scenario as NormalizedScenario;
 }
 
-function normalizeActors(items: Record<string, ActorSchema | null>): void {
+function normalizeActors(items: Record<string, ActorSchema | string | null>): void {
   for (const key in items) {
-    const actor = items[key] || {};
-
-    actor.title ??= keyToTitle(key);
-    actor.type ??= 'object';
-    actor.properties = {
-      ...(actor.properties ?? {}),
-      id: 'string',
-      title: 'string',
-      role: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] },
-    };
-    actor.additionalProperties ??= false;
-
-    if (actor.properties) {
-      const { required } = normalizeSchemas(actor.properties);
-
-      if (required.length > 0) {
-        actor.required = dedup([...(actor.required ?? []), ...required]);
-      }
-    }
-
-    if (typeof actor.additionalProperties === 'object') {
-      normalizeSchema(actor.additionalProperties);
-    }
-
-    items[key] = actor;
+    items[key] = typeof items[key] === 'string' ? stringToSchema(items[key]) : (items[key] || {});
+    normalizeActor(items[key] as ActorSchema, key);
   }
+}
+
+function normalizeActor(schema: ActorSchema, key?: string): ActorSchema {
+  if (key) {
+    schema.title ??= keyToTitle(key);
+  }
+
+  if ('$ref' in schema) {
+    return schema;
+  }
+
+  schema.type ??= 'object';
+  schema.properties = {
+    ...(schema.properties ?? {}),
+    id: 'string',
+    title: 'string',
+    role: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] },
+  };
+
+  return normalizeSchema(schema);
 }
 
 function normalizeSchemas(schemas: Record<string, any>, setTitle = false): { required: string[] } {
@@ -127,9 +136,9 @@ function normalizeListOfSchemas(schemas: Schema[]): Schema[] {
   });
 }
 
-function normalizeSchema(schema: Schema): void {
+function normalizeSchema(schema: Schema): Schema {
   if ('$ref' in schema) {
-    return;
+    return schema;
   }
 
   schema.type ??= 'items' in schema ? 'array' : 'object';
@@ -161,34 +170,43 @@ function normalizeSchema(schema: Schema): void {
   if (schema.type === 'object') {
     schema.additionalProperties ??= false;
   }
+
+  return schema;
 }
 
 function normalizeActions(actions: Record<string, Action | null>): void {
   for (const key in actions) {
     if (actions[key] === null) actions[key] = {};
-    const action = actions[key] as Action;
-
-    action.$schema ??= actionSchema.$id;
-
-    action.title ??= keyToTitle(key);
-    action.description ??= '';
-    action.if ??= true;
-
-    action.actor ??= ['*'];
-    if (!Array.isArray(action.actor) && !isFn(action.actor)) {
-      action.actor = [action.actor];
-    }
-
-    action.response ??= {};
-    if (typeof action.response === 'string') {
-      action.response = stringToSchema(action.response);
-    }
-    if (typeof action.response === 'object' && Object.keys(action.response).length > 0 && !isFn(action.response)) {
-      normalizeSchema(action.response);
-    }
-
-    action.update = normalizeUpdateInstructions(action.update ?? []);
+    normalizeAction(actions[key] as Action, key);
   }
+}
+
+function normalizeAction(action: Action, key?: string): NormalizedAction {
+  action.$schema ??= actionSchema.$id;
+
+  if (key) {
+    action.title ??= keyToTitle(key);
+  }
+
+  action.description ??= '';
+  action.if ??= true;
+
+  action.actor ??= ['*'];
+  if (!Array.isArray(action.actor) && !isFn(action.actor)) {
+    action.actor = [action.actor];
+  }
+
+  action.response ??= {};
+  if (typeof action.response === 'string') {
+    action.response = stringToSchema(action.response);
+  }
+  if (typeof action.response === 'object' && Object.keys(action.response).length > 0 && !isFn(action.response)) {
+    normalizeSchema(action.response);
+  }
+
+  action.update = normalizeUpdateInstructions(action.update ?? []);
+
+  return action as NormalizedAction;
 }
 
 function normalizeUpdateInstructions(
@@ -413,6 +431,10 @@ function convertTimePeriodToSeconds(timePeriod: string): number {
     default:
       throw new Error('Invalid time period unit.');
   }
+}
+
+function keyToTitle(key: string): string {
+  return key.replace(/\*$/, '').replace('_', ' ').trim();
 }
 
 function dedup<T>(array: Array<T>): Array<T> {

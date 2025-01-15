@@ -1,7 +1,8 @@
 import { expect } from 'chai';
-import { normalize, Scenario } from '../../src/scenario';
+import { normalize, Scenario, Schema } from '../../src/scenario';
+import { schemaSchema } from '../../src/schemas/v1.0.0';
 
-describe('normalize scenario', () => {
+describe('normalize', () => {
   describe('scenario', () => {
     it('should normalize a minimal scenario', () => {
       const scenario: Scenario = {
@@ -649,6 +650,51 @@ describe('normalize scenario', () => {
 
       expect(normalize(scenario).result).to.deep.eq({
         type: 'string',
+      });
+    });
+  });
+
+  describe('schema', () => {
+    it('should normalize an object schema', () => {
+      const schema: Schema = {
+        properties: {
+          one: 'string',
+          two: {
+            type: 'number',
+            '!required': true,
+          } as any,
+        },
+      };
+
+      expect(normalize(schema, { $schema: schemaSchema.$id })).to.deep.eq({
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
+        type: 'object',
+        properties: {
+          one: {
+            type: 'string',
+          },
+          two: {
+            type: 'number',
+          },
+        },
+        required: ['two'],
+        additionalProperties: false,
+      });
+    });
+
+    it('should normalize an array schema', () => {
+      const schema: Schema = {
+        title: 'email addresses',
+        items: 'string',
+      };
+
+      expect(normalize(schema, { $schema: schemaSchema.$id })).to.deep.eq({
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
+        type: 'array',
+        title: 'email addresses',
+        items: {
+          type: 'string',
+        },
       });
     });
   });

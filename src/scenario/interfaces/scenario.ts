@@ -7,6 +7,7 @@ type Forbidden<T, K extends keyof any> = {
 };
 
 export interface Schema {
+  $schema?: string;
   $ref?: string;
   type?: string;
   title?: string;
