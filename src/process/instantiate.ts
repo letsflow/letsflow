@@ -1,10 +1,16 @@
+import Ajv from 'ajv';
 import { v4 as uuid } from 'uuid';
-import { ActorSchema, NormalizedAction, NormalizedScenario, Transition } from '../scenario';
+import { ajv as defaultAjv } from '../ajv';
+import { ActorSchema, NormalizedAction, NormalizedScenario, Schema, Transition } from '../scenario';
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { Action, Actor, InstantiateEvent, Notify, Process, StartInstructions, State } from './interfaces/process';
 
-export function instantiate(scenario: NormalizedScenario, instructions: StartInstructions): Process {
+export function instantiate(
+  scenario: NormalizedScenario,
+  instructions: StartInstructions,
+  options: { ajv?: Ajv } = {},
+): Process {
   const event: InstantiateEvent = withHash({
     id: uuid(),
     timestamp: new Date(),
@@ -18,8 +24,8 @@ export function instantiate(scenario: NormalizedScenario, instructions: StartIns
     title: scenario.title ?? `Process ${event.id}`,
     tags: scenario.tags,
     scenario: { id: instructions.scenario, ...scenario },
-    actors: instantiateActors(scenario.actors, event.actors),
-    vars: { ...defaultVars(scenario.vars), ...event.vars },
+    actors: instantiateActors(scenario.actors, event.actors, options),
+    vars: { ...defaultValues(scenario.vars, options), ...event.vars },
     result: scenario.result.default ?? null,
     events: [event],
   };
@@ -32,6 +38,7 @@ export function instantiate(scenario: NormalizedScenario, instructions: StartIns
 function instantiateActors(
   schemas: Record<string, ActorSchema>,
   actors: Record<string, Omit<Actor, 'title' | 'role'>>,
+  options: { ajv?: Ajv } = {},
 ): Record<string, Actor> {
   const keys = dedup([...Object.keys(schemas).filter((key) => !key.endsWith('*')), ...Object.keys(actors)]);
   const result: Record<string, Actor> = {};
@@ -42,7 +49,7 @@ function instantiateActors(
 
     result[key] = {
       title: schema.title ?? key,
-      ...defaultVars(schema.properties ?? {}),
+      ...defaultValue(schema, options),
       ...(actors[key] || {}),
       ...(schema.role ? { role: schema.role } : {}),
     } as Actor;
@@ -94,12 +101,34 @@ export function instantiateAction(key: string, action: NormalizedAction, process
   return processAction;
 }
 
-function defaultVars(vars: Record<string, any>): Record<string, any> {
+function defaultValues(vars: Record<string, any>, options: { ajv?: Ajv } = {}): Record<string, any> {
   const defaults = Object.entries(vars)
-    .map(([key, schema]) => [key, schema.default])
+    .map(([key, schema]) => [key, defaultValue(schema, options)])
     .filter(([, value]) => value !== undefined);
 
   return Object.fromEntries(defaults);
+}
+
+function defaultValue(schema: Schema | string, options: { ajv?: Ajv } = {}): any {
+  if (typeof schema === 'string') {
+    return undefined;
+  }
+
+  if (schema.$ref) {
+    const ajv = options.ajv ?? defaultAjv;
+    const refSchema = ajv.getSchema(schema.$ref);
+    return refSchema ? defaultValue(refSchema, options) : undefined;
+  }
+
+  if (schema.default !== undefined) {
+    return schema.default;
+  }
+
+  if (schema.properties) {
+    return defaultValues(schema.properties);
+  }
+
+  return undefined;
 }
 
 function dedup<T>(array: Array<T>): Array<T> {

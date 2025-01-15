@@ -4,3 +4,4 @@ export * from './interfaces/normalized';
 
 export { normalize } from './normalize';
 export { validate, isEndState } from './validate';
+export { loadSchemas } from './load';

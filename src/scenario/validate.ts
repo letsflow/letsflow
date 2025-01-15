@@ -12,14 +12,12 @@ export interface ValidateFunction {
 
 export const validate: ValidateFunction = (scenario: any, options: { ajv?: Ajv } = {}): boolean => {
   const ajv = options.ajv ?? defaultAjv;
-  const validateSchema = ajv.compile(scenarioSchema);
+  const validateScenario = ajv.compile(scenarioSchema);
 
-  validateSchema(scenario);
-
-  const errors = [...(validateSchema.errors || []), ...validateActions(scenario), ...validateStates(scenario)];
+  validateScenario(scenario);
+  const errors = [...(validateScenario.errors || []), ...validateActions(scenario), ...validateStates(scenario)];
 
   validate.errors = errors.length > 0 ? errors : null;
-
   return errors.length === 0;
 };
 

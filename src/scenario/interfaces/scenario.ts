@@ -30,7 +30,7 @@ export interface Action {
   title?: string;
   description?: string | Fn;
   actor?: string | Fn | Array<string | Fn>;
-  response?: string | Schema | Fn;
+  response?: string | Schema;
   if?: boolean | Fn;
   update?: string | UpdateInstruction | UpdateInstruction[];
 
