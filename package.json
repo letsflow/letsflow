@@ -20,16 +20,16 @@
       "types": "./lib/process/index.d.ts",
       "default": "./lib/process/index.js"
     },
-    "./schemas": {
-      "types": "./lib/schemas/index.d.ts",
-      "default": "./lib/schemas/index.js"
+    "./schemas/v1.0.0": {
+      "types": "./lib/schemas/v1.0.0/index.d.ts",
+      "default": "./lib/schemas/v1.0.0/index.js"
     },
     "./package.json": "./package.json"
   },
   "files": [
     "lib",
     "src"
-  ],  
+  ],
   "dependencies": {
     "@letsflow/jmespath": "^1.1.4-jasny.1",
     "@noble/hashes": "^1.4.0",
