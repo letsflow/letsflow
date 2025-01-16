@@ -5,9 +5,11 @@ interface FnRef {
 }
 
 interface FnSub {
-  '<tpl>': string | {
-    template: string;
-    view?: any;
-    partials?: Record<string, string>;
-  };
+  '<tpl>':
+    | string
+    | {
+        template: string;
+        view?: any;
+        partials?: Record<string, string>;
+      };
 }

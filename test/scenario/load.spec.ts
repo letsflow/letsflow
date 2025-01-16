@@ -20,14 +20,14 @@ describe('loadSchemas', () => {
     const scenario = normalize({
       actors: {
         manager: {
-          $ref: 'https://schemas.example.com/actors/manager'
+          $ref: 'https://schemas.example.com/actors/manager',
         },
         client: {
           properties: {
             name: 'string',
             organization: 'https://schemas.example.com/objects/organization',
-          }
-        }
+          },
+        },
       },
       actions: {
         create: {
@@ -38,9 +38,9 @@ describe('loadSchemas', () => {
           response: {
             properties: {
               contract: 'https://schemas.example.com/objects/contract',
-            }
-          }
-        }
+            },
+          },
+        },
       },
       states: {},
       vars: {
@@ -48,8 +48,8 @@ describe('loadSchemas', () => {
         level: {
           properties: {
             game: 'https://schemas.example.com/objects/game',
-          }
-        }
+          },
+        },
       },
       result: 'https://schemas.example.com/objects/dossier',
     });
@@ -66,10 +66,12 @@ describe('loadSchemas', () => {
     expect(fetchSchema.calledWith('https://schemas.example.com/actions/create')).to.be.false;
     expect(fetchSchema.callCount).to.equal(7);
 
-    expect(ajv.getSchema('https://schemas.example.com/actors/manager')?.schema)
-      .to.be.deep.equal({ $id: 'https://schemas.example.com/actors/manager' });
-    expect(ajv.getSchema('https://schemas.example.com/objects/organization')?.schema)
-      .to.be.deep.equal({ $id: 'https://schemas.example.com/objects/organization' });
+    expect(ajv.getSchema('https://schemas.example.com/actors/manager')?.schema).to.be.deep.equal({
+      $id: 'https://schemas.example.com/actors/manager',
+    });
+    expect(ajv.getSchema('https://schemas.example.com/objects/organization')?.schema).to.be.deep.equal({
+      $id: 'https://schemas.example.com/objects/organization',
+    });
 
     expect(ajv.getSchema('https://schemas.example.com/not-used')).to.be.undefined;
   });
@@ -82,16 +84,16 @@ describe('loadSchemas', () => {
           properties: {
             name: 'string',
             organization: 'https://schemas.example.com/objects/organization',
-          }
-        }
+          },
+        },
       },
       actions: {
         create: {
           response: 'https://schemas.example.com/responses/create',
         },
         update: {
-          response: {}
-        }
+          response: {},
+        },
       },
       states: {},
     });
@@ -105,7 +107,7 @@ describe('loadSchemas', () => {
 
   it('should handle missing optional fields gracefully', async () => {
     const scenario = normalize({
-      states: {}
+      states: {},
     });
 
     await loadSchemas(scenario, { ajv });
@@ -129,7 +131,9 @@ describe('loadSchemas', () => {
     expect(fetchSchema.calledOnceWith('https://schemas.example.com/objects/organization')).to.be.true;
     expect(fetchSchema.callCount).to.equal(1);
 
-    expect(ajv.getSchema('https://schemas.example.com/objects/organization')?.schema)
-      .to.be.deep.equal({ type: 'object', additionalProperties: true });
+    expect(ajv.getSchema('https://schemas.example.com/objects/organization')?.schema).to.be.deep.equal({
+      type: 'object',
+      additionalProperties: true,
+    });
   });
 });

@@ -12,8 +12,9 @@ import { stringifyString } from 'yaml/util';
 
 const fnTag = (type: string): YAML.ScalarTag => ({
   identify: (value) => {
-    return typeof value === 'object' && value !== null && `<${type}>` in value
-      && typeof value[`<${type}>`] === 'string';
+    return (
+      typeof value === 'object' && value !== null && `<${type}>` in value && typeof value[`<${type}>`] === 'string'
+    );
   },
   tag: `!${type}`,
   stringify(item: YAML.Scalar<Record<string, string>>, ctx, onComment, onChompKeep) {
@@ -38,7 +39,7 @@ const tplExplicitTag: YAML.CollectionTag = {
 
     return wrappedMap;
   },
-}
+};
 
 const constTag: YAML.ScalarTag = {
   tag: '!const',
@@ -56,17 +57,17 @@ const defaultTag: YAML.ScalarTag = {
 const formatTag: YAML.ScalarTag = {
   tag: '!format',
   resolve: (format) => ({ type: 'string', format }),
-}
+};
 
 const patternTag: YAML.ScalarTag = {
   tag: '!pattern',
   resolve: (pattern) => ({ type: 'string', pattern }),
-}
+};
 
 const requiredScalarTag: YAML.ScalarTag = {
   tag: '!required',
   resolve: (type) => ({ type, '!required': true }),
-}
+};
 const requiredMapTag: YAML.CollectionTag = {
   tag: '!required',
   collection: 'map',
@@ -82,7 +83,7 @@ const requiredMapTag: YAML.CollectionTag = {
 
     return map;
   },
-}
+};
 
 function parseValue(value: any) {
   const numValue: any = Number(value);
@@ -111,7 +112,10 @@ export const schema = new YAML.Schema({
   ],
 });
 
-export function stringify(data: any, options?: DocumentOptions & SchemaOptions & ParseOptions & CreateNodeOptions & ToStringOptions): string {
+export function stringify(
+  data: any,
+  options?: DocumentOptions & SchemaOptions & ParseOptions & CreateNodeOptions & ToStringOptions,
+): string {
   return YAML.stringify(data, { schema, ...(options ?? {}) });
 }
 

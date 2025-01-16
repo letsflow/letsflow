@@ -35,10 +35,12 @@ describe('yaml', () => {
         foo: { '<ref>': 'abc' },
         bar: { '<ref>': 'abc > 0' },
         qux: { '<tpl>': 'Hello, {{ name }}!' },
-        wam: { '<tpl>': {
-          template: 'Hello, {{ name }}!',
-          view: { name: 'John' },
-        }},
+        wam: {
+          '<tpl>': {
+            template: 'Hello, {{ name }}!',
+            view: { name: 'John' },
+          },
+        },
       });
     });
 

@@ -87,7 +87,7 @@ export function instantiateState(
       return instantiateAction(k, action, process);
     })
     .filter((action: Action) => action.if);
-  state.notify = (state.notify as Array<Notify & { if: boolean }>).filter((notify) => notify.if)
+  state.notify = (state.notify as Array<Notify & { if: boolean }>).filter((notify) => notify.if);
 
   return state;
 }
@@ -106,7 +106,7 @@ export function instantiateAction(key: string, action: NormalizedAction, process
   return processAction;
 }
 
-function defaultValues(vars: Record<string, any>, options: { ajv?: Ajv, base?: Schema } = {}): Record<string, any> {
+function defaultValues(vars: Record<string, any>, options: { ajv?: Ajv; base?: Schema } = {}): Record<string, any> {
   const defaults = Object.entries(vars)
     .map(([key, schema]) => [key, defaultValue(schema, options)])
     .filter(([, value]) => value !== undefined);
@@ -114,7 +114,7 @@ function defaultValues(vars: Record<string, any>, options: { ajv?: Ajv, base?: S
   return Object.fromEntries(defaults);
 }
 
-export function defaultValue(schema: Schema | string, options: { ajv?: Ajv, base?: Schema } = {}): any {
+export function defaultValue(schema: Schema | string, options: { ajv?: Ajv; base?: Schema } = {}): any {
   if (typeof schema === 'string' && !schema.startsWith('https:')) {
     return undefined;
   }

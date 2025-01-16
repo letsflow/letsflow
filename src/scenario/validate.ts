@@ -27,7 +27,7 @@ function validateActions(scenario: Scenario): ErrorObject[] {
     .filter((state): state is State => state !== null && 'notify' in state)
     .map((state) => state.notify)
     .flat()
-    .map((notify: Notify | string) => typeof notify === 'string' ? notify : notify.service)
+    .map((notify: Notify | string) => (typeof notify === 'string' ? notify : notify.service))
     .map((service) => `service:${service}`);
   const allowedValues = [...actors, ...services];
   const errors: ErrorObject[] = [];
@@ -39,7 +39,12 @@ function validateActions(scenario: Scenario): ErrorObject[] {
 
     for (const actor of actionActors) {
       if (!isFn(actor) && actor !== '*' && !allowedValues.includes(actor)) {
-        errors.push(error(`/actions/${key}/actor`, 'must reference an actor or service', { value: actor, allowedValues: allowedValues }));
+        errors.push(
+          error(`/actions/${key}/actor`, 'must reference an actor or service', {
+            value: actor,
+            allowedValues: allowedValues,
+          }),
+        );
       }
     }
   });

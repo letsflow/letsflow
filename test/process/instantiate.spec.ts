@@ -32,9 +32,9 @@ describe('instantiate', () => {
           created: { type: 'string', format: 'date-time' },
           approved: { type: 'boolean', default: false },
         },
-      }
-    }
-  }
+      },
+    },
+  };
 
   beforeEach(() => {
     ajv = new Ajv({ allErrors: true });
@@ -60,11 +60,15 @@ describe('instantiate', () => {
         },
       });
 
-      const process = instantiate(scenario, {
-        scenario: scenarioId,
-        actors: {},
-        vars: {},
-      }, { ajv });
+      const process = instantiate(
+        scenario,
+        {
+          scenario: scenarioId,
+          actors: {},
+          vars: {},
+        },
+        { ajv },
+      );
 
       expect(process.scenario).to.deep.eq({ id: scenarioId, ...scenario });
       expect(process.actors).to.deep.eq({
@@ -125,13 +129,17 @@ describe('instantiate', () => {
         },
       });
 
-      const process = instantiate(scenario, {
-        scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-        actors: {
-          user: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+      const process = instantiate(
+        scenario,
+        {
+          scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+          actors: {
+            user: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
+          },
+          vars: {},
         },
-        vars: {},
-      }, { ajv });
+        { ajv },
+      );
 
       expect(process.actors.user).to.deep.eq({
         title: 'Main user',
@@ -192,13 +200,17 @@ describe('instantiate', () => {
         },
       });
 
-      const process = instantiate(scenario, {
-        scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-        actors: {},
-        vars: {
-          foo: 'hello',
+      const process = instantiate(
+        scenario,
+        {
+          scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+          actors: {},
+          vars: {
+            foo: 'hello',
+          },
         },
-      }, { ajv });
+        { ajv },
+      );
 
       expect(process.vars).to.deep.eq({
         foo: 'hello',
@@ -217,19 +229,23 @@ describe('instantiate', () => {
           properties: {
             amount: { type: 'number', default: 0 },
             signed: { type: 'boolean', default: false },
-          }
+          },
         },
         states: {
           initial: {
             on: 'complete',
             goto: '(done)',
           },
-        }
+        },
       });
 
-      const process = instantiate(scenario, {
-        scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-      }, { ajv });
+      const process = instantiate(
+        scenario,
+        {
+          scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+        },
+        { ajv },
+      );
 
       expect(process.result).to.deep.eq({
         amount: 0,
@@ -247,7 +263,7 @@ describe('instantiate', () => {
         actors: {
           client: {
             $ref: 'https://schemas.example.com/actors/client',
-          }
+          },
         },
         result: 'https://schemas.example.com/objects/contract#$defs/meta',
         vars: {
@@ -258,34 +274,38 @@ describe('instantiate', () => {
             },
             $defs: {
               bool: { type: 'boolean', default: false },
-            }
-          }
+            },
+          },
         },
         states: {
           initial: {
             on: 'complete',
             goto: '(done)',
           },
-        }
+        },
       });
 
-      const process = instantiate(scenario, {
-        scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-      }, { ajv });
+      const process = instantiate(
+        scenario,
+        {
+          scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+        },
+        { ajv },
+      );
 
       expect(process.actors).to.deep.eq({
         client: {
           title: 'client',
           signed: false,
           status: 'active',
-        }
+        },
       });
 
       expect(process.vars).to.deep.eq({
         foo: {
           one: false,
           two: false,
-        }
+        },
       });
 
       expect(process.result).to.deep.eq({
@@ -328,15 +348,19 @@ describe('instantiate', () => {
     });
 
     before(() => {
-      process = instantiate(scenario, {
-        scenario: 'basic',
-        actors: {
-          client: {
-            name: 'John Doe',
-            email: 'john@example.com',
+      process = instantiate(
+        scenario,
+        {
+          scenario: 'basic',
+          actors: {
+            client: {
+              name: 'John Doe',
+              email: 'john@example.com',
+            },
           },
         },
-      }, { ajv });
+        { ajv },
+      );
     });
 
     it('should instantiate a state', () => {
@@ -438,7 +462,7 @@ describe('instantiate', () => {
         title: 'some scenario',
         actors: {
           client: {},
-          admin: {}
+          admin: {},
         },
         actions: {
           complete: {
@@ -456,21 +480,25 @@ describe('instantiate', () => {
         vars: {
           act: {
             type: 'string',
-            default: 'client'
+            default: 'client',
           },
-          amount: 'integer'
+          amount: 'integer',
         },
       });
     });
 
     before(() => {
-      process = instantiate(scenario, {
-        scenario: 'basic',
-        vars: {
-          amount: 20,
-          act: 'admin'
+      process = instantiate(
+        scenario,
+        {
+          scenario: 'basic',
+          vars: {
+            amount: 20,
+            act: 'admin',
+          },
         },
-      }, { ajv });
+        { ajv },
+      );
     });
 
     it('should instantiate an action', () => {

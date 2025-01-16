@@ -32,8 +32,8 @@ export function step(
   actor: StepActor | string = 'actor',
   response?: any,
   options: {
-    hashFn?: typeof withHash,
-    ajv?: Ajv,
+    hashFn?: typeof withHash;
+    ajv?: Ajv;
   } = {},
 ): Process {
   const process = structuredClone(input);
@@ -113,15 +113,14 @@ function createEvent(
     response,
     skipped: errors.length > 0,
     errors: errors.length > 0 ? errors : undefined,
-  }
+  };
 }
 
 function validateStep(ajv: Ajv, process: Process, action: string, actor: StepActor, response: any): string[] {
   const errors: string[] = [];
 
-  const key = `${process.current.key}.${action}` in process.scenario.actions
-    ? `${process.current.key}.${action}`
-    : action;
+  const key =
+    `${process.current.key}.${action}` in process.scenario.actions ? `${process.current.key}.${action}` : action;
 
   const currentAction = process.scenario.actions[key]
     ? instantiateAction(key, process.scenario.actions[key], process)

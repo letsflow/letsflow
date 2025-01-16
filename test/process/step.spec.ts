@@ -275,7 +275,7 @@ describe('step', () => {
       expect(event.skipped).to.be.true;
       expect(event.errors).to.have.length(1);
       expect(event.errors![0]).to.eq("Action 'dance' is not allowed in state 'initial'");
-    })
+    });
 
     it("should skip an action that's not allowed in the state", () => {
       const scenario = normalize({
@@ -323,9 +323,7 @@ describe('step', () => {
         },
         states: {
           initial: {
-            transitions: [
-              { on: 'complete', goto: '(done)' },
-            ],
+            transitions: [{ on: 'complete', goto: '(done)' }],
           },
         },
       });
@@ -402,7 +400,7 @@ describe('step', () => {
             response: {
               type: 'string',
               default: 'default value',
-            }
+            },
           },
         },
         states: {
@@ -432,7 +430,7 @@ describe('step', () => {
             response: {
               type: 'string',
               default: 'default value',
-            }
+            },
           },
         },
         states: {
@@ -547,7 +545,7 @@ describe('step', () => {
           initial: {
             notify: {
               service: 'my-app',
-              trigger: 'complete'
+              trigger: 'complete',
             },
             on: 'complete',
             goto: '(done)',

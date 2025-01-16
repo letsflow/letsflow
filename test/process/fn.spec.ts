@@ -75,7 +75,7 @@ describe('applyFn', () => {
   });
 
   it('should call tpl function when encountering "<tpl>" key with template and data', () => {
-    const subject = { '<tpl>': { template: 'Hello, {{ name }}!', view: { name: 'Alice'} }};
+    const subject = { '<tpl>': { template: 'Hello, {{ name }}!', view: { name: 'Alice' } } };
     const expected = 'Hello, Alice!';
 
     const result = applyFn(subject, {});
@@ -128,7 +128,7 @@ describe('applyFn', () => {
 
   it('should apply a <ref> function to the data of a <tpl> function', () => {
     const subject = {
-      '<tpl>': { template: 'Hello, {{ name }}!', view: { '<ref>': 'persons.friend' }},
+      '<tpl>': { template: 'Hello, {{ name }}!', view: { '<ref>': 'persons.friend' } },
     };
     const expected = 'Hello, Alice!';
     const data = { persons: { friend: { name: 'Alice' } } };
@@ -140,12 +140,12 @@ describe('applyFn', () => {
 
   it('should apply partials to a <tpl> function', () => {
     const subject = {
-      '<tpl>': { template: '{{> greeting }}!', partials: { '<ref>': 'partials' }},
+      '<tpl>': { template: '{{> greeting }}!', partials: { '<ref>': 'partials' } },
     };
     const expected = 'Hello, Alice!';
     const data = {
       name: 'Alice',
-      partials: { greeting: 'Hello, {{ name }}'},
+      partials: { greeting: 'Hello, {{ name }}' },
     };
 
     const result = applyFn(subject, data);

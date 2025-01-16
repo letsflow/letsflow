@@ -25,10 +25,7 @@ import { isEndState } from './validate';
 type InferReturnType<T> = T extends Scenario ? NormalizedScenario : Schema;
 
 export function normalize(input: Scenario): NormalizedScenario;
-export function normalize<T extends Scenario | Schema>(
-  input: T,
-  defaults: { $schema: string }
-): InferReturnType<T>;
+export function normalize<T extends Scenario | Schema>(input: T, defaults: { $schema: string }): InferReturnType<T>;
 
 export function normalize(input: Scenario | Schema, defaults?: { $schema: string }): NormalizedScenario | Schema {
   const ref = input.$schema ?? defaults?.$schema ?? scenarioSchema.$id;
@@ -70,7 +67,7 @@ function normalizeScenario<T extends Scenario>(input: T): NormalizedScenario {
 
 function normalizeActors(items: Record<string, ActorSchema | string | null>): void {
   for (const key in items) {
-    items[key] = typeof items[key] === 'string' ? stringToSchema(items[key]) : (items[key] || {});
+    items[key] = typeof items[key] === 'string' ? stringToSchema(items[key]) : items[key] || {};
     normalizeActor(items[key] as ActorSchema, key);
   }
 }
@@ -274,8 +271,10 @@ function normalizeNotify(notify?: string | Notify | Array<string | Notify>): Nor
 function addImplicitActions(scenario: NormalizedScenario): void {
   const allActors = Object.keys(scenario.actors);
 
-  const filterActors = (by: string[])=> [
-    ...(by.includes('*') ? allActors : allActors.filter((actor) => by.includes(actor) || by.includes(actor.replace(/\d+$/, '*')))),
+  const filterActors = (by: string[]) => [
+    ...(by.includes('*')
+      ? allActors
+      : allActors.filter((actor) => by.includes(actor) || by.includes(actor.replace(/\d+$/, '*')))),
     ...by.filter((actor) => actor.startsWith('service:') && !allActors.includes(actor)),
   ];
 

@@ -29,11 +29,8 @@ describe('normalize', () => {
               id: { type: 'string' },
               title: { type: 'string' },
               role: {
-                oneOf: [
-                  { type: 'string' },
-                  { type: 'array', items: { type: 'string' } },
-                ]
-              }
+                oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+              },
             },
             additionalProperties: false,
           },
@@ -101,11 +98,8 @@ describe('normalize', () => {
             title: { type: 'string' },
             name: { type: 'string' },
             role: {
-              oneOf: [
-                { type: 'string' },
-                { type: 'array', items: { type: 'string' } },
-              ]
-            }
+              oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+            },
           },
           additionalProperties: false,
         },
@@ -130,11 +124,8 @@ describe('normalize', () => {
             id: { type: 'string' },
             title: { type: 'string' },
             role: {
-              oneOf: [
-                { type: 'string' },
-                { type: 'array', items: { type: 'string' } },
-              ]
-            }
+              oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+            },
           },
           additionalProperties: false,
         },
@@ -164,17 +155,14 @@ describe('normalize', () => {
             title: { type: 'string' },
             name: { type: 'string' },
             role: {
-              oneOf: [
-                { type: 'string' },
-                { type: 'array', items: { type: 'string' } },
-              ]
-            }
+              oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+            },
           },
           additionalProperties: false,
-          required: ['name']
+          required: ['name'],
         },
       });
-    })
+    });
   });
 
   describe('actions', () => {
@@ -609,7 +597,7 @@ describe('normalize', () => {
                 '!required': true,
               } as any,
             },
-          }
+          },
         },
       };
 
@@ -705,7 +693,7 @@ describe('normalize', () => {
           two: '#/definitions/two',
           three: 'https://example.com/schemas/three.json',
         },
-      }
+      };
 
       expect(normalize(schema, { $schema: schemaSchema.$id })).to.deep.eq({
         $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -721,9 +709,8 @@ describe('normalize', () => {
             $ref: 'https://example.com/schemas/three.json',
           },
         },
-        additionalProperties: false
+        additionalProperties: false,
       });
     });
-
   });
 });

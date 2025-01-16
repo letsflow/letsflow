@@ -14,8 +14,8 @@ export async function loadSchemas(scenario: NormalizedScenario, options: { ajv?:
   ];
 
   const combinedSchema = {
-    'oneOf': schemas.filter((schema) => Object.keys(schema).length > 0),
-  }
+    oneOf: schemas.filter((schema) => Object.keys(schema).length > 0),
+  };
 
   await ajv.compileAsync(combinedSchema);
 }
