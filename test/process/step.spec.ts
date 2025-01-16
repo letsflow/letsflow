@@ -350,7 +350,7 @@ describe('step', () => {
     });
   });
 
-  describe('assert response', () => {
+  describe('response', () => {
     const scenario = normalize({
       title: 'some scenario',
       actions: {
@@ -392,6 +392,66 @@ describe('step', () => {
       expect(event.skipped).to.be.true;
       expect(event.errors).to.have.length(1);
       expect(event.errors![0]).to.eq('Response is invalid: data must be string');
+    });
+
+    it('should use the default response if no response is set', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        actions: {
+          complete: {
+            response: {
+              type: 'string',
+              default: 'default value',
+            }
+          },
+        },
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const instructions = {
+        scenario: uuid(scenario),
+      };
+
+      const newProcess = instantiate(scenario, instructions);
+      const process = step(newProcess, 'complete', 'actor');
+
+      const event = process.events[1] as ActionEvent;
+      expect(event.response).to.eq('default value');
+    });
+
+    it('should not use the default response if the response is set', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        actions: {
+          complete: {
+            response: {
+              type: 'string',
+              default: 'default value',
+            }
+          },
+        },
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const instructions = {
+        scenario: uuid(scenario),
+      };
+
+      const newProcess = instantiate(scenario, instructions);
+      const process = step(newProcess, 'complete', 'actor', 'hello world');
+
+      const event = process.events[1] as ActionEvent;
+      expect(event.response).to.eq('hello world');
     });
   });
 

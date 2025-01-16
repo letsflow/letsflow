@@ -6,12 +6,12 @@ import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } fro
 
 describe('loadSchemas', () => {
   let ajv: Ajv;
-  let loadSchema: sinon.SinonStub;
+  let fetchSchema: sinon.SinonStub;
 
   beforeEach(() => {
-    loadSchema = sinon.stub().callsFake(async (uri) => ({ $id: uri }));
+    fetchSchema = sinon.stub().callsFake(async (uri) => ({ $id: uri }));
 
-    ajv = new Ajv({ allErrors: true, loadSchema });
+    ajv = new Ajv({ allErrors: true, loadSchema: fetchSchema });
     ajv.addKeyword('$anchor');
     ajv.addSchema([scenarioSchema, actionSchema, actorSchema, fnSchema, schemaSchema]);
   });
@@ -56,15 +56,15 @@ describe('loadSchemas', () => {
 
     await loadSchemas(scenario, { ajv });
 
-    expect(loadSchema.calledWith('https://schemas.example.com/actors/manager')).to.be.true;
-    expect(loadSchema.calledWith('https://schemas.example.com/objects/organization')).to.be.true;
-    expect(loadSchema.calledWith('https://schemas.example.com/responses/create')).to.be.true;
-    expect(loadSchema.calledWith('https://schemas.example.com/objects/contract')).to.be.true;
-    expect(loadSchema.calledWith('https://schemas.example.com/objects/plan')).to.be.true;
-    expect(loadSchema.calledWith('https://schemas.example.com/objects/game')).to.be.true;
-    expect(loadSchema.calledWith('https://schemas.example.com/objects/dossier')).to.be.true;
-    expect(loadSchema.calledWith('https://schemas.example.com/actions/create')).to.be.false;
-    expect(loadSchema.callCount).to.equal(7);
+    expect(fetchSchema.calledWith('https://schemas.example.com/actors/manager')).to.be.true;
+    expect(fetchSchema.calledWith('https://schemas.example.com/objects/organization')).to.be.true;
+    expect(fetchSchema.calledWith('https://schemas.example.com/responses/create')).to.be.true;
+    expect(fetchSchema.calledWith('https://schemas.example.com/objects/contract')).to.be.true;
+    expect(fetchSchema.calledWith('https://schemas.example.com/objects/plan')).to.be.true;
+    expect(fetchSchema.calledWith('https://schemas.example.com/objects/game')).to.be.true;
+    expect(fetchSchema.calledWith('https://schemas.example.com/objects/dossier')).to.be.true;
+    expect(fetchSchema.calledWith('https://schemas.example.com/actions/create')).to.be.false;
+    expect(fetchSchema.callCount).to.equal(7);
 
     expect(ajv.getSchema('https://schemas.example.com/actors/manager')?.schema)
       .to.be.deep.equal({ $id: 'https://schemas.example.com/actors/manager' });
@@ -98,9 +98,9 @@ describe('loadSchemas', () => {
 
     await loadSchemas(scenario, { ajv });
 
-    expect(loadSchema.calledWith('https://schemas.example.com/objects/organization')).to.be.true;
-    expect(loadSchema.calledWith('https://schemas.example.com/responses/create')).to.be.true;
-    expect(loadSchema.callCount).to.equal(2);
+    expect(fetchSchema.calledWith('https://schemas.example.com/objects/organization')).to.be.true;
+    expect(fetchSchema.calledWith('https://schemas.example.com/responses/create')).to.be.true;
+    expect(fetchSchema.callCount).to.equal(2);
   });
 
   it('should handle missing optional fields gracefully', async () => {
@@ -110,6 +110,26 @@ describe('loadSchemas', () => {
 
     await loadSchemas(scenario, { ajv });
 
-    expect(loadSchema.notCalled).to.be.true;
+    expect(fetchSchema.notCalled).to.be.true;
+  });
+
+  it('should load a schema only once', async () => {
+    const scenario = normalize({
+      vars: {
+        organization: 'https://schemas.example.com/objects/organization',
+      },
+      states: {},
+    });
+
+    fetchSchema.resolves({ type: 'object', additionalProperties: true });
+
+    await loadSchemas(scenario, { ajv });
+    await loadSchemas(scenario, { ajv });
+
+    expect(fetchSchema.calledOnceWith('https://schemas.example.com/objects/organization')).to.be.true;
+    expect(fetchSchema.callCount).to.equal(1);
+
+    expect(ajv.getSchema('https://schemas.example.com/objects/organization')?.schema)
+      .to.be.deep.equal({ type: 'object', additionalProperties: true });
   });
 });

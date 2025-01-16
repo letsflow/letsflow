@@ -7,7 +7,6 @@ import { applyFn } from './fn';
 import { withHash } from './hash';
 import { defaultValue, instantiateAction, instantiateState } from './instantiate';
 import { ActionEvent, Process, TimeoutEvent } from './interfaces/process';
-import { isPlainObject } from './utils';
 import { validateProcess } from './validate';
 
 interface InstantiatedUpdateInstructions {
@@ -43,16 +42,15 @@ export function step(
   const hashFn = options.hashFn ?? withHash;
   const ajv = options.ajv ?? defaultAjv;
 
-  const event = hashFn(createEvent(process, action, actor, response));
-  process.events.push(event);
-
   const currentAction =
     process.scenario.actions[`${process.current.key}.${action}`] || process.scenario.actions[action];
 
-  const responseDefault = currentAction?.response ? defaultValue(currentAction.response, { ajv }) : undefined;
-  process.current.response = isPlainObject(response) && isPlainObject(responseDefault)
-    ? { ...responseDefault, ...response }
-    : (response ?? responseDefault);
+  response ??= currentAction?.response ? defaultValue(currentAction.response, { ajv }) : undefined;
+
+  const event = hashFn(createEvent(process, action, actor, response));
+  process.events.push(event);
+
+  process.current.response = response;
   process.current.actor = process.actors[actor.key];
 
   const stepErrors = validateStep(ajv, process, action, actor, response);

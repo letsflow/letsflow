@@ -6,27 +6,27 @@
       "$ref": "https://json-schema.org/draft/2020-12/schema"
     },
     {
-      "$ref": "#/definitions/scalar"
+      "$ref": "#/$defs/scalar"
     },
     {
-      "$ref": "#/definitions/object"
+      "$ref": "#/$defs/object"
     },
     {
-      "$ref": "#/definitions/array"
+      "$ref": "#/$defs/array"
     }
   ],
-  "definitions": {
+  "$defs": {
     "simple": {
       "$anchor": "simple",
       "oneOf": [
         {
-          "$ref": "#/definitions/scalar"
+          "$ref": "#/$defs/scalar"
         },
         {
-          "$ref": "#/definitions/object"
+          "$ref": "#/$defs/object"
         },
         {
-          "$ref": "#/definitions/array"
+          "$ref": "#/$defs/array"
         }
       ]
     },
@@ -58,7 +58,7 @@
         "properties": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/simple"
+            "$ref": "#/$defs/simple"
           },
           "minProperties": 1
         },
@@ -74,7 +74,7 @@
               "type": "boolean"
             },
             {
-              "$ref": "#/definitions/simple"
+              "$ref": "#/$defs/simple"
             }
           ],
           "default": false
@@ -101,7 +101,7 @@
           "type": "string"
         },
         "items": {
-          "$ref": "#/definitions/simple"
+          "$ref": "#/$defs/simple"
         },
         "minItems": {
           "type": "number"

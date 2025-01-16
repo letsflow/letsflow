@@ -394,7 +394,7 @@ function mergeStates(state: NormalizedState, partialState: NormalizedState): voi
 }
 
 function stringToSchema(schema: string): Schema {
-  return schema.match(/^https?:/) ? { $ref: schema } : { type: schema };
+  return schema.match(/^https?:|^#/) ? { $ref: schema } : { type: schema };
 }
 
 function convertTimePeriodToSeconds(timePeriod: string): number {

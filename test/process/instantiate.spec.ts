@@ -25,6 +25,15 @@ describe('instantiate', () => {
       amount: { type: 'number', default: 0 },
       signed: { type: 'boolean', default: false },
     },
+    $defs: {
+      meta: {
+        type: 'object',
+        properties: {
+          created: { type: 'string', format: 'date-time' },
+          approved: { type: 'boolean', default: false },
+        },
+      }
+    }
   }
 
   beforeEach(() => {
@@ -67,7 +76,9 @@ describe('instantiate', () => {
       const { hash: eventHash, ...event } = process.events[0] as InstantiateEvent;
       expect(event.timestamp).to.be.instanceof(Date);
       expect(event.scenario).to.eq('6ba7b810-9dad-11d1-80b4-00c04fd430c8');
-      expect(event.actors).to.deep.eq({});
+      expect(event.actors).to.deep.eq({
+        actor: { title: 'actor' },
+      });
       expect(event.vars).to.deep.eq({});
       expect(eventHash).to.eq(hash(event));
 
@@ -138,6 +149,21 @@ describe('instantiate', () => {
       });
 
       expect(Object.keys(process.actors)).to.deep.eq(['user', 'admin', 'support']);
+
+      expect((process.events[0] as InstantiateEvent).actors).to.deep.eq({
+        user: {
+          title: 'Main user',
+          id: 'eb82534d-1b99-415f-8d32-096070ea3310',
+          verified: false,
+        },
+        admin: {
+          title: 'admin',
+        },
+        support: {
+          title: 'support',
+          role: 'support-team',
+        },
+      });
     });
 
     it('should instantiate vars', () => {
@@ -153,9 +179,16 @@ describe('instantiate', () => {
           },
         },
         vars: {
-          foo: { type: 'string' },
+          foo: 'string',
           bar: { type: 'integer', default: 10 },
-          qux: { type: 'string' },
+          qux: {
+            type: 'object',
+            description: 'Ignored because no defaults',
+            properties: {
+              one: 'string',
+              two: 'number',
+            },
+          },
         },
       });
 
@@ -171,6 +204,42 @@ describe('instantiate', () => {
         foo: 'hello',
         bar: 10,
       });
+
+      expect((process.events[0] as InstantiateEvent).vars).to.deep.eq({
+        foo: 'hello',
+        bar: 10,
+      });
+    });
+
+    it('should instantiate result', () => {
+      const scenario: NormalizedScenario = normalize({
+        result: {
+          properties: {
+            amount: { type: 'number', default: 0 },
+            signed: { type: 'boolean', default: false },
+          }
+        },
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        }
+      });
+
+      const process = instantiate(scenario, {
+        scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+      }, { ajv });
+
+      expect(process.result).to.deep.eq({
+        amount: 0,
+        signed: false,
+      });
+
+      expect((process.events[0] as InstantiateEvent).result).to.deep.eq({
+        amount: 0,
+        signed: false,
+      });
     });
 
     it('should get default values with refs', () => {
@@ -180,7 +249,18 @@ describe('instantiate', () => {
             $ref: 'https://schemas.example.com/actors/client',
           }
         },
-        result: 'https://schemas.example.com/objects/contract',
+        result: 'https://schemas.example.com/objects/contract#$defs/meta',
+        vars: {
+          foo: {
+            properties: {
+              one: '#$defs/bool',
+              two: '#$defs/bool',
+            },
+            $defs: {
+              bool: { type: 'boolean', default: false },
+            }
+          }
+        },
         states: {
           initial: {
             on: 'complete',
@@ -201,9 +281,15 @@ describe('instantiate', () => {
         }
       });
 
+      expect(process.vars).to.deep.eq({
+        foo: {
+          one: false,
+          two: false,
+        }
+      });
+
       expect(process.result).to.deep.eq({
-        amount: 0,
-        signed: false,
+        approved: false,
       });
     });
   });

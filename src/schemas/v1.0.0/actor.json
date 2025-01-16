@@ -14,7 +14,7 @@
               "const": "object"
             },
             "role": {
-              "$ref": "#/definitions/multiString"
+              "$ref": "#/$defs/multiString"
             }
           }
         }
@@ -29,7 +29,7 @@
           "type": "object",
           "properties": {
             "role": {
-              "$ref": "#/definitions/multiString"
+              "$ref": "#/$defs/multiString"
             }
           }
         }
@@ -39,7 +39,7 @@
       "type": "null"
     }
   ],
-  "definitions": {
+  "$defs": {
     "multiString": {
       "oneOf": [
         {

@@ -11,7 +11,7 @@ export const ajv = new Ajv({
     }
 
     try {
-      return { $id: uri, ...(await response.json()) };
+      return await response.json();
     } catch (error) {
       console && console.warn(`Failed to parse schema at ${uri}: ${error}`);
       return {};

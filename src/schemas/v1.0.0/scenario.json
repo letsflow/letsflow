@@ -41,16 +41,16 @@
       "type": "object",
       "properties": {
         "*": {
-          "$ref": "#/definitions/partialState"
+          "$ref": "#/$defs/partialState"
         }
       },
       "patternProperties": {
         "^\\(.+\\)$": {
-          "$ref": "#/definitions/endState"
+          "$ref": "#/$defs/endState"
         }
       },
       "additionalProperties": {
-        "$ref": "#/definitions/state"
+        "$ref": "#/$defs/state"
       },
       "required": [
         "initial"
@@ -79,17 +79,17 @@
       "required": ["name", "version"]
     }
   ],
-  "definitions": {
+  "$defs": {
     "state": {
       "oneOf": [
         {
-          "$ref": "#/definitions/explicitState"
+          "$ref": "#/$defs/explicitState"
         },
         {
-          "$ref": "#/definitions/simpleState"
+          "$ref": "#/$defs/simpleState"
         },
         {
-          "$ref": "#/definitions/timeoutState"
+          "$ref": "#/$defs/timeoutState"
         }
       ]
     },
@@ -98,7 +98,7 @@
         {
           "allOf": [
             {
-              "$ref": "#/definitions/explicitState"
+              "$ref": "#/$defs/explicitState"
             },
             {
               "type": "object",
@@ -107,10 +107,10 @@
           ]
         },
         {
-          "$ref": "#/definitions/simpleState"
+          "$ref": "#/$defs/simpleState"
         },
         {
-          "$ref": "#/definitions/timeoutState"
+          "$ref": "#/$defs/timeoutState"
         }
       ]
     },
@@ -118,18 +118,18 @@
       "type": "object",
       "properties": {
         "title": {
-          "$ref": "#/definitions/stringFn"
+          "$ref": "#/$defs/stringFn"
         },
         "instructions": {
-          "$ref": "#/definitions/instructions"
+          "$ref": "#/$defs/instructions"
         },
         "notify": {
-          "$ref": "#/definitions/notify"
+          "$ref": "#/$defs/notify"
         },
         "transitions": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/transition"
+            "$ref": "#/$defs/transition"
           }
         }
       },
@@ -141,19 +141,19 @@
       "type": "object",
       "properties": {
         "title": {
-          "$ref": "#/definitions/stringFn"
+          "$ref": "#/$defs/stringFn"
         },
         "instructions": {
-          "$ref": "#/definitions/instructions"
+          "$ref": "#/$defs/instructions"
         },
         "notify": {
-          "$ref": "#/definitions/notify"
+          "$ref": "#/$defs/notify"
         },
         "on": {
           "type": "string"
         },
         "by": {
-          "$ref": "#/definitions/multiString"
+          "$ref": "#/$defs/multiString"
         },
         "if": {
           "type": "null"
@@ -171,16 +171,16 @@
       "type": "object",
       "properties": {
         "title": {
-          "$ref": "#/definitions/stringFn"
+          "$ref": "#/$defs/stringFn"
         },
         "instructions": {
-          "$ref": "#/definitions/instructions"
+          "$ref": "#/$defs/instructions"
         },
         "notify": {
-          "$ref": "#/definitions/notify"
+          "$ref": "#/$defs/notify"
         },
         "after": {
-          "$ref": "#/definitions/timePeriod"
+          "$ref": "#/$defs/timePeriod"
         },
         "if": {
           "type": "null"
@@ -198,13 +198,13 @@
       "type": "object",
       "properties": {
         "title": {
-          "$ref": "#/definitions/stringFn"
+          "$ref": "#/$defs/stringFn"
         },
         "instructions": {
-          "$ref": "#/definitions/instructions"
+          "$ref": "#/$defs/instructions"
         },
         "notify": {
-          "$ref": "#/definitions/notify"
+          "$ref": "#/$defs/notify"
         }
       },
       "nullable": true
@@ -218,10 +218,10 @@
               "type": "string"
             },
             "by": {
-              "$ref": "#/definitions/multiString"
+              "$ref": "#/$defs/multiString"
             },
             "if": {
-              "$ref": "#/definitions/booleanFn"
+              "$ref": "#/$defs/booleanFn"
             },
             "goto": {
               "oneOf": [
@@ -243,10 +243,10 @@
           "type": "object",
           "properties": {
             "after": {
-              "$ref": "#/definitions/timePeriod"
+              "$ref": "#/$defs/timePeriod"
             },
             "if": {
-              "$ref": "#/definitions/booleanFn"
+              "$ref": "#/$defs/booleanFn"
             },
             "goto": {
               "type": "string"
@@ -262,7 +262,7 @@
     "instructions": {
       "type": "object",
       "additionalProperties": {
-        "$ref": "#/definitions/stringFn"
+        "$ref": "#/$defs/stringFn"
       }
     },
     "notify": {
@@ -271,7 +271,7 @@
           "type": "string"
         },
         {
-          "$ref": "#/definitions/notifyExplicit"
+          "$ref": "#/$defs/notifyExplicit"
         },
         {
           "type": "array",
@@ -281,7 +281,7 @@
                 "type": "string"
               },
               {
-                "$ref": "#/definitions/notifyExplicit"
+                "$ref": "#/$defs/notifyExplicit"
               }
             ]
           }
@@ -295,13 +295,13 @@
           "type": "string"
         },
         "if": {
-          "$ref": "#/definitions/booleanFn"
+          "$ref": "#/$defs/booleanFn"
         },
         "after": {
-          "$ref": "#/definitions/timePeriod"
+          "$ref": "#/$defs/timePeriod"
         },
         "trigger": {
-          "$ref": "#/definitions/stringFn"
+          "$ref": "#/$defs/stringFn"
         },
         "message": {
           "oneOf": [

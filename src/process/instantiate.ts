@@ -11,24 +11,29 @@ export function instantiate(
   instructions: StartInstructions,
   options: { ajv?: Ajv } = {},
 ): Process {
-  const event: InstantiateEvent = withHash({
-    id: uuid(),
-    timestamp: new Date(),
-    scenario: instructions.scenario,
-    actors: instructions.actors ?? {},
-    vars: instructions.vars ?? {},
-  });
+  const id = uuid();
 
   const process: Omit<Process, 'current'> = {
-    id: event.id,
-    title: scenario.title ?? `Process ${event.id}`,
+    id,
+    title: scenario.title ?? `Process ${id}`,
     tags: scenario.tags,
     scenario: { id: instructions.scenario, ...scenario },
-    actors: instantiateActors(scenario.actors, event.actors, options),
-    vars: { ...defaultValues(scenario.vars, options), ...event.vars },
+    actors: instantiateActors(scenario.actors, instructions.actors ?? {}, options),
+    vars: { ...defaultValues(scenario.vars, options), ...(instructions.vars ?? {}) },
     result: scenario.result ? defaultValue(scenario.result, options) ?? null : null,
-    events: [event],
+    events: [],
   };
+
+  const event: InstantiateEvent = withHash({
+    id,
+    timestamp: new Date(),
+    scenario: instructions.scenario,
+    actors: process.actors,
+    vars: process.vars,
+    result: process.result,
+  });
+
+  process.events.push(event);
 
   const current = instantiateState(scenario, 'initial', process, event.timestamp);
 
@@ -101,7 +106,7 @@ export function instantiateAction(key: string, action: NormalizedAction, process
   return processAction;
 }
 
-function defaultValues(vars: Record<string, any>, options: { ajv?: Ajv } = {}): Record<string, any> {
+function defaultValues(vars: Record<string, any>, options: { ajv?: Ajv, base?: Schema } = {}): Record<string, any> {
   const defaults = Object.entries(vars)
     .map(([key, schema]) => [key, defaultValue(schema, options)])
     .filter(([, value]) => value !== undefined);
@@ -109,27 +114,42 @@ function defaultValues(vars: Record<string, any>, options: { ajv?: Ajv } = {}): 
   return Object.fromEntries(defaults);
 }
 
-export function defaultValue(schema: Schema | string, options: { ajv?: Ajv } = {}): any {
+export function defaultValue(schema: Schema | string, options: { ajv?: Ajv, base?: Schema } = {}): any {
   if (typeof schema === 'string' && !schema.startsWith('https:')) {
     return undefined;
   }
 
+  const ajv = options.ajv ?? defaultAjv;
+  const base = options.base ?? (typeof schema !== 'string' ? schema : undefined);
+
   if (typeof schema === 'string' || schema.$ref) {
     const uri = typeof schema === 'string' ? schema : schema.$ref!;
-    const ajv = options.ajv ?? defaultAjv;
-    const refSchema = ajv.getSchema(uri)?.schema
-    return refSchema ? defaultValue(refSchema as any, options) : undefined;
+    const resolvedSchema = resolveRef(ajv, uri, base);
+    return resolvedSchema ? defaultValue(resolvedSchema, options) : undefined;
   }
 
   if (schema.default !== undefined) {
     return schema.default;
   }
 
-  if (schema.properties) {
-    return defaultValues(schema.properties);
+  if ((schema.type ?? 'object') === 'object' && schema.properties) {
+    const value = defaultValues(schema.properties, { ajv, base });
+    return Object.keys(value).length > 0 ? value : undefined;
   }
 
   return undefined;
+}
+
+function resolveRef(ajv: Ajv, uri: string, base?: Schema): Schema | undefined {
+  const [baseUri, pointer] = uri.split('#');
+  const refSchema = baseUri ? ajv.getSchema(baseUri)?.schema : base;
+
+  if (refSchema && pointer) {
+    const segments = pointer.split('/').filter((segment) => segment); // Remove empty parts
+    return segments.reduce((subSchema: any, segment) => subSchema?.[segment], refSchema);
+  }
+
+  return refSchema as Schema | undefined;
 }
 
 function dedup<T>(array: Array<T>): Array<T> {

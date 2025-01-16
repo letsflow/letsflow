@@ -44,7 +44,7 @@
       ]
     },
     "if": {
-      "$ref": "#/definitions/booleanFn"
+      "$ref": "#/$defs/booleanFn"
     },
     "response": {
       "anyOf": [
@@ -53,9 +53,6 @@
         },
         {
           "$ref": "https://schemas.letsflow.io/v1.0.0/schema"
-        },
-        {
-          "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
         }
       ]
     },
@@ -65,18 +62,18 @@
           "type": "string"
         },
         {
-          "$ref": "#/definitions/updateInstruction"
+          "$ref": "#/$defs/updateInstruction"
         },
         {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/updateInstruction"
+            "$ref": "#/$defs/updateInstruction"
           }
         }
       ]
     }
   },
-  "definitions": {
+  "$defs": {
     "updateInstruction": {
       "type": "object",
       "properties": {
@@ -100,7 +97,7 @@
           ]
         },
         "if": {
-          "$ref": "#/definitions/booleanFn"
+          "$ref": "#/$defs/booleanFn"
         }
       },
       "required": [

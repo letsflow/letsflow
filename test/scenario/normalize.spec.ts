@@ -697,5 +697,33 @@ describe('normalize', () => {
         },
       });
     });
+
+    it('should normalize a strings into schemas', () => {
+      const schema: Schema = {
+        properties: {
+          one: 'string',
+          two: '#/definitions/two',
+          three: 'https://example.com/schemas/three.json',
+        },
+      }
+
+      expect(normalize(schema, { $schema: schemaSchema.$id })).to.deep.eq({
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
+        type: 'object',
+        properties: {
+          one: {
+            type: 'string',
+          },
+          two: {
+            $ref: '#/definitions/two',
+          },
+          three: {
+            $ref: 'https://example.com/schemas/three.json',
+          },
+        },
+        additionalProperties: false
+      });
+    });
+
   });
 });

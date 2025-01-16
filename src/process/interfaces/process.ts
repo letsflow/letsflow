@@ -19,6 +19,7 @@ export interface InstantiateEvent {
   scenario: string;
   actors: Record<string, Omit<Actor, 'title'>>;
   vars: Record<string, any>;
+  result: any;
   hash: string;
 }
 
