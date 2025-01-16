@@ -5,8 +5,9 @@ import { ajv as defaultAjv } from '../ajv';
 import { NormalizedTransition, Transition } from '../scenario';
 import { applyFn } from './fn';
 import { withHash } from './hash';
-import { instantiateAction, instantiateState } from './instantiate';
+import { defaultValue, instantiateAction, instantiateState } from './instantiate';
 import { ActionEvent, Process, TimeoutEvent } from './interfaces/process';
+import { isPlainObject } from './utils';
 import { validateProcess } from './validate';
 
 interface InstantiatedUpdateInstructions {
@@ -45,7 +46,13 @@ export function step(
   const event = hashFn(createEvent(process, action, actor, response));
   process.events.push(event);
 
-  process.current.response = response;
+  const currentAction =
+    process.scenario.actions[`${process.current.key}.${action}`] || process.scenario.actions[action];
+
+  const responseDefault = currentAction?.response ? defaultValue(currentAction.response, { ajv }) : undefined;
+  process.current.response = isPlainObject(response) && isPlainObject(responseDefault)
+    ? { ...responseDefault, ...response }
+    : (response ?? responseDefault);
   process.current.actor = process.actors[actor.key];
 
   const stepErrors = validateStep(ajv, process, action, actor, response);
@@ -55,9 +62,6 @@ export function step(
     reverted.events.push(hashFn({ ...event, skipped: true, errors: stepErrors }));
     return reverted;
   }
-
-  const currentAction =
-    process.scenario.actions[`${process.current.key}.${action}`] || process.scenario.actions[action];
 
   for (const scenarioInstructions of currentAction.update) {
     const instructions: InstantiatedUpdateInstructions = applyFn(scenarioInstructions, process);

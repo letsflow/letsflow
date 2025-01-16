@@ -3,4 +3,4 @@ export { instantiate } from './instantiate';
 export { step, timeout } from './step';
 export { validateProcess } from './validate';
 export { etag, lastModified } from './etag';
-export * from './utils';
+export { hasEnded } from './utils';

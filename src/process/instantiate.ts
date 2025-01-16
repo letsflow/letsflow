@@ -26,7 +26,7 @@ export function instantiate(
     scenario: { id: instructions.scenario, ...scenario },
     actors: instantiateActors(scenario.actors, event.actors, options),
     vars: { ...defaultValues(scenario.vars, options), ...event.vars },
-    result: scenario.result.default ?? null,
+    result: scenario.result ? defaultValue(scenario.result, options) ?? null : null,
     events: [event],
   };
 
@@ -109,15 +109,16 @@ function defaultValues(vars: Record<string, any>, options: { ajv?: Ajv } = {}): 
   return Object.fromEntries(defaults);
 }
 
-function defaultValue(schema: Schema | string, options: { ajv?: Ajv } = {}): any {
-  if (typeof schema === 'string') {
+export function defaultValue(schema: Schema | string, options: { ajv?: Ajv } = {}): any {
+  if (typeof schema === 'string' && !schema.startsWith('https:')) {
     return undefined;
   }
 
-  if (schema.$ref) {
+  if (typeof schema === 'string' || schema.$ref) {
+    const uri = typeof schema === 'string' ? schema : schema.$ref!;
     const ajv = options.ajv ?? defaultAjv;
-    const refSchema = ajv.getSchema(schema.$ref);
-    return refSchema ? defaultValue(refSchema, options) : undefined;
+    const refSchema = ajv.getSchema(uri)?.schema
+    return refSchema ? defaultValue(refSchema as any, options) : undefined;
   }
 
   if (schema.default !== undefined) {

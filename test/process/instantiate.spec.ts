@@ -1,10 +1,38 @@
+import Ajv from 'ajv/dist/2020';
 import { expect } from 'chai';
 import { instantiate, InstantiateEvent, Process } from '../../src/process';
 import { hash } from '../../src/process/hash';
 import { instantiateAction, instantiateState } from '../../src/process/instantiate';
 import { normalize, NormalizedScenario } from '../../src/scenario';
+import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from '../../src/schemas/v1.0.0';
 
 describe('instantiate', () => {
+  let ajv: Ajv;
+
+  const clientSchema = {
+    $id: 'https://schemas.example.com/actors/client',
+    type: 'object',
+    properties: {
+      name: { type: 'string' },
+      signed: { type: 'boolean', default: false },
+      status: { type: 'string', default: 'active' },
+    },
+  };
+  const contractSchema = {
+    $id: 'https://schemas.example.com/objects/contract',
+    type: 'object',
+    properties: {
+      amount: { type: 'number', default: 0 },
+      signed: { type: 'boolean', default: false },
+    },
+  }
+
+  beforeEach(() => {
+    ajv = new Ajv({ allErrors: true });
+    ajv.addKeyword('$anchor');
+    ajv.addSchema([scenarioSchema, actionSchema, actorSchema, fnSchema, schemaSchema, clientSchema, contractSchema]);
+  });
+
   describe('scenario', () => {
     it('should instantiate', () => {
       const scenarioId = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
@@ -27,7 +55,7 @@ describe('instantiate', () => {
         scenario: scenarioId,
         actors: {},
         vars: {},
-      });
+      }, { ajv });
 
       expect(process.scenario).to.deep.eq({ id: scenarioId, ...scenario });
       expect(process.actors).to.deep.eq({
@@ -92,7 +120,7 @@ describe('instantiate', () => {
           user: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
         },
         vars: {},
-      });
+      }, { ajv });
 
       expect(process.actors.user).to.deep.eq({
         title: 'Main user',
@@ -137,11 +165,45 @@ describe('instantiate', () => {
         vars: {
           foo: 'hello',
         },
-      });
+      }, { ajv });
 
       expect(process.vars).to.deep.eq({
         foo: 'hello',
         bar: 10,
+      });
+    });
+
+    it('should get default values with refs', () => {
+      const scenario: NormalizedScenario = normalize({
+        actors: {
+          client: {
+            $ref: 'https://schemas.example.com/actors/client',
+          }
+        },
+        result: 'https://schemas.example.com/objects/contract',
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        }
+      });
+
+      const process = instantiate(scenario, {
+        scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+      }, { ajv });
+
+      expect(process.actors).to.deep.eq({
+        client: {
+          title: 'client',
+          signed: false,
+          status: 'active',
+        }
+      });
+
+      expect(process.result).to.deep.eq({
+        amount: 0,
+        signed: false,
       });
     });
   });
@@ -188,7 +250,7 @@ describe('instantiate', () => {
             email: 'john@example.com',
           },
         },
-      });
+      }, { ajv });
     });
 
     it('should instantiate a state', () => {
@@ -322,7 +384,7 @@ describe('instantiate', () => {
           amount: 20,
           act: 'admin'
         },
-      });
+      }, { ajv });
     });
 
     it('should instantiate an action', () => {
