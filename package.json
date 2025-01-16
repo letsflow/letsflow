@@ -32,7 +32,7 @@
   ],
   "dependencies": {
     "@letsflow/jmespath": "^1.1.4-jasny.1",
-    "@noble/hashes": "^1.4.0",
+    "@noble/hashes": "^1.7.0",
     "ajv": "^8.16.0",
     "fast-json-stable-stringify": "^2.1.0",
     "get-value": "^3.0.1",
