@@ -28,6 +28,9 @@
         {
           "type": "object",
           "properties": {
+            "type": {
+              "const": "object"
+            },
             "role": {
               "$ref": "#/$defs/multiString"
             }

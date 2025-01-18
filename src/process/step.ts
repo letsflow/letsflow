@@ -20,6 +20,7 @@ interface StepActor {
   key: string;
   id?: string;
   roles?: string[];
+  [_: string]: any;
 }
 
 /**
@@ -105,11 +106,13 @@ function createEvent(
   response: any,
   errors: string[] = [],
 ): Omit<ActionEvent, 'hash'> {
+  const { roles: _, ...eventActor } = actor;
+
   return {
     previous: process.events[process.events.length - 1].hash,
     timestamp: new Date(),
     action,
-    actor: actor.id ? { id: actor.id, key: actor.key } : { key: actor.key },
+    actor: eventActor,
     response,
     skipped: errors.length > 0,
     errors: errors.length > 0 ? errors : undefined,

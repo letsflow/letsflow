@@ -77,5 +77,9 @@ function validateResult(ajv: Ajv, process: Process): string[] {
 }
 
 function findSchema(scenario: NormalizedScenario, property: string, key: string) {
-  return scenario[property][key] ? scenario[property][key] : scenario[property][key.replace(/\d+$/, '*')];
+  const { role: _, ...schema } = scenario[property][key]
+    ? scenario[property][key]
+    : scenario[property][key.replace(/\d+$/, '*')] ?? {};
+
+  return schema;
 }

@@ -536,6 +536,71 @@ describe('step', () => {
 
       expect(process.current.key).to.eq('(done)');
     });
+
+    it('should put additional actor properties in the event', () => {
+      const scenario = normalize({
+        actors: {
+          admin: {
+            role: 'administrator',
+            properties: {
+              name: 'string',
+              email: 'string',
+            },
+          },
+        },
+        actions: {
+          complete: {
+            update: {
+              set: 'current.actor',
+              mode: 'merge',
+              value: { '<ref>': 'events[-1].actor | { id: id, name: name, email: email }' },
+            },
+          },
+        },
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const newProcess = instantiate(scenario, {
+        scenario: uuid(scenario),
+        actors: {
+          admin: {
+            title: 'Captain',
+          },
+        },
+      });
+
+      const actor = {
+        key: 'admin',
+        id: 'eb82534d-1b99-415f-8d32-096070ea3310',
+        roles: ['administrator'],
+        name: 'John',
+        email: 'john@example.com',
+      };
+
+      const process = step(newProcess, 'complete', actor);
+
+      const event = process.events[1] as ActionEvent;
+      expect(event.actor).to.deep.eq({
+        key: 'admin',
+        id: 'eb82534d-1b99-415f-8d32-096070ea3310',
+        name: 'John',
+        email: 'john@example.com',
+      });
+
+      expect(process.current.key).to.eq('(done)');
+      expect(process.actors.admin).to.deep.eq({
+        id: 'eb82534d-1b99-415f-8d32-096070ea3310',
+        name: 'John',
+        email: 'john@example.com',
+        role: 'administrator',
+        title: 'Captain',
+      });
+    });
   });
 
   describe('notify service', () => {

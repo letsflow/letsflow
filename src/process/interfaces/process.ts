@@ -27,7 +27,7 @@ export interface ActionEvent {
   previous: string;
   timestamp: Date;
   action: string;
-  actor: { key: string; id?: string };
+  actor: { key: string; id?: string; [_: string]: any };
   response?: any;
   hash: string;
   skipped: boolean;

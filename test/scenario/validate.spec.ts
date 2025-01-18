@@ -65,6 +65,27 @@ describe('validate scenario', () => {
       expect(result).to.be.true;
     });
 
+    it('should succeed with an actor with role', () => {
+      const scenario = {
+        title: '',
+        actors: {
+          user: { role: ['user', 'client'] },
+          admin: { role: 'admin' },
+        },
+        actions: {
+          next: {},
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)' },
+        },
+      };
+
+      const result = validate(scenario);
+
+      expect(validate.errors).to.eq(null);
+      expect(result).to.be.true;
+    });
+
     it('should succeed with an actor with schema properties', () => {
       const scenario = {
         title: '',
