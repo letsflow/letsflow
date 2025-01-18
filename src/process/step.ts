@@ -7,6 +7,7 @@ import { applyFn } from './fn';
 import { withHash } from './hash';
 import { defaultValue, instantiateAction, instantiateState } from './instantiate';
 import { ActionEvent, Process, TimeoutEvent } from './interfaces/process';
+import { clean } from './utils';
 import { validateProcess } from './validate';
 
 interface InstantiatedUpdateInstructions {
@@ -106,13 +107,11 @@ function createEvent(
   response: any,
   errors: string[] = [],
 ): Omit<ActionEvent, 'hash'> {
-  const { roles: _, ...eventActor } = actor;
-
   return {
     previous: process.events[process.events.length - 1].hash,
     timestamp: new Date(),
     action,
-    actor: eventActor,
+    actor: clean({ ...actor, roles: undefined }),
     response,
     skipped: errors.length > 0,
     errors: errors.length > 0 ? errors : undefined,
