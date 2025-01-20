@@ -706,5 +706,30 @@ describe('normalize', () => {
         additionalProperties: false,
       });
     });
+
+    it('should normalize definitions', () => {
+      const schema: Schema = {
+        $defs: {
+          one: 'string',
+        },
+        definitions: {
+          two: 'number',
+        },
+      };
+
+      expect(normalize(schema, { $schema: schemaSchema.$id })).to.deep.eq({
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
+        $defs: {
+          one: {
+            type: 'string',
+          },
+        },
+        definitions: {
+          two: {
+            type: 'number',
+          },
+        },
+      });
+    });
   });
 });

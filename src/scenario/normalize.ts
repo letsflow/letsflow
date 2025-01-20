@@ -152,6 +152,9 @@ function normalizeSchema(schema: Schema): Schema {
     }
   }
 
+  if (schema.definitions) normalizeSchemas(schema.definitions);
+  if (schema.$defs) normalizeSchemas(schema.$defs);
+
   if (typeof schema.items === 'string') {
     schema.items = { type: schema.items };
   } else if (typeof schema.items === 'object') {
@@ -209,7 +212,9 @@ function normalizeAction(action: Action, key?: string): NormalizedAction {
 function normalizeUpdateInstructions(
   instructions: string | UpdateInstruction | UpdateInstruction[],
 ): UpdateInstruction[] {
-  if (typeof instructions === 'string') instructions = { set: instructions };
+  if (typeof instructions === 'string') {
+    instructions = { set: instructions };
+  }
 
   return (Array.isArray(instructions) ? instructions : [instructions]).map((instruction) => ({
     set: instruction.set,
