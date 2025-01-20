@@ -106,15 +106,7 @@ function normalizeSchemas(schemas: Record<string, any>, setTitle = false): { req
       required.push(key);
     }
 
-    if ('allOf' in schemas[key]) {
-      schemas[key].allOf = normalizeListOfSchemas(schemas[key].allOf);
-    } else if ('oneOf' in schemas[key]) {
-      schemas[key].oneOf = normalizeListOfSchemas(schemas[key].oneOf);
-    } else if ('anyOf' in schemas[key]) {
-      schemas[key].anyOf = normalizeListOfSchemas(schemas[key].anyOf);
-    } else {
-      normalizeSchema(schemas[key]);
-    }
+    normalizeSchema(schemas[key]);
 
     if (setTitle) schemas[key].title ??= keyToTitle(key);
   }
@@ -134,7 +126,11 @@ function normalizeListOfSchemas(schemas: Schema[]): Schema[] {
 }
 
 function normalizeSchema(schema: Schema): Schema {
-  if ('$ref' in schema) {
+  if ('allOf' in schema) schema.allOf = normalizeListOfSchemas(schema.allOf);
+  if ('oneOf' in schema) schema.oneOf = normalizeListOfSchemas(schema.oneOf);
+  if ('anyOf' in schema) schema.anyOf = normalizeListOfSchemas(schema.anyOf);
+
+  if ('$ref' in schema || 'anyOf' in schema || 'oneOf' in schema || 'allOf' in schema) {
     return schema;
   }
 
