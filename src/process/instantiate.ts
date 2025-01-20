@@ -1,10 +1,20 @@
 import Ajv from 'ajv';
 import { v4 as uuid } from 'uuid';
 import { ajv as defaultAjv } from '../ajv';
-import { ActorSchema, NormalizedAction, NormalizedScenario, Schema, Transition } from '../scenario';
+import { NormalizedAction, NormalizedScenario, Schema, Transition } from '../scenario';
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { Action, Actor, InstantiateEvent, Notify, Process, StartInstructions, State } from './interfaces/process';
+import { validateProcess } from './validate';
+
+const errorState = {
+  key: '(error)',
+  title: 'Error',
+  description: 'The process failed to start',
+  instructions: {},
+  actions: [],
+  notify: [],
+};
 
 export function instantiate(
   scenario: NormalizedScenario,
@@ -36,31 +46,53 @@ export function instantiate(
   process.events.push(event);
 
   const current = instantiateState(scenario, 'initial', process, event.timestamp);
+  const instantiated: Process = { ...process, current };
 
-  return { ...process, current };
+  const errors = validateProcess(instantiated, options);
+
+  if (errors.length > 0) {
+    instantiated.events[0] = withHash({ ...event, errors });
+    instantiated.current = { ...errorState, timestamp: event.timestamp };
+  }
+
+  return instantiated;
 }
 
 function instantiateActors(
-  schemas: Record<string, ActorSchema>,
-  actors: Record<string, Omit<Actor, 'title' | 'role'>>,
+  schemas: Record<string, Schema>,
+  values: Record<string, Omit<Actor, 'title' | 'role'>>,
   options: { ajv?: Ajv } = {},
 ): Record<string, Actor> {
-  const keys = dedup([...Object.keys(schemas).filter((key) => !key.endsWith('*')), ...Object.keys(actors)]);
+  const keys = dedup([...Object.keys(schemas).filter((key) => !key.endsWith('*')), ...Object.keys(values)]);
   const result: Record<string, Actor> = {};
 
   for (const key of keys) {
-    const schema = schemas[key] ?? schemas[key.replace(/\d+$/, '*')];
-    if (!schema) throw new Error(`Invalid start instructions: Actor '${key}' not found in scenario`);
-
-    result[key] = {
-      title: schema.title ?? key,
-      ...defaultValue(schema, options),
-      ...(actors[key] || {}),
-      ...(schema.role ? { role: schema.role } : {}),
-    } as Actor;
+    result[key] = instantiateActor(schemas, key, values[key] ?? {}, options);
   }
 
   return result;
+}
+
+export function instantiateActor(
+  schemas: Record<string, Schema>,
+  key: string,
+  values: Record<string, any>,
+  options: { ajv?: Ajv } = {},
+): Actor {
+  const schemaKey = key in schemas ? key : key.replace(/\d+$/, '*');
+  const schema = schemas[schemaKey];
+  if (!schema) throw new Error(`Actor '${key}' not found in scenario`);
+
+  const title = schema.title
+    ? schema.title + (schemaKey.endsWith('*') ? ' ' + key.slice(schemaKey.length - 1) : '')
+    : key.replace('_', ' ').trim();
+
+  return {
+    title,
+    ...defaultValue(schema, options),
+    ...values,
+    ...(schema.role ? { role: schema.role } : {}),
+  };
 }
 
 export function instantiateState(
@@ -130,6 +162,10 @@ export function defaultValue(schema: Schema | string, options: { ajv?: Ajv; base
 
   if (schema.default !== undefined) {
     return schema.default;
+  }
+
+  if (schema.const !== undefined) {
+    return schema.const;
   }
 
   if ((schema.type ?? 'object') === 'object' && schema.properties) {

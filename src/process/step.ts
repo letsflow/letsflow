@@ -5,7 +5,7 @@ import { ajv as defaultAjv } from '../ajv';
 import { NormalizedTransition, Transition } from '../scenario';
 import { applyFn } from './fn';
 import { withHash } from './hash';
-import { defaultValue, instantiateAction, instantiateState } from './instantiate';
+import { defaultValue, instantiateAction, instantiateActor, instantiateState } from './instantiate';
 import { ActionEvent, Process, TimeoutEvent } from './interfaces/process';
 import { clean } from './utils';
 import { validateProcess } from './validate';
@@ -66,7 +66,7 @@ export function step(
   for (const scenarioInstructions of currentAction.update) {
     const instructions: InstantiatedUpdateInstructions = applyFn(scenarioInstructions, process);
     if (!instructions.if) continue;
-    update(process, instructions.set, instructions.value, instructions.mode, actor.key);
+    update(process, instructions.set, instructions.value, instructions.mode, actor.key, { ajv });
   }
 
   const updateErrors = validateProcess(process, { ajv });
@@ -232,10 +232,13 @@ function update(
   value: any,
   mode: 'replace' | 'merge' | 'append',
   currentActor: string,
+  options: { ajv?: Ajv } = {},
 ): void {
   if (!path.match(/^title$|^(vars|actors|result|current\.actor)(\.|$)/)) {
     throw new Error(`Not allowed to set '${path}' through update instructions`);
   }
+
+  const exitingActors = Object.keys(process.actors);
 
   if (mode === 'merge') {
     const current: any = get(process, path);
@@ -261,6 +264,15 @@ function update(
 
   if (path.match(/^current\.actor(\.|$)/) && currentActor in process.actors) {
     process.actors[currentActor] = process.current.actor!;
+  }
+
+  const addedActors = Object.keys(process.actors).filter((key) => !exitingActors.includes(key));
+  for (const actor of addedActors) {
+    try {
+      process.actors[actor] = instantiateActor(process.scenario.actors, actor, process.actors[actor], options);
+    } catch (e) {
+      // Will fail at validation, so no need to do anything
+    }
   }
 }
 

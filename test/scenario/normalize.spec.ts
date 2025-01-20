@@ -77,7 +77,6 @@ describe('normalize', () => {
   describe('actors', () => {
     it('should set the actor title', () => {
       const scenario: Scenario = {
-        title: '',
         actors: {
           user_1: {
             properties: {
@@ -85,7 +84,6 @@ describe('normalize', () => {
             },
           },
         },
-        actions: {},
         states: {},
       };
 
@@ -108,11 +106,9 @@ describe('normalize', () => {
 
     it('should convert a null actor', () => {
       const scenario: Scenario = {
-        title: '',
         actors: {
           user: null,
         },
-        actions: {},
         states: {},
       };
 
@@ -134,7 +130,6 @@ describe('normalize', () => {
 
     it('should set required properties', () => {
       const scenario: Scenario = {
-        title: '',
         actors: {
           user: {
             properties: {
@@ -142,7 +137,6 @@ describe('normalize', () => {
             },
           },
         },
-        actions: {},
         states: {},
       };
 

@@ -138,7 +138,7 @@ function normalizeSchema(schema: Schema): Schema {
     return schema;
   }
 
-  schema.type ??= 'items' in schema ? 'array' : 'object';
+  determineSchema(schema);
 
   if ('!required' in schema) {
     delete schema['!required'];
@@ -429,6 +429,30 @@ function convertTimePeriodToSeconds(timePeriod: string): number {
       return value * 604800;
     default:
       throw new Error('Invalid time period unit.');
+  }
+}
+
+function determineSchema(schema: Schema): void {
+  if (schema.type || '$ref' in schema) return;
+
+  if ('const' in schema) {
+    schema.type = typeof schema.const;
+    return;
+  }
+
+  if ('enum' in schema) {
+    const types = dedup<string>(schema.enum.map((item: any) => typeof item));
+    schema.type = types.length === 1 ? types[0] : types;
+  }
+
+  if ('properties' in schema) {
+    schema.type = 'object';
+    return;
+  }
+
+  if ('items' in schema) {
+    schema.type = 'array';
+    return;
   }
 }
 

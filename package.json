@@ -31,9 +31,10 @@
     "src"
   ],
   "dependencies": {
-    "@letsflow/jmespath": "^1.1.4-jasny.1",
-    "@noble/hashes": "^1.4.0",
+    "@letsflow/jmespath": "^1.1.4-jasny.4",
+    "@noble/hashes": "^1.7.1",
     "ajv": "^8.16.0",
+    "ajv-formats": "^3.0.1",
     "fast-json-stable-stringify": "^2.1.0",
     "get-value": "^3.0.1",
     "mustache": "^4.2.0",

@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
 import { ajv as defaultAjv } from '../ajv';
-import { NormalizedScenario } from '../scenario';
+import { ActorSchema, NormalizedScenario, Schema } from '../scenario';
 import { Process } from './interfaces/process';
 
 export function validateProcess(process: Process, options: { ajv?: Ajv } = {}): string[] {
@@ -23,15 +23,21 @@ function validateActors(ajv: Ajv, process: Process): string[] {
   const errors: string[] = [];
 
   for (const [key, actor] of Object.entries(process.actors)) {
-    const schema = findSchema(process.scenario, 'actors', key);
-    if (!schema) {
+    const found = findSchema(process.scenario, 'actors', key) as ActorSchema | undefined;
+    if (!found) {
       errors.push(`Actor '${key}' is not defined in the scenario`);
       continue;
     }
 
+    const { role: schemaRole, ...schema } = found;
+
     const valid = ajv.validate(schema, actor);
     if (!valid) {
       errors.push(`Actor '${key}' is invalid: ${ajv.errorsText()}`);
+    }
+
+    if (schemaRole && !areRolesEqual(schemaRole, actor.role ?? [])) {
+      errors.push(`Role of actor '${key}' must not be changed`);
     }
   }
 
@@ -76,10 +82,15 @@ function validateResult(ajv: Ajv, process: Process): string[] {
   return errors;
 }
 
-function findSchema(scenario: NormalizedScenario, property: string, key: string) {
-  const { role: _, ...schema } = scenario[property][key]
-    ? scenario[property][key]
-    : scenario[property][key.replace(/\d+$/, '*')] ?? {};
+function findSchema(scenario: NormalizedScenario, property: string, key: string): Schema | undefined {
+  return scenario[property][key] ? scenario[property][key] : scenario[property][key.replace(/\d+$/, '*')] ?? {};
+}
 
-  return schema;
+function areRolesEqual(a: string | string[], b: string | string[]): boolean {
+  const normalize = (role: string | string[]): string[] => (Array.isArray(role) ? role.sort() : [role]);
+
+  const roleA = normalize(a);
+  const roleB = normalize(b);
+
+  return roleA.length === roleB.length && roleA.every((value, index) => value === roleB[index]);
 }

@@ -1,3 +1,4 @@
+import ajvFormats from 'ajv-formats';
 import Ajv from 'ajv/dist/2020';
 import { expect } from 'chai';
 import { instantiate, InstantiateEvent, Process } from '../../src/process';
@@ -40,6 +41,7 @@ describe('instantiate', () => {
     ajv = new Ajv({ allErrors: true });
     ajv.addKeyword('$anchor');
     ajv.addSchema([scenarioSchema, actionSchema, actorSchema, fnSchema, schemaSchema, clientSchema, contractSchema]);
+    ajvFormats(ajv);
   });
 
   describe('scenario', () => {
@@ -265,12 +267,12 @@ describe('instantiate', () => {
             $ref: 'https://schemas.example.com/actors/client',
           },
         },
-        result: 'https://schemas.example.com/objects/contract#$defs/meta',
+        result: 'https://schemas.example.com/objects/contract#/$defs/meta',
         vars: {
           foo: {
             properties: {
-              one: '#$defs/bool',
-              two: '#$defs/bool',
+              one: '#/$defs/bool',
+              two: '#/$defs/bool',
             },
             $defs: {
               bool: { type: 'boolean', default: false },
@@ -311,6 +313,46 @@ describe('instantiate', () => {
       expect(process.result).to.deep.eq({
         approved: false,
       });
+    });
+
+    it('should go into an error state if validation fails', () => {
+      const scenario: NormalizedScenario = normalize({
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+        vars: {
+          amount: 'integer',
+        },
+      });
+
+      const process = instantiate(
+        scenario,
+        {
+          scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+          vars: {
+            amount: 'not a number',
+          },
+        },
+        { ajv },
+      );
+
+      expect(process.current).to.deep.eq({
+        key: '(error)',
+        title: 'Error',
+        description: 'The process failed to start',
+        instructions: {},
+        actions: [],
+        notify: [],
+        timestamp: process.events[0].timestamp,
+      });
+
+      const event = process.events[0] as InstantiateEvent;
+
+      expect(event.errors ?? []).to.have.length(1);
+      expect(event.errors![0]).to.eq("Variable 'amount' is invalid: data must be integer");
     });
   });
 

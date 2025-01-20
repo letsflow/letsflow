@@ -453,7 +453,7 @@ describe('step', () => {
     });
   });
 
-  describe('assert actor', () => {
+  describe('actors', () => {
     const scenario = normalize({
       title: 'some scenario',
       actors: {
@@ -599,6 +599,69 @@ describe('step', () => {
         email: 'john@example.com',
         role: 'administrator',
         title: 'Captain',
+      });
+    });
+
+    it('should instantiate actors that are created at runtime', () => {
+      const scenario = normalize({
+        actors: {
+          admin: {},
+          'client_*': {
+            properties: {
+              name: 'string',
+              email: 'string',
+              signed: {
+                type: 'boolean',
+                default: false,
+              },
+            },
+          },
+        },
+        actions: {
+          complete: {
+            response: {
+              type: 'array',
+              items: {
+                properties: {
+                  name: 'string',
+                  email: 'string',
+                },
+              },
+            },
+            update: {
+              set: 'actors',
+              mode: 'merge',
+              value: { '<ref>': "current.response | to_object(zip(range(1, length(@) + 1, 'client_'), @))" },
+            },
+          },
+        },
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const instructions = {
+        scenario: uuid(scenario),
+      };
+
+      const newProcess = instantiate(scenario, instructions);
+      const process = step(newProcess, 'complete', 'admin', [
+        { name: 'Alice', email: 'alice@example.com' },
+        { name: 'Bob', email: 'bob@example.com' },
+        { name: 'Charlie', email: 'charlie@example.com' },
+      ]);
+
+      expect((process.events[process.events.length - 1] as ActionEvent).errors ?? []).to.deep.eq([]);
+      expect(process.current.key).to.eq('(done)');
+
+      expect(process.actors).to.deep.eq({
+        admin: { title: 'admin' },
+        client_1: { title: 'client 1', name: 'Alice', email: 'alice@example.com', signed: false },
+        client_2: { title: 'client 2', name: 'Bob', email: 'bob@example.com', signed: false },
+        client_3: { title: 'client 3', name: 'Charlie', email: 'charlie@example.com', signed: false },
       });
     });
   });
@@ -839,6 +902,9 @@ describe('step', () => {
             age: { type: 'integer' },
           },
         },
+        admin: {
+          role: 'admin',
+        },
       },
       actions: {
         updateTitle: {
@@ -852,6 +918,9 @@ describe('step', () => {
         },
         updateResult: {
           update: { set: 'result' },
+        },
+        updateAdminRole: {
+          update: { set: 'actors.admin.role' },
         },
       },
       vars: {
@@ -868,6 +937,7 @@ describe('step', () => {
             { on: 'updateActor', goto: '(done)' },
             { on: 'updateVars', goto: '(done)' },
             { on: 'updateResult', goto: '(done)' },
+            { on: 'updateAdminRole', goto: '(done)' },
           ],
         },
       },
@@ -875,9 +945,6 @@ describe('step', () => {
 
     const instructions = {
       scenario: uuid(scenario),
-      actors: {
-        client: {},
-      },
     };
 
     const newProcess = instantiate(scenario, instructions);
@@ -918,6 +985,15 @@ describe('step', () => {
       expect(event.skipped).to.be.true;
       expect(event.errors).to.have.length(1);
       expect(event.errors![0]).to.eq('Result is invalid: data/0 must be string');
+    });
+
+    it('should not allow modifying a fixed role', () => {
+      const process = step(newProcess, 'updateAdminRole', 'admin', 'client');
+      const event = process.events[1] as ActionEvent;
+
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq("Role of actor 'admin' must not be changed");
     });
   });
 });
