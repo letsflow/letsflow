@@ -35,8 +35,7 @@ export default [
       sourceType: 'module',
 
       parserOptions: {
-        project: 'tsconfig.json',
-        tsconfigRootDir: '/home/arnold/Projects/letsflow/core',
+        project: 'tsconfig.json'
       },
     },
 
