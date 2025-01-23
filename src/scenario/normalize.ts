@@ -1,5 +1,5 @@
 import { isFn } from '../process/fn';
-import { actionSchema, scenarioSchema, schemaSchema } from '../schemas/v1.0.0';
+import { actionSchema, scenarioSchema, schemaSchema } from '../schemas/v1.0';
 import {
   NormalizedAction,
   NormalizedExplicitTransition,

@@ -2,7 +2,7 @@ import Ajv from 'ajv';
 import { ErrorObject } from 'ajv/dist/types';
 import { ajv as defaultAjv } from '../ajv';
 import { isFn } from '../process/fn';
-import { scenarioSchema } from '../schemas/v1.0.0';
+import { scenarioSchema } from '../schemas/v1.0';
 import { EndState, Notify, Scenario, State } from './interfaces/scenario';
 
 export interface ValidateFunction {

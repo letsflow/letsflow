@@ -2,7 +2,7 @@ import Ajv from 'ajv/dist/2020';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { loadSchemas, normalize } from '../../src/scenario';
-import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from '../../src/schemas/v1.0.0';
+import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from '../../src/schemas/v1.0';
 
 describe('loadSchemas', () => {
   let ajv: Ajv;

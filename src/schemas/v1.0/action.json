@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.letsflow.io/v1.0.0/action",
+  "$id": "https://schemas.letsflow.io/v1.0/action",
   "type": "object",
   "nullable": true,
   "properties": {
@@ -16,7 +16,7 @@
           "type": "string"
         },
         {
-          "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+          "$ref": "https://schemas.letsflow.io/v1.0/fn"
         }
       ]
     },
@@ -26,7 +26,7 @@
           "type": "string"
         },
         {
-          "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+          "$ref": "https://schemas.letsflow.io/v1.0/fn"
         },
         {
           "type": "array",
@@ -36,7 +36,7 @@
                 "type": "string"
               },
               {
-                "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+                "$ref": "https://schemas.letsflow.io/v1.0/fn"
               }
             ]
           }
@@ -52,7 +52,7 @@
           "type": "string"
         },
         {
-          "$ref": "https://schemas.letsflow.io/v1.0.0/schema"
+          "$ref": "https://schemas.letsflow.io/v1.0/schema"
         }
       ]
     },
@@ -83,7 +83,7 @@
               "type": "string"
             },
             {
-              "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+              "$ref": "https://schemas.letsflow.io/v1.0/fn"
             }
           ]
         },
@@ -110,7 +110,7 @@
           "type": "boolean"
         },
         {
-          "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+          "$ref": "https://schemas.letsflow.io/v1.0/fn"
         }
       ]
     }

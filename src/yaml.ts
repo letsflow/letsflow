@@ -46,11 +46,17 @@ const constTag: YAML.ScalarTag = {
   resolve: (str) => ({ const: parseValue(str) }),
 };
 
+const enumTag: YAML.CollectionTag = {
+  tag: '!enum',
+  collection: 'seq',
+  resolve: (seq) => ({ enum: seq.toJSON() }),
+};
+
 const defaultTag: YAML.ScalarTag = {
   tag: '!default',
   resolve(str) {
     const value = parseValue(str);
-    return { type: typeof value, default: value };
+    return { default: value, ...determineType(value) };
   },
 };
 
@@ -95,7 +101,34 @@ function parseValue(value: any) {
     return value === 'true';
   }
 
+  if (value === '~') {
+    return null;
+  }
+
   return value;
+}
+
+function determineType(value: any): { type?: string; items?: string | string[]; format?: string } {
+  if (value === null || value === undefined) {
+    return {};
+  }
+
+  if (Array.isArray(value)) {
+    const items = Array.from(new Set(value.map((v) => determineType(v).type)));
+    return items.length === 0 || items.some((t) => t === undefined)
+      ? { type: 'array' }
+      : { type: 'array', items: items.length === 1 ? (items[0] as string) : (items as string[]) };
+  }
+
+  if (value instanceof Date) {
+    return { type: 'string', format: 'date-time' };
+  }
+
+  if (typeof value === 'number') {
+    return { type: Number.isInteger(value) ? 'integer' : 'number' };
+  }
+
+  return { type: typeof value };
 }
 
 export const schema = new YAML.Schema({
@@ -104,6 +137,7 @@ export const schema = new YAML.Schema({
     fnTag('tpl'),
     tplExplicitTag,
     constTag,
+    enumTag,
     formatTag,
     patternTag,
     defaultTag,

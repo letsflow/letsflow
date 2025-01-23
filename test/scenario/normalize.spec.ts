@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { normalize, Scenario, Schema } from '../../src/scenario';
-import { schemaSchema } from '../../src/schemas/v1.0.0';
+import { schemaSchema } from '../../src/schemas/v1.0';
 
 describe('normalize', () => {
   describe('scenario', () => {
@@ -17,7 +17,7 @@ describe('normalize', () => {
       };
 
       expect(normalize(scenario)).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0.0/scenario',
+        $schema: 'https://schemas.letsflow.io/v1.0/scenario',
         title: 'minimal scenario',
         description: '',
         tags: ['foo', 'bar'],
@@ -37,7 +37,7 @@ describe('normalize', () => {
         },
         actions: {
           'initial.complete': {
-            $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+            $schema: 'https://schemas.letsflow.io/v1.0/action',
             title: 'complete',
             description: '',
             if: true,
@@ -175,7 +175,7 @@ describe('normalize', () => {
 
       expect(normalize(scenario).actions).to.deep.eq({
         complete: {
-          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           if: true,
@@ -200,7 +200,7 @@ describe('normalize', () => {
 
       expect(normalize(scenario).actions).to.deep.eq({
         complete: {
-          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           if: true,
@@ -254,7 +254,7 @@ describe('normalize', () => {
 
       expect(normalize(scenario).actions).to.deep.eq({
         one: {
-          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'one',
           description: '',
           if: true,
@@ -265,7 +265,7 @@ describe('normalize', () => {
           update: [],
         },
         two: {
-          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'two',
           description: '',
           if: true,
@@ -302,7 +302,7 @@ describe('normalize', () => {
 
       expect(normalize(scenario).actions).to.deep.eq({
         complete: {
-          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           if: true,
@@ -352,7 +352,7 @@ describe('normalize', () => {
 
       expect(normalize(scenario).actions).to.deep.eq({
         complete: {
-          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           if: true,
@@ -402,7 +402,7 @@ describe('normalize', () => {
 
       expect(normalized.actions).to.deep.eq({
         'initial.complete': {
-          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           if: true,
@@ -497,7 +497,7 @@ describe('normalize', () => {
 
       expect(normalized.actions).to.deep.eq({
         'initial.complete': {
-          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           if: true,
@@ -506,7 +506,7 @@ describe('normalize', () => {
           update: [],
         },
         'initial.cancel': {
-          $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'cancel',
           description: '',
           if: true,
@@ -561,7 +561,7 @@ describe('normalize', () => {
       ]);
 
       expect(normalized.actions['third.complete']).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'complete',
         description: '',
         if: true,

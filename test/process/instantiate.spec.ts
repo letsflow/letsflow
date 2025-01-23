@@ -5,7 +5,7 @@ import { instantiate, InstantiateEvent, Process } from '../../src/process';
 import { hash } from '../../src/process/hash';
 import { instantiateAction, instantiateState } from '../../src/process/instantiate';
 import { normalize, NormalizedScenario } from '../../src/scenario';
-import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from '../../src/schemas/v1.0.0';
+import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from '../../src/schemas/v1.0';
 
 describe('instantiate', () => {
   let ajv: Ajv;
@@ -93,7 +93,7 @@ describe('instantiate', () => {
       expect(process.current.timestamp).to.eq(event.timestamp);
       expect(process.current.actions).to.have.length(1);
       expect(process.current.actions[0]).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'complete',
         description: 'Complete some scenario',
         if: true,
@@ -449,7 +449,7 @@ describe('instantiate', () => {
 
       expect(current.actions).to.have.length(1);
       expect(current.actions[0]).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'complete',
         description: 'Complete some scenario',
         if: true,
@@ -547,7 +547,7 @@ describe('instantiate', () => {
       const action = instantiateAction('complete', scenario.actions['complete'], process);
 
       expect(action).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0.0/action',
+        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'complete',
         description: 'Complete some scenario',
         if: false,

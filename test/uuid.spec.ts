@@ -1,10 +1,10 @@
-import { uuid } from '../src/uuid';
 import { expect } from 'chai';
+import { uuid } from '../src/uuid';
 
 describe('uuid', () => {
   it('should create a deterministic uuid', function () {
     const scenario = {
-      $schema: 'https://specs.letsflow.io/v1.0.0/scenario',
+      $schema: 'https://specs.letsflow.io/v1.0/scenario',
       title: 'minimal scenario',
       description: '',
       actors: {
@@ -17,7 +17,7 @@ describe('uuid', () => {
       },
       actions: {
         complete: {
-          $schema: 'https://specs.letsflow.io/v1.0.0/action',
+          $schema: 'https://specs.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           actor: ['actor'],
@@ -42,6 +42,6 @@ describe('uuid', () => {
       vars: {},
     };
 
-    expect(uuid(scenario)).to.eq('906a51d4-bfb5-5db4-98d1-4d660298c77f');
+    expect(uuid(scenario)).to.eq('ec64ced8-5be8-579b-8e81-6dffc8501e78');
   });
 });

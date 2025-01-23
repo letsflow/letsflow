@@ -15,7 +15,7 @@ actions:
     response: !ref scenario.actors.client
     update: actors.client
   request_quote:
-    $schema: https://schemas.letsflow.io/v1.0.0/actions/form
+    $schema: https://schemas.letsflow.io/v1.0/actions/form
     actor: client
     response: !ref scenario.vars.quote_request
     form:

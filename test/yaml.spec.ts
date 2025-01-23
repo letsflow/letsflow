@@ -44,13 +44,10 @@ describe('yaml', () => {
       });
     });
 
-    it('should parse yaml with const and default tags', () => {
+    it('should parse yaml with const tags', () => {
       const yamlString = `
         foo: !const abc
         bar: !const 10
-        rob: !default abc
-        qux: !default true
-        wam: !default 22
       `;
 
       const data = parse(yamlString);
@@ -58,9 +55,41 @@ describe('yaml', () => {
       expect(data).to.eql({
         foo: { const: 'abc' },
         bar: { const: 10 },
+      });
+    });
+
+    it('should parse yaml with enum tags', () => {
+      const yamlString = `
+        one: !enum [abc, def, ghi]
+        two: !enum
+          - abc
+          - def
+          - ghi
+      `;
+
+      const data = parse(yamlString);
+
+      expect(data).to.eql({
+        one: { enum: ['abc', 'def', 'ghi'] },
+        two: { enum: ['abc', 'def', 'ghi'] },
+      });
+    });
+
+    it('should parse yaml with default tags', () => {
+      const yamlString = `
+        rob: !default abc
+        qux: !default true
+        wam: !default 22
+        lop: !default ~
+      `;
+
+      const data = parse(yamlString);
+
+      expect(data).to.eql({
         rob: { type: 'string', default: 'abc' },
         qux: { type: 'boolean', default: true },
-        wam: { type: 'number', default: 22 },
+        wam: { type: 'integer', default: 22 },
+        lop: { default: null },
       });
     });
 

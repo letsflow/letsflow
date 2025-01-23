@@ -1,6 +1,6 @@
 import ajvFormats from 'ajv-formats';
 import Ajv from 'ajv/dist/2020';
-import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from './schemas/v1.0.0';
+import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from './schemas/v1.0';
 
 export const ajv = new Ajv({
   allErrors: true,

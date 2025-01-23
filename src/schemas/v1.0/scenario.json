@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.letsflow.io/v1.0.0/scenario",
+  "$id": "https://schemas.letsflow.io/v1.0/scenario",
   "type": "object",
   "properties": {
     "$schema": {
       "type": "string",
-      "const": "https://schemas.letsflow.io/v1.0.0/scenario"
+      "const": "https://schemas.letsflow.io/v1.0/scenario"
     },
     "name": {
       "type": "string"
@@ -28,13 +28,13 @@
     "actors": {
       "type": "object",
       "additionalProperties": {
-        "$ref": "https://schemas.letsflow.io/v1.0.0/actor"
+        "$ref": "https://schemas.letsflow.io/v1.0/actor"
       }
     },
     "actions": {
       "type": "object",
       "additionalProperties": {
-        "$ref": "https://schemas.letsflow.io/v1.0.0/action"
+        "$ref": "https://schemas.letsflow.io/v1.0/action"
       }
     },
     "states": {
@@ -59,11 +59,11 @@
     "vars": {
       "type": "object",
       "additionalProperties": {
-        "$ref": "https://schemas.letsflow.io/v1.0.0/schema"
+        "$ref": "https://schemas.letsflow.io/v1.0/schema"
       }
     },
     "result": {
-      "$ref": "https://schemas.letsflow.io/v1.0.0/schema"
+      "$ref": "https://schemas.letsflow.io/v1.0/schema"
     }
   },
   "required": [
@@ -309,7 +309,7 @@
               "type": "string"
             },
             {
-              "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+              "$ref": "https://schemas.letsflow.io/v1.0/fn"
             },
             {
               "type": "object",
@@ -331,7 +331,7 @@
           "type": "string"
         },
         {
-          "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+          "$ref": "https://schemas.letsflow.io/v1.0/fn"
         }
       ]
     },
@@ -341,7 +341,7 @@
           "type": "boolean"
         },
         {
-          "$ref": "https://schemas.letsflow.io/v1.0.0/fn"
+          "$ref": "https://schemas.letsflow.io/v1.0/fn"
         }
       ]
     },
