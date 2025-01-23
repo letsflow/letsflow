@@ -1,6 +1,7 @@
 import ajvFormats from 'ajv-formats';
 import Ajv from 'ajv/dist/2020';
 import { expect } from 'chai';
+import { uuid } from '../../src';
 import { instantiate, InstantiateEvent, Process } from '../../src/process';
 import { hash } from '../../src/process/hash';
 import { instantiateAction, instantiateState } from '../../src/process/instantiate';
@@ -46,7 +47,6 @@ describe('instantiate', () => {
 
   describe('scenario', () => {
     it('should instantiate', () => {
-      const scenarioId = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
       const scenario: NormalizedScenario = normalize({
         title: 'some scenario',
         actions: {
@@ -62,17 +62,9 @@ describe('instantiate', () => {
         },
       });
 
-      const process = instantiate(
-        scenario,
-        {
-          scenario: scenarioId,
-          actors: {},
-          vars: {},
-        },
-        { ajv },
-      );
+      const process = instantiate(scenario, { ajv });
 
-      expect(process.scenario).to.deep.eq({ id: scenarioId, ...scenario });
+      expect(process.scenario).to.deep.eq({ id: uuid(scenario), ...scenario });
       expect(process.actors).to.deep.eq({
         actor: { title: 'actor' },
       });
@@ -81,7 +73,7 @@ describe('instantiate', () => {
       expect(process.events.length).to.eq(1);
       const { hash: eventHash, ...event } = process.events[0] as InstantiateEvent;
       expect(event.timestamp).to.be.instanceof(Date);
-      expect(event.scenario).to.eq('6ba7b810-9dad-11d1-80b4-00c04fd430c8');
+      expect(event.scenario).to.eq('b6068b54-e9b4-5c74-a084-b0c2b88a05c4');
       expect(event.actors).to.deep.eq({
         actor: { title: 'actor' },
       });
@@ -105,7 +97,6 @@ describe('instantiate', () => {
 
     it('should instantiate actors', () => {
       const scenario: NormalizedScenario = normalize({
-        title: 'some scenario',
         actors: {
           user: {
             title: 'Main user',
@@ -114,14 +105,11 @@ describe('instantiate', () => {
               verified: { type: 'boolean', default: false },
             },
           },
-          admin: {},
+          admin: null,
           support: {
             role: 'support-team',
           },
           'signer_*': {},
-        },
-        actions: {
-          complete: {},
         },
         states: {
           initial: {
@@ -131,21 +119,10 @@ describe('instantiate', () => {
         },
       });
 
-      const process = instantiate(
-        scenario,
-        {
-          scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-          actors: {
-            user: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
-          },
-          vars: {},
-        },
-        { ajv },
-      );
+      const process = instantiate(scenario, { ajv });
 
       expect(process.actors.user).to.deep.eq({
         title: 'Main user',
-        id: 'eb82534d-1b99-415f-8d32-096070ea3310',
         verified: false,
       });
 
@@ -163,7 +140,6 @@ describe('instantiate', () => {
       expect((process.events[0] as InstantiateEvent).actors).to.deep.eq({
         user: {
           title: 'Main user',
-          id: 'eb82534d-1b99-415f-8d32-096070ea3310',
           verified: false,
         },
         admin: {
@@ -189,7 +165,7 @@ describe('instantiate', () => {
           },
         },
         vars: {
-          foo: 'string',
+          foo: { const: 'hello' },
           bar: { type: 'integer', default: 10 },
           qux: {
             type: 'object',
@@ -202,17 +178,7 @@ describe('instantiate', () => {
         },
       });
 
-      const process = instantiate(
-        scenario,
-        {
-          scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-          actors: {},
-          vars: {
-            foo: 'hello',
-          },
-        },
-        { ajv },
-      );
+      const process = instantiate(scenario, { ajv });
 
       expect(process.vars).to.deep.eq({
         foo: 'hello',
@@ -241,13 +207,7 @@ describe('instantiate', () => {
         },
       });
 
-      const process = instantiate(
-        scenario,
-        {
-          scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-        },
-        { ajv },
-      );
+      const process = instantiate(scenario, { ajv });
 
       expect(process.result).to.deep.eq({
         amount: 0,
@@ -287,13 +247,7 @@ describe('instantiate', () => {
         },
       });
 
-      const process = instantiate(
-        scenario,
-        {
-          scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-        },
-        { ajv },
-      );
+      const process = instantiate(scenario, { ajv });
 
       expect(process.actors).to.deep.eq({
         client: {
@@ -314,46 +268,6 @@ describe('instantiate', () => {
         approved: false,
       });
     });
-
-    it('should go into an error state if validation fails', () => {
-      const scenario: NormalizedScenario = normalize({
-        states: {
-          initial: {
-            on: 'complete',
-            goto: '(done)',
-          },
-        },
-        vars: {
-          amount: 'integer',
-        },
-      });
-
-      const process = instantiate(
-        scenario,
-        {
-          scenario: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-          vars: {
-            amount: 'not a number',
-          },
-        },
-        { ajv },
-      );
-
-      expect(process.current).to.deep.eq({
-        key: '(error)',
-        title: 'Error',
-        description: 'The process failed to start',
-        instructions: {},
-        actions: [],
-        notify: [],
-        timestamp: process.events[0].timestamp,
-      });
-
-      const event = process.events[0] as InstantiateEvent;
-
-      expect(event.errors ?? []).to.have.length(1);
-      expect(event.errors![0]).to.eq("Variable 'amount' is invalid: data must be integer");
-    });
   });
 
   describe('state', () => {
@@ -366,8 +280,14 @@ describe('instantiate', () => {
         actors: {
           client: {
             properties: {
-              name: 'string',
-              email: 'string',
+              name: {
+                type: 'string',
+                default: 'John Doe',
+              },
+              email: {
+                type: 'string',
+                default: 'john@example.com',
+              },
             },
           },
         },
@@ -387,22 +307,8 @@ describe('instantiate', () => {
         },
         foo: 10,
       });
-    });
 
-    before(() => {
-      process = instantiate(
-        scenario,
-        {
-          scenario: 'basic',
-          actors: {
-            client: {
-              name: 'John Doe',
-              email: 'john@example.com',
-            },
-          },
-        },
-        { ajv },
-      );
+      process = instantiate(scenario, { ajv });
     });
 
     it('should instantiate a state', () => {
@@ -522,25 +428,16 @@ describe('instantiate', () => {
         vars: {
           act: {
             type: 'string',
-            default: 'client',
+            default: 'admin',
           },
-          amount: 'integer',
+          amount: {
+            type: 'integer',
+            default: 20,
+          },
         },
       });
-    });
 
-    before(() => {
-      process = instantiate(
-        scenario,
-        {
-          scenario: 'basic',
-          vars: {
-            amount: 20,
-            act: 'admin',
-          },
-        },
-        { ajv },
-      );
+      process = instantiate(scenario, { ajv });
     });
 
     it('should instantiate an action', () => {

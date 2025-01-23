@@ -14,9 +14,10 @@ export interface Schema {
   default?: any;
   description?: string;
   properties?: Record<string, string | Schema>;
+  patternProperties?: Record<string, string | Schema>;
+  additionalProperties?: boolean | string | Schema;
   required?: string[];
   items?: string | Schema;
-  additionalProperties?: boolean | string | Schema;
 
   [_: string]: any;
 }
@@ -59,7 +60,7 @@ interface BaseState {
 interface SimpleState extends BaseState {
   on: string;
   by?: string | string[];
-  goto: string;
+  goto: string | null;
 }
 
 interface SimpleTimeoutState extends BaseState {

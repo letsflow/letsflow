@@ -42,6 +42,6 @@ describe('uuid', () => {
       vars: {},
     };
 
-    expect(uuid(scenario)).to.eq('ec64ced8-5be8-579b-8e81-6dffc8501e78');
+    expect(uuid(scenario)).to.eq('b4130302-8e5b-5dbe-8ecb-dfc4dad164ac');
   });
 });

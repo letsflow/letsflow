@@ -139,6 +139,20 @@ describe('yaml', () => {
         qux: { type: 'string', pattern: '^\\d{13}$' },
       });
     });
+
+    it('should parse yaml with update instruction mode tags', () => {
+      const yamlString = `
+        bar: !merge def
+        rob: !append ghi
+      `;
+
+      const data = parse(yamlString);
+
+      expect(data).to.eql({
+        bar: { mode: 'merge', set: 'def' },
+        rob: { mode: 'append', set: 'ghi' },
+      });
+    });
   });
 
   describe('stringify', () => {

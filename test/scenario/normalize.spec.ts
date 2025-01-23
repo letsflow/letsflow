@@ -157,6 +157,46 @@ describe('normalize', () => {
         },
       });
     });
+
+    it('should normalize properties', () => {
+      const scenario: Scenario = {
+        actors: {
+          user: {
+            properties: {
+              name: 'string',
+            },
+            patternProperties: {
+              '^foo': 'string',
+            },
+            additionalProperties: 'number',
+          },
+        },
+        states: {},
+      };
+
+      expect(normalize(scenario).actors).to.deep.eq({
+        user: {
+          title: 'user',
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            title: { type: 'string' },
+            name: { type: 'string' },
+            role: {
+              oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+            },
+          },
+          patternProperties: {
+            '^foo': {
+              type: 'string',
+            },
+          },
+          additionalProperties: {
+            type: 'number',
+          },
+        },
+      });
+    });
   });
 
   describe('actions', () => {
@@ -729,6 +769,25 @@ describe('normalize', () => {
             type: 'number',
           },
         },
+      });
+    });
+
+    it('should normalize pattern properties', () => {
+      const schema: Schema = {
+        patternProperties: {
+          '^foo': 'string',
+        },
+      };
+
+      expect(normalize(schema, { $schema: schemaSchema.$id })).to.deep.eq({
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
+        type: 'object',
+        patternProperties: {
+          '^foo': {
+            type: 'string',
+          },
+        },
+        additionalProperties: false,
       });
     });
   });

@@ -1,43 +1,35 @@
 import Ajv from 'ajv';
-import { v4 as uuid } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { ajv as defaultAjv } from '../ajv';
 import { NormalizedAction, NormalizedScenario, Schema, Transition } from '../scenario';
+import { uuid } from '../uuid';
 import { applyFn } from './fn';
 import { withHash } from './hash';
-import { Action, Actor, InstantiateEvent, Notify, Process, StartInstructions, State } from './interfaces/process';
-import { validateProcess } from './validate';
-
-const errorState = {
-  key: '(error)',
-  title: 'Error',
-  description: 'The process failed to start',
-  instructions: {},
-  actions: [],
-  notify: [],
-};
+import { Action, Actor, InstantiateEvent, Notify, Process, State } from './interfaces/process';
 
 export function instantiate(
-  scenario: NormalizedScenario,
-  instructions: StartInstructions,
-  options: { ajv?: Ajv } = {},
+  scenario: NormalizedScenario & { id?: string },
+  options: { hashFn?: typeof withHash; ajv?: Ajv } = {},
 ): Process {
-  const id = uuid();
+  const id = uuidv4();
+  const scenarioId = scenario.id ?? uuid(scenario);
+  const hashFn = options.hashFn ?? withHash;
 
   const process: Omit<Process, 'current'> = {
     id,
     title: scenario.title ?? `Process ${id}`,
     tags: scenario.tags,
-    scenario: { id: instructions.scenario, ...scenario },
-    actors: instantiateActors(scenario.actors, instructions.actors ?? {}, options),
-    vars: { ...defaultValues(scenario.vars, options), ...(instructions.vars ?? {}) },
+    scenario: { id: scenarioId, ...scenario },
+    actors: instantiateActors(scenario.actors, {}, options),
+    vars: defaultValues(scenario.vars, options),
     result: scenario.result ? defaultValue(scenario.result, options) ?? null : null,
     events: [],
   };
 
-  const event: InstantiateEvent = withHash({
+  const event: InstantiateEvent = hashFn({
     id,
     timestamp: new Date(),
-    scenario: instructions.scenario,
+    scenario: scenarioId,
     actors: process.actors,
     vars: process.vars,
     result: process.result,
@@ -46,16 +38,8 @@ export function instantiate(
   process.events.push(event);
 
   const current = instantiateState(scenario, 'initial', process, event.timestamp);
-  const instantiated: Process = { ...process, current };
 
-  const errors = validateProcess(instantiated, options);
-
-  if (errors.length > 0) {
-    instantiated.events[0] = withHash({ ...event, errors });
-    instantiated.current = { ...errorState, timestamp: event.timestamp };
-  }
-
-  return instantiated;
+  return { ...process, current };
 }
 
 function instantiateActors(

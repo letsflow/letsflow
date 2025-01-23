@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { uuid } from '../../src';
 import { ActionEvent, instantiate, step } from '../../src/process';
 import { hash } from '../../src/process/hash';
+import { chain } from '../../src/process/utils';
 import { normalize } from '../../src/scenario';
 
 describe('step', () => {
@@ -17,15 +18,7 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-        actors: {
-          actor: {},
-        },
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'actor');
+      const process = step(instantiate(scenario), 'complete', 'actor');
 
       expect(process.events).to.have.length(2);
       const { hash: eventHash, ...event } = process.events[1] as ActionEvent;
@@ -63,15 +56,7 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-        actors: {
-          actor: {},
-        },
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'next', 'actor');
+      const process = step(instantiate(scenario), 'next', 'actor');
 
       expect(process.events).to.have.length(2);
       const { hash: eventHash, ...event } = process.events[1] as ActionEvent;
@@ -103,29 +88,36 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-        actors: {
-          actor: {},
-          admin: {},
-        },
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'admin');
+      const process = step(instantiate(scenario), 'complete', 'admin');
 
       expect(process.current.key).to.eq('(done)');
     });
 
     it('should pick the transition based on the actor with wildcard', () => {
       const scenario = normalize({
-        title: 'some scenario',
+        actions: {
+          createActors: {
+            response: {
+              patternProperties: {
+                '^party_\\d+$': 'object',
+              },
+            },
+            update: {
+              set: 'actors',
+              mode: 'merge',
+            },
+          },
+        },
         actors: {
           'party_*': {},
           admin: {},
         },
         states: {
           initial: {
+            on: 'createActors',
+            goto: 'main',
+          },
+          main: {
             transitions: [
               { on: 'complete', by: 'admin', goto: '(failed)' },
               { on: 'complete', by: 'party_*', goto: '(done)' },
@@ -134,17 +126,11 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-        actors: {
-          party_1: {},
-          party_2: {},
-          admin: {},
-        },
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'party_2');
+      const process = chain(
+        instantiate(scenario),
+        (process) => step(process, 'createActors', 'admin', { party_1: {}, party_2: {} }),
+        (process) => step(process, 'complete', 'party_2'),
+      );
 
       expect(process.current.key).to.eq('(done)');
     });
@@ -155,9 +141,15 @@ describe('step', () => {
         vars: {
           foo: 'integer',
         },
+        actions: {
+          setVar: {
+            update: 'vars.foo',
+          },
+        },
         states: {
           initial: {
             transitions: [
+              { on: 'setVar', goto: null },
               { on: 'complete', if: { '<ref>': 'vars.foo <= 10' }, goto: '(failed)' },
               { on: 'complete', if: { '<ref>': 'vars.foo > 10' }, goto: '(done)' },
             ],
@@ -165,18 +157,11 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-        actors: {
-          actor: {},
-        },
-        vars: {
-          foo: 42,
-        },
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'actor');
+      const process = chain(
+        instantiate(scenario),
+        (process) => step(process, 'setVar', 'actor', 20),
+        (process) => step(process, 'complete', 'actor'),
+      );
 
       expect(process.current.key).to.eq('(done)');
     });
@@ -194,15 +179,8 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-        actors: {
-          actor: {},
-        },
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'nop', 'actor');
+      const initialProcess = instantiate(scenario);
+      const process = step(initialProcess, 'nop', 'actor');
 
       expect(process.events).to.have.length(2);
       const { hash: eventHash, ...event } = process.events[1] as ActionEvent;
@@ -214,7 +192,7 @@ describe('step', () => {
       expect(eventHash).to.eq(hash(event));
 
       expect(process.current.key).to.eq('initial');
-      expect(process.current.timestamp.toISOString()).to.eq(newProcess.current.timestamp.toISOString());
+      expect(process.current.timestamp.toISOString()).to.eq(initialProcess.current.timestamp.toISOString());
     });
 
     it('should not allow stepping out of an end state', () => {
@@ -231,16 +209,11 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-        actors: {
-          actor: {},
-        },
-      };
-
-      let process = instantiate(scenario, instructions);
-      process = step(process, 'complete', 'actor');
-      process = step(process, 'complete', 'actor');
+      const process = chain(
+        instantiate(scenario),
+        (process) => step(process, 'complete', 'actor'),
+        (process) => step(process, 'complete', 'actor'),
+      );
 
       const event = process.events[2] as ActionEvent;
       expect(event.skipped).to.be.true;
@@ -259,12 +232,7 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'dance', 'actor');
+      const process = step(instantiate(scenario), 'dance', 'actor');
 
       expect(process.current.key).to.eq('initial');
       expect(process.events).to.have.length(2);
@@ -292,12 +260,7 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'dance', 'actor');
+      const process = step(instantiate(scenario), 'dance', 'actor');
 
       expect(process.current.key).to.eq('initial');
       expect(process.events).to.have.length(2);
@@ -328,15 +291,7 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-        vars: {
-          foo: 5,
-        },
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'actor');
+      const process = step(instantiate(scenario), 'complete', 'actor');
 
       expect(process.current.key).to.eq('initial');
       expect(process.events).to.have.length(2);
@@ -365,23 +320,13 @@ describe('step', () => {
     });
 
     it('should step to the next state if the response is valid', () => {
-      const instructions = {
-        scenario: uuid(scenario),
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'actor', 'hello world');
+      const process = step(instantiate(scenario), 'complete', 'actor', 'hello world');
 
       expect(process.current.key).to.eq('(done)');
     });
 
     it('should skip the action if the response is invalid', () => {
-      const instructions = {
-        scenario: uuid(scenario),
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'actor', { foo: 'bar' });
+      const process = step(instantiate(scenario), 'complete', 'actor', { foo: 'bar' });
 
       expect(process.current.key).to.eq('initial');
       expect(process.events).to.have.length(2);
@@ -411,12 +356,7 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'actor');
+      const process = step(instantiate(scenario), 'complete', 'actor');
 
       const event = process.events[1] as ActionEvent;
       expect(event.response).to.eq('default value');
@@ -441,12 +381,7 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'actor', 'hello world');
+      const process = step(instantiate(scenario), 'complete', 'actor', 'hello world');
 
       const event = process.events[1] as ActionEvent;
       expect(event.response).to.eq('hello world');
@@ -464,8 +399,18 @@ describe('step', () => {
         complete: {
           actor: 'admin',
         },
+        setActor: {
+          update: {
+            set: 'current.actor',
+            mode: 'merge',
+          },
+        },
       },
       states: {
+        '*': {
+          on: 'setActor',
+          goto: null,
+        },
         initial: {
           on: 'complete',
           goto: '(done)',
@@ -476,15 +421,10 @@ describe('step', () => {
       },
     });
 
-    const instructions = {
-      scenario: uuid(scenario),
-      actors: {
-        user: {},
-      },
-    };
+    uuid(scenario);
 
     it('should check if an actor is defined', () => {
-      const process = step(instantiate(scenario, instructions), 'complete', 'captain');
+      const process = step(instantiate(scenario), 'complete', 'captain');
       const event = process.events[1] as ActionEvent;
 
       expect(event.skipped).to.be.true;
@@ -493,7 +433,7 @@ describe('step', () => {
     });
 
     it('should check if an actor is assigned', () => {
-      const process = step(instantiate(scenario, instructions), 'complete', { key: 'admin', id: '1' });
+      const process = step(instantiate(scenario), 'complete', { key: 'admin', id: '1' });
       const event = process.events[1] as ActionEvent;
 
       expect(event.skipped).to.be.true;
@@ -502,7 +442,7 @@ describe('step', () => {
     });
 
     it('should check if an actor is allowed to perform an action', () => {
-      const process = step(instantiate(scenario, instructions), 'complete', 'user');
+      const process = step(instantiate(scenario), 'complete', 'user');
       const event = process.events[1] as ActionEvent;
 
       expect(event.skipped).to.be.true;
@@ -511,28 +451,25 @@ describe('step', () => {
     });
 
     it('should allow an actor to perform an action based on the id', () => {
-      const newProcess = instantiate(scenario, {
-        scenario: uuid(scenario),
-        actors: {
-          admin: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
-        },
-      });
+      const actor = { key: 'admin', id: 'eb82534d-1b99-415f-8d32-096070ea3310' };
 
-      const process = step(newProcess, 'complete', { key: 'admin', id: 'eb82534d-1b99-415f-8d32-096070ea3310' });
+      const process = chain(
+        instantiate(scenario),
+        (process) => step(process, 'setActor', 'admin', { id: 'eb82534d-1b99-415f-8d32-096070ea3310' }),
+        (process) => step(process, 'complete', actor),
+      );
 
       expect(process.current.key).to.eq('(done)');
     });
 
     it('should allow an actor to perform an action based on the role', () => {
-      const newProcess = instantiate(scenario, {
-        scenario: uuid(scenario),
-        actors: {
-          admin: { role: 'administrator' },
-        },
-      });
-
       const actor = { key: 'admin', id: 'eb82534d-1b99-415f-8d32-096070ea3310', roles: ['administrator'] };
-      const process = step(newProcess, 'complete', actor);
+
+      const process = chain(
+        instantiate(scenario),
+        (process) => step(process, 'setActor', 'admin', { role: 'administrator' }),
+        (process) => step(process, 'complete', actor),
+      );
 
       expect(process.current.key).to.eq('(done)');
     });
@@ -541,6 +478,7 @@ describe('step', () => {
       const scenario = normalize({
         actors: {
           admin: {
+            title: 'Captain',
             role: 'administrator',
             properties: {
               name: 'string',
@@ -565,15 +503,6 @@ describe('step', () => {
         },
       });
 
-      const newProcess = instantiate(scenario, {
-        scenario: uuid(scenario),
-        actors: {
-          admin: {
-            title: 'Captain',
-          },
-        },
-      });
-
       const actor = {
         key: 'admin',
         id: 'eb82534d-1b99-415f-8d32-096070ea3310',
@@ -582,7 +511,7 @@ describe('step', () => {
         email: 'john@example.com',
       };
 
-      const process = step(newProcess, 'complete', actor);
+      const process = step(instantiate(scenario), 'complete', actor);
 
       const event = process.events[1] as ActionEvent;
       expect(event.actor).to.deep.eq({
@@ -643,12 +572,7 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'admin', [
+      const process = step(instantiate(scenario), 'complete', 'admin', [
         { name: 'Alice', email: 'alice@example.com' },
         { name: 'Bob', email: 'bob@example.com' },
         { name: 'Charlie', email: 'charlie@example.com' },
@@ -681,11 +605,9 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-      };
+      uuid(scenario);
 
-      const process = step(instantiate(scenario, instructions), 'complete', 'service:my-app');
+      const process = step(instantiate(scenario), 'complete', 'service:my-app');
 
       expect(process.current.key).to.eq('(done)');
     });
@@ -703,11 +625,9 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-      };
+      uuid(scenario);
 
-      const process = step(instantiate(scenario, instructions), 'complete', 'service:my-app');
+      const process = step(instantiate(scenario), 'complete', 'service:my-app');
       const event = process.events[1] as ActionEvent;
 
       expect(event.skipped).to.be.true;
@@ -730,11 +650,9 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-      };
+      uuid(scenario);
 
-      const process = step(instantiate(scenario, instructions), 'complete', 'service:my-app');
+      const process = step(instantiate(scenario), 'complete', 'service:my-app');
       const event = process.events[1] as ActionEvent;
 
       expect(event.skipped).to.be.true;
@@ -771,22 +689,11 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-        actors: {
-          client: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
-        },
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'client');
+      const process = step(instantiate(scenario), 'complete', 'client');
 
       expect(process.current.key).to.eq('(done)');
       expect(process.title).to.eq('updated title');
-      expect(process.actors.client).to.deep.eq({
-        title: 'Updated actor',
-        id: 'eb82534d-1b99-415f-8d32-096070ea3310',
-      });
+      expect(process.actors.client).to.deep.eq({ title: 'Updated actor' });
       expect(process.vars.foo).to.eq('bar');
     });
 
@@ -812,20 +719,11 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-        actors: {
-          client: { id: 'eb82534d-1b99-415f-8d32-096070ea3310' },
-        },
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'client', { title: 'Updated actor' });
+      const process = step(instantiate(scenario), 'complete', 'client', { title: 'Updated actor' });
 
       expect(process.current.key).to.eq('(done)');
       expect(process.actors.client).to.deep.eq({
         title: 'Updated actor',
-        id: 'eb82534d-1b99-415f-8d32-096070ea3310',
       });
     });
 
@@ -848,15 +746,7 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-        actors: {
-          actor: {},
-        },
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      const process = step(newProcess, 'complete', 'actor', 'bar');
+      const process = step(instantiate(scenario), 'complete', 'actor', 'bar');
 
       expect(process.current.key).to.eq('(done)');
       expect(process.vars.foo).to.eq('bar');
@@ -878,15 +768,7 @@ describe('step', () => {
         },
       });
 
-      const instructions = {
-        scenario: uuid(scenario),
-        actors: {
-          actor: {},
-        },
-      };
-
-      const newProcess = instantiate(scenario, instructions);
-      expect(() => step(newProcess, 'complete', 'actor')).to.throw(
+      expect(() => step(instantiate(scenario), 'complete', 'actor')).to.throw(
         "Not allowed to set 'current.key' through update instructions",
       );
     });
@@ -943,14 +825,10 @@ describe('step', () => {
       },
     });
 
-    const instructions = {
-      scenario: uuid(scenario),
-    };
-
-    const newProcess = instantiate(scenario, instructions);
+    const initialProcess = instantiate(scenario);
 
     it('should validate the title', () => {
-      const process = step(newProcess, 'updateTitle', 'client', { foo: 'bar' });
+      const process = step(initialProcess, 'updateTitle', 'client', { foo: 'bar' });
       const event = process.events[1] as ActionEvent;
 
       expect(event.skipped).to.be.true;
@@ -959,7 +837,7 @@ describe('step', () => {
     });
 
     it('should validate the actor', () => {
-      const process = step(newProcess, 'updateActor', 'client', { email: 'non-an-email', age: 'old' });
+      const process = step(initialProcess, 'updateActor', 'client', { email: 'non-an-email', age: 'old' });
       const event = process.events[1] as ActionEvent;
 
       expect(event.skipped).to.be.true;
@@ -970,7 +848,7 @@ describe('step', () => {
     });
 
     it('should validate the vars', () => {
-      const process = step(newProcess, 'updateVars', 'client', 42);
+      const process = step(initialProcess, 'updateVars', 'client', 42);
       const event = process.events[1] as ActionEvent;
 
       expect(event.skipped).to.be.true;
@@ -979,7 +857,7 @@ describe('step', () => {
     });
 
     it('should validate the result', () => {
-      const process = step(newProcess, 'updateResult', 'client', [42]);
+      const process = step(initialProcess, 'updateResult', 'client', [42]);
       const event = process.events[1] as ActionEvent;
 
       expect(event.skipped).to.be.true;
@@ -988,7 +866,7 @@ describe('step', () => {
     });
 
     it('should not allow modifying a fixed role', () => {
-      const process = step(newProcess, 'updateAdminRole', 'admin', 'client');
+      const process = step(initialProcess, 'updateAdminRole', 'admin', 'client');
       const event = process.events[1] as ActionEvent;
 
       expect(event.skipped).to.be.true;

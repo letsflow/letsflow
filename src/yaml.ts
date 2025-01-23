@@ -131,6 +131,13 @@ function determineType(value: any): { type?: string; items?: string | string[]; 
   return { type: typeof value };
 }
 
+const updateModeFlag = (mode: string): YAML.ScalarTag => ({
+  tag: `!${mode}`,
+  resolve(str) {
+    return { mode, set: str };
+  },
+});
+
 export const schema = new YAML.Schema({
   customTags: [
     fnTag('ref'),
@@ -143,6 +150,8 @@ export const schema = new YAML.Schema({
     defaultTag,
     requiredScalarTag,
     requiredMapTag,
+    updateModeFlag('merge'),
+    updateModeFlag('append'),
   ],
 });
 

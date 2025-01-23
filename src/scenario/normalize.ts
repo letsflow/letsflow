@@ -163,6 +163,16 @@ function normalizeSchema(schema: Schema): Schema {
     normalizeSchema(schema.additionalProperties);
   }
 
+  if (typeof schema.patternProperties === 'object') {
+    for (const key in schema.patternProperties) {
+      if (typeof schema.patternProperties[key] === 'string') {
+        schema.patternProperties[key] = stringToSchema(schema.patternProperties[key]);
+      } else if (typeof schema.patternProperties[key] === 'object') {
+        normalizeSchema(schema.patternProperties[key]);
+      }
+    }
+  }
+
   if (schema.type === 'object') {
     schema.additionalProperties ??= false;
   }
@@ -446,13 +456,13 @@ function determineSchema(schema: Schema): void {
     schema.type = types.length === 1 ? types[0] : types;
   }
 
-  if ('properties' in schema) {
-    schema.type = 'object';
+  if ('items' in schema) {
+    schema.type = 'array';
     return;
   }
 
-  if ('items' in schema) {
-    schema.type = 'array';
+  if ('properties' in schema || 'patternProperties' in schema || 'additionalProperties' in schema) {
+    schema.type = 'object';
     return;
   }
 }
