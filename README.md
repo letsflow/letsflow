@@ -27,7 +27,7 @@ The scenario models a process as a fine state machine. The actors are persons, o
 to participate on the process by performing actions. Which actions can be performed depends on the current state of the
 process. After an action has been, the process will transition to a different state.
 
-**[Read the documentation](https://www.letsflow.io/)**
+### [Read the documentation](https://www.letsflow.io/)
 
 ## Installation
 
@@ -38,10 +38,10 @@ yarn add @letsflow/core
 ## Example usage
 
 ```typescript
-import { Scenario, normalize } from '@letsflow/core/scenario';
+import { normalize } from '@letsflow/core/scenario';
 import { chain, instantiate, step } from '@letsflow/core/process';
 
-const scenario = normalize(new Scenario({
+const scenario = normalize({
   title: 'My first scenario',
   actors: {
     user: {
@@ -66,7 +66,7 @@ const scenario = normalize(new Scenario({
       goto: '(done)'
     }
   }
-}));
+});
 
 const process = chain(
   instantiate(scenario),
