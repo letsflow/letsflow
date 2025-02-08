@@ -225,6 +225,7 @@ function normalizeUpdateInstructions(
   return (Array.isArray(instructions) ? instructions : [instructions]).map((instruction) => ({
     set: instruction.set,
     value: instruction.value ?? { '<ref>': 'current.response' },
+    stub: instruction.stub ?? undefined,
     mode: instruction.mode ?? 'replace',
     if: instruction.if ?? true,
   }));
@@ -407,7 +408,9 @@ function stringToSchema(schema: string): Schema {
   return schema.match(/^https?:|^#/) ? { $ref: schema } : { type: schema };
 }
 
-function convertTimePeriodToSeconds(timePeriod: string): number {
+function convertTimePeriodToSeconds(timePeriod: string | number): number {
+  if (typeof timePeriod === 'number') return timePeriod;
+
   const match = timePeriod.match(/^\s*(\d+)\s*(\w*)\s*$/);
   if (!match) throw new Error('Invalid time period format');
 

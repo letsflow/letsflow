@@ -13,6 +13,7 @@ import { validateProcess } from './validate';
 interface InstantiatedUpdateInstructions {
   set: string;
   value: any;
+  stub: any;
   mode: 'replace' | 'merge' | 'append';
   if: boolean;
 }
@@ -28,8 +29,8 @@ interface StepActor {
  * Step the process forward by one action.
  * @return The updated process.
  */
-export function step(
-  input: Process,
+export function step<T extends Process>(
+  input: T,
   action: string,
   actor: StepActor | string = 'actor',
   response?: any,
@@ -37,7 +38,7 @@ export function step(
     hashFn?: typeof withHash;
     ajv?: Ajv;
   } = {},
-): Process {
+): T {
   const process = structuredClone(input);
   if (typeof actor === 'string') actor = { key: actor };
 
@@ -66,10 +67,11 @@ export function step(
   for (const scenarioInstructions of currentAction.update) {
     const instructions: InstantiatedUpdateInstructions = applyFn(scenarioInstructions, process);
     if (!instructions.if) continue;
-    update(process, instructions.set, instructions.value, instructions.mode, actor.key, { ajv });
+
+    update(process, instructions, actor.key, { ajv });
   }
 
-  const updateErrors = validateProcess(process, { ajv });
+  const updateErrors = !isPrediction(process) ? validateProcess(process, { ajv }) : [];
 
   const next: NormalizedTransition = process.scenario.states[process.current.key].transitions
     .filter((transition: NormalizedTransition) => 'on' in transition)
@@ -180,6 +182,7 @@ function validateStep(ajv: Ajv, process: Process, action: string, actor: StepAct
   }
 
   if (
+    !isPrediction(process) &&
     currentAction?.response &&
     Object.keys(currentAction.response).length > 0 &&
     !ajv.validate(currentAction.response, response)
@@ -194,14 +197,14 @@ function validateStep(ajv: Ajv, process: Process, action: string, actor: StepAct
  * Step the process forward in case of a timeout.
  * @return The updated process.
  */
-export function timeout(input: Process, options: { hashFn?: typeof withHash } = {}): Process {
+export function timeout<T extends Process>(input: T, options: { hashFn?: typeof withHash; force?: boolean } = {}): T {
   const hashFn = options.hashFn ?? withHash;
 
   const process = structuredClone(input);
   const current = process.scenario.states[process.current.key];
 
   const timestamp = new Date();
-  const timeout = timestamp.getTime() - process.current.timestamp.getTime();
+  const timeout = !options.force ? timestamp.getTime() - process.current.timestamp.getTime() : Number.MAX_SAFE_INTEGER;
 
   const next = (current.transitions ?? [])
     .filter((transition: NormalizedTransition) => 'after' in transition)
@@ -228,12 +231,14 @@ export function timeout(input: Process, options: { hashFn?: typeof withHash } = 
 
 function update(
   process: Process,
-  path: string,
-  value: any,
-  mode: 'replace' | 'merge' | 'append',
+  instructions: InstantiatedUpdateInstructions,
   currentActor: string,
   options: { ajv?: Ajv } = {},
 ): void {
+  const path = instructions.set;
+  let value = !isPrediction(process) ? instructions.value : instructions.stub ?? instructions.value;
+  const mode = instructions.mode ?? 'replace';
+
   if (!path.match(/^title$|^(vars|actors|result|current\.actor)(\.|$)/)) {
     throw new Error(`Not allowed to set '${path}' through update instructions`);
   }
@@ -278,4 +283,8 @@ function update(
 
 function includesActor(actors: string[], key: string): boolean {
   return actors.includes(key) || actors.includes('*') || actors.includes(key.replace(/\d+$/, '*'));
+}
+
+function isPrediction(process: Process): boolean {
+  return 'is_prediction' in process && (process.is_prediction as boolean);
 }

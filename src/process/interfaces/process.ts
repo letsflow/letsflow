@@ -79,3 +79,5 @@ export interface Process {
   current: State;
   events: Array<InstantiateEvent | ActionEvent | TimeoutEvent>;
 }
+
+export type PredictedState = Omit<State, 'timestamp' | 'notify'>;

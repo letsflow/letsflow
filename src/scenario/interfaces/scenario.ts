@@ -3,7 +3,7 @@ import { Fn } from './fn';
 type Forbidden<T, K extends keyof any> = {
   [P in keyof T]: P extends K ? never : T[P];
 } & {
-  [P in K]?: never;
+  [_ in K]?: never;
 };
 
 export interface Schema {
@@ -41,6 +41,7 @@ export interface Action {
 export interface UpdateInstruction {
   set: string | Fn;
   value?: any | Fn;
+  stub?: any | Fn;
   mode?: 'replace' | 'merge' | 'append';
   if?: boolean | Fn;
 }
