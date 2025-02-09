@@ -14,9 +14,9 @@ describe('import scenario', () => {
 
   // Uncomment this block to generate the scenario.json and scenario-normalized.json file
   before(async () => {
-    const parsed = yaml.parse(scenarioYaml);
+    //const parsed = yaml.parse(scenarioYaml);
     //await fs.writeFile(__dirname + '/test/scenario.json', JSON.stringify(parsed, null, 2));
-    await fs.writeFile(__dirname + '/test/scenario-normalized.json', JSON.stringify(normalize(parsed), null, 2));
+    //await fs.writeFile(__dirname + '/test/scenario-normalized.json', JSON.stringify(normalize(parsed), null, 2));
   });
 
   before(async () => {
