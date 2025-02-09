@@ -402,6 +402,7 @@ describe('normalize', () => {
             {
               set: 'vars.foo',
               value: { '<ref>': 'current.response' },
+              stub: null,
               mode: 'replace',
               if: true,
             },

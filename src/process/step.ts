@@ -236,7 +236,7 @@ function update(
   options: { ajv?: Ajv } = {},
 ): void {
   const path = instructions.set;
-  let value = !isPrediction(process) ? instructions.value : instructions.stub ?? instructions.value;
+  let value = isPrediction(process) && instructions.stub !== null ? instructions.stub : instructions.value;
   const mode = instructions.mode ?? 'replace';
 
   if (!path.match(/^title$|^(vars|actors|result|current\.actor)(\.|$)/)) {

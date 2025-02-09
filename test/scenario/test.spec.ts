@@ -1,7 +1,7 @@
-import * as fs from 'fs/promises';
-import { NormalizedScenario, Scenario, normalize, validate } from '../../src/scenario';
-import { yaml } from '../../src';
 import { expect } from 'chai';
+import * as fs from 'fs/promises';
+import { yaml } from '../../src';
+import { normalize, NormalizedScenario, Scenario, validate } from '../../src/scenario';
 
 describe('import scenario', () => {
   let scenarioYaml: string;
@@ -14,9 +14,9 @@ describe('import scenario', () => {
 
   // Uncomment this block to generate the scenario.json and scenario-normalized.json file
   before(async () => {
-    //const parsed = yaml.parse(scenarioYaml);
+    const parsed = yaml.parse(scenarioYaml);
     //await fs.writeFile(__dirname + '/test/scenario.json', JSON.stringify(parsed, null, 2));
-    //await fs.writeFile(__dirname + '/test/scenario-normalized.json', JSON.stringify(normalize(parsed), null, 2));
+    await fs.writeFile(__dirname + '/test/scenario-normalized.json', JSON.stringify(normalize(parsed), null, 2));
   });
 
   before(async () => {
