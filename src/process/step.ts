@@ -93,9 +93,8 @@ export function step<T extends Process>(
   }
 
   process.current = instantiateState(
-    process.scenario,
-    next.goto ?? process.current.key,
     process,
+    next.goto ?? process.current.key,
     next.goto ? event.timestamp : process.current.timestamp,
   );
 
@@ -127,7 +126,7 @@ function validateStep(ajv: Ajv, process: Process, action: string, actor: StepAct
     `${process.current.key}.${action}` in process.scenario.actions ? `${process.current.key}.${action}` : action;
 
   const currentAction = process.scenario.actions[key]
-    ? instantiateAction(key, process.scenario.actions[key], process)
+    ? instantiateAction(process, key, process.scenario.actions[key])
     : undefined;
   const service = actor.key.startsWith('service:') ? actor.key.split(':', 2)[1] : undefined;
 
@@ -217,7 +216,7 @@ export function timeout<T extends Process>(input: T, options: { hashFn?: typeof 
   process.events.push(event);
 
   if (next.goto !== null) {
-    process.current = instantiateState(process.scenario, next.goto, process, event.timestamp);
+    process.current = instantiateState(process, next.goto, event.timestamp);
   }
 
   return process;

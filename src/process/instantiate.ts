@@ -37,7 +37,7 @@ export function instantiate(
 
   process.events.push(event);
 
-  const current = instantiateState(scenario, 'initial', process, event.timestamp);
+  const current = instantiateState(process, 'initial', event.timestamp);
 
   return { ...process, current };
 }
@@ -79,12 +79,8 @@ export function instantiateActor(
   };
 }
 
-export function instantiateState(
-  scenario: NormalizedScenario,
-  key: string,
-  process: Omit<Process, 'current'>,
-  timestamp?: Date,
-): State {
+export function instantiateState(process: Omit<Process, 'current'>, key: string, timestamp?: Date): State {
+  const scenario = process.scenario;
   const scenarioState = scenario.states[key];
   if (!scenarioState) throw new Error(`State '${key}' not found in scenario`);
 
@@ -93,15 +89,26 @@ export function instantiateState(
   state.key = key;
   state.timestamp = timestamp ?? new Date();
 
-  state.actions = ((state.transitions ?? []) as Transition[])
+  const actions = ((state.transitions ?? []) as Transition[])
     .filter((transition) => 'on' in transition)
-    .map((transition) => transition.on)
-    .map((k: string): Action & { if: boolean } => {
-      const action = scenario.actions[`${key}.${k}`] ?? scenario.actions[k];
+    .filter((transition) => transition.if as boolean)
+    .reduce(
+      (acc, transition) => {
+        const { on, by } = transition;
+        acc[on] ??= [];
+        acc[on].push(...(by as string[]));
+        return acc;
+      },
+      {} as Record<string, string[]>,
+    );
+
+  state.actions = Object.entries(actions)
+    .map(([on, by]): Action & { if: boolean } => {
+      const action = scenario.actions[`${key}.${on}`] ?? scenario.actions[on];
       if (!action) {
-        throw new Error(`Action '${k}' is used in state '${key}', but not defined in the scenario`);
+        throw new Error(`Action '${on}' is used in state '${key}', but not defined in the scenario`);
       }
-      return instantiateAction(k, action, process);
+      return instantiateAction(process, on, action, by as string[]);
     })
     .filter((action) => action.if)
     .map((action) => {
@@ -109,7 +116,7 @@ export function instantiateState(
       return rest;
     });
 
-  state.notify = (state.notify as Array<Notify & { if: boolean }>)
+  state.notify = ((state.notify ?? []) as Array<Notify & { if: boolean }>)
     .filter((notify) => notify.if)
     .map((notify): Notify => {
       const { if: _, ...rest } = notify;
@@ -120,12 +127,15 @@ export function instantiateState(
 }
 
 export function instantiateAction(
-  key: string,
-  action: NormalizedAction,
   process: Omit<Process, 'current'>,
+  key: string,
+  action?: NormalizedAction,
+  by?: string[],
 ): Action & { if: boolean } {
-  const { update: _, ...scenarioAction } = action;
+  const { update: _, ...scenarioAction } = action ?? process.scenario.actions[key];
   const processAction: Action & { if: boolean } = { ...applyFn(scenarioAction, process), key };
+
+  if (by?.includes('*')) by = undefined;
 
   // noinspection SuspiciousTypeOfGuard
   if (typeof processAction.actor === 'string') {
@@ -143,7 +153,8 @@ export function instantiateAction(
       if (actor in process.actors) return [actor];
       return [];
     })
-    .flat();
+    .flat()
+    .filter((actor) => !by || by.includes(actor) || by.includes(actor.replace(/\d+$/, '*')));
 
   processAction.if = processAction.if && processAction.actor.length > 0;
 

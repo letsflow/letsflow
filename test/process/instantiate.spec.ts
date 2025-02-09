@@ -273,7 +273,7 @@ describe('instantiate', () => {
     let scenario: NormalizedScenario;
     let process: Process;
 
-    before(() => {
+    beforeEach(() => {
       scenario = normalize({
         title: 'some scenario',
         actors: {
@@ -306,7 +306,9 @@ describe('instantiate', () => {
         },
         foo: 10,
       });
+    });
 
+    beforeEach(() => {
       process = instantiate(scenario, { ajv });
     });
 
@@ -342,7 +344,7 @@ describe('instantiate', () => {
       };
       const timestamp = new Date();
 
-      const current = instantiateState(scenario, 'next', process, timestamp);
+      const current = instantiateState(process, 'next', timestamp);
 
       expect(current.key).to.eq('next');
       expect(current.title).to.eq('Next state');
@@ -392,14 +394,52 @@ describe('instantiate', () => {
         ],
       };
 
-      const current = instantiateState(scenario, 'next', process);
+      const current = instantiateState(process, 'next');
 
       expect(current.notify).to.have.length(0);
+    });
+
+    it('should group actions by on', () => {
+      scenario.actors.admin = {};
+      scenario.actors.management = {};
+      scenario.actors.notary = {};
+      scenario.actors.other = {};
+
+      scenario.states.next = {
+        ...scenario.states.next,
+        transitions: [
+          {
+            on: 'complete',
+            by: ['admin', 'management'],
+            if: true,
+            goto: '(a)',
+          },
+          {
+            on: 'complete',
+            by: ['client', 'management'],
+            if: true,
+            goto: '(b)',
+          },
+          {
+            on: 'complete',
+            by: ['notary'],
+            if: false,
+            goto: '(c)',
+          },
+        ],
+      };
+
+      process = instantiate(scenario, { ajv });
+      const current = instantiateState(process, 'next');
+
+      expect(current.actions).to.have.length(1);
+      expect(current.actions[0].actor).to.deep.eq(['client', 'admin', 'management']);
     });
   });
 
   describe('action', () => {
     let scenario: NormalizedScenario;
+    let processOnlyAdmin: Process;
     let process: Process;
 
     before(() => {
@@ -433,18 +473,7 @@ describe('instantiate', () => {
             on: 'set_actors',
             goto: null,
           },
-          initial: {
-            transitions: [
-              {
-                on: 'complete',
-                goto: '(done)',
-              },
-              {
-                on: 'other',
-                goto: '(done)',
-              },
-            ],
-          },
+          initial: {},
         },
         vars: {
           act: {
@@ -460,11 +489,17 @@ describe('instantiate', () => {
     });
 
     beforeEach(() => {
-      process = instantiate(scenario, { ajv });
+      processOnlyAdmin = instantiate(scenario, { ajv });
+
+      process = step(processOnlyAdmin, 'set_actors', 'admin', {
+        client_1: { title: 'client 1' },
+        client_2: { title: 'client 2' },
+      });
+      expect(Object.keys(process.actors)).to.deep.eq(['admin', 'client_1', 'client_2']);
     });
 
     it('should instantiate an action', () => {
-      const action = instantiateAction('one', scenario.actions['one'], process);
+      const action = instantiateAction(process, 'one');
 
       expect(action).to.deep.eq({
         $schema: 'https://schemas.letsflow.io/v1.0/action',
@@ -478,13 +513,7 @@ describe('instantiate', () => {
     });
 
     it('should instantiate an action with a wildcard actor', () => {
-      process = step(process, 'set_actors', 'admin', {
-        client_1: { title: 'client 1' },
-        client_2: { title: 'client 2' },
-      });
-      expect(Object.keys(process.actors)).to.deep.eq(['admin', 'client_1', 'client_2']);
-
-      const action = instantiateAction('two', scenario.actions['two'], process);
+      const action = instantiateAction(process, 'two');
 
       expect(action).to.deep.eq({
         $schema: 'https://schemas.letsflow.io/v1.0/action',
@@ -498,7 +527,7 @@ describe('instantiate', () => {
     });
 
     it('should set the if condition to false if the actor is not found', () => {
-      const action = instantiateAction('two', scenario.actions['two'], process);
+      const action = instantiateAction(processOnlyAdmin, 'two');
 
       expect(action).to.deep.eq({
         $schema: 'https://schemas.letsflow.io/v1.0/action',
@@ -512,13 +541,49 @@ describe('instantiate', () => {
     });
 
     it('should set the actor to all actors if the actor is a wildcard', () => {
-      process = step(process, 'set_actors', 'admin', {
-        client_1: { title: 'client 1' },
-        client_2: { title: 'client 2' },
-      });
-      expect(Object.keys(process.actors)).to.deep.eq(['admin', 'client_1', 'client_2']);
+      const action = instantiateAction(process, 'three');
 
-      const action = instantiateAction('three', scenario.actions['three'], process);
+      expect(action).to.deep.eq({
+        $schema: 'https://schemas.letsflow.io/v1.0/action',
+        title: 'three',
+        description: '',
+        actor: ['admin', 'client_1', 'client_2'],
+        if: true,
+        response: {},
+        key: 'three',
+      });
+    });
+
+    it('should filter on by', () => {
+      const action = instantiateAction(process, 'three', undefined, ['admin', 'client_1', 'foo']);
+
+      expect(action).to.deep.eq({
+        $schema: 'https://schemas.letsflow.io/v1.0/action',
+        title: 'three',
+        description: '',
+        actor: ['admin', 'client_1'],
+        if: true,
+        response: {},
+        key: 'three',
+      });
+    });
+
+    it('should filter on by with a wildcard actor', () => {
+      const action = instantiateAction(process, 'three', undefined, ['client_*']);
+
+      expect(action).to.deep.eq({
+        $schema: 'https://schemas.letsflow.io/v1.0/action',
+        title: 'three',
+        description: '',
+        actor: ['client_1', 'client_2'],
+        if: true,
+        response: {},
+        key: 'three',
+      });
+    });
+
+    it('should not filter on if by contains any', () => {
+      const action = instantiateAction(process, 'three', undefined, ['admin', '*']);
 
       expect(action).to.deep.eq({
         $schema: 'https://schemas.letsflow.io/v1.0/action',
