@@ -27,7 +27,6 @@ describe('validate scenario', () => {
   describe('actors', () => {
     it('should succeed with a basic actor', () => {
       const scenario = {
-        title: '',
         actors: {
           user: {},
         },
@@ -47,7 +46,6 @@ describe('validate scenario', () => {
 
     it('should succeed with a null actor', () => {
       const scenario = {
-        title: '',
         actors: {
           user: null,
         },
@@ -67,7 +65,6 @@ describe('validate scenario', () => {
 
     it('should succeed with an actor with role', () => {
       const scenario = {
-        title: '',
         actors: {
           user: { role: ['user', 'client'] },
           admin: { role: 'admin' },
@@ -88,7 +85,6 @@ describe('validate scenario', () => {
 
     it('should succeed with an actor with schema properties', () => {
       const scenario = {
-        title: '',
         actors: {
           user: {
             properties: {
@@ -120,7 +116,6 @@ describe('validate scenario', () => {
 
     it('should succeed with an actor with simple properties', () => {
       const scenario = {
-        title: '',
         actors: {
           user: {
             properties: {
@@ -147,7 +142,6 @@ describe('validate scenario', () => {
 
     it('should fail for an actor of an incorrect type', () => {
       const scenario = {
-        title: '',
         actors: {
           user: { type: 'string' },
         },
@@ -173,7 +167,6 @@ describe('validate scenario', () => {
 
     it('should succeed with a ref to a schema', () => {
       const scenario = {
-        title: '',
         actors: {
           user: {
             title: 'User',
@@ -198,7 +191,6 @@ describe('validate scenario', () => {
   describe('actions', () => {
     it('should succeed with a standard action', () => {
       const scenario = {
-        title: '',
         actors: {
           user: {},
         },
@@ -235,7 +227,6 @@ describe('validate scenario', () => {
 
     it('should fail if update instruction is missing "set" property', () => {
       const scenario = {
-        title: '',
         actions: {
           next: {
             update: {
@@ -264,7 +255,6 @@ describe('validate scenario', () => {
 
     it('should fail if action is referencing a non-existing actor', () => {
       const scenario = {
-        title: '',
         actors: {
           user: {},
         },
@@ -295,7 +285,6 @@ describe('validate scenario', () => {
 
     it('should succeed if action is referencing a service', () => {
       const scenario = {
-        title: '',
         actions: {
           next: {
             actor: 'service:email',
@@ -312,9 +301,29 @@ describe('validate scenario', () => {
       expect(result).to.be.true;
     });
 
+    it('should success if action is referencing a wildcard actor', () => {
+      const scenario = {
+        actors: {
+          'client_*': {},
+        },
+        actions: {
+          next: {
+            actor: 'client_*',
+          },
+        },
+        states: {
+          initial: { on: 'next', goto: '(done)' },
+        },
+      };
+
+      const result = validate(scenario);
+
+      expect(validate.errors).to.eq(null);
+      expect(result).to.be.true;
+    });
+
     it('should fail if action is referencing a service that is not in the scenario', () => {
       const scenario = {
-        title: '',
         actions: {
           next: {
             actor: 'service:email',
@@ -342,7 +351,6 @@ describe('validate scenario', () => {
 
     it('should fail if update instruction is missing set', () => {
       const scenario = {
-        title: '',
         actions: {
           next: {
             update: {
@@ -374,7 +382,6 @@ describe('validate scenario', () => {
     describe('simple state', () => {
       it('should succeed with a simple state', () => {
         const scenario = {
-          title: '',
           actions: {
             next: {},
           },
@@ -396,7 +403,6 @@ describe('validate scenario', () => {
 
       it('should succeed with a timeout state', () => {
         const scenario = {
-          title: '',
           actions: {},
           states: {
             initial: {
@@ -416,7 +422,6 @@ describe('validate scenario', () => {
 
       it('should succeed with a state with instructions', () => {
         const scenario = {
-          title: '',
           actors: {
             user: {},
           },
@@ -453,7 +458,6 @@ describe('validate scenario', () => {
 
       it('should fail for a simple state with a condition', () => {
         const scenario = {
-          title: '',
           actions: {
             next: {},
           },
@@ -482,7 +486,6 @@ describe('validate scenario', () => {
 
       it('should fail for a timeout state with a condition', () => {
         const scenario = {
-          title: '',
           actions: {
             next: {},
           },
@@ -511,7 +514,6 @@ describe('validate scenario', () => {
 
       it('should fail if `goto` references an unknown state', () => {
         const scenario = {
-          title: '',
           actions: {
             next: {},
           },
@@ -556,7 +558,6 @@ describe('validate scenario', () => {
     describe('explicit state', () => {
       it('should succeed with an explicit state', () => {
         const scenario = {
-          title: '',
           actions: {
             next: {},
           },
@@ -586,7 +587,6 @@ describe('validate scenario', () => {
 
       it('should succeed with an explicit state with actions', () => {
         const scenario = {
-          title: '',
           actions: {
             next: {},
             other: {},
@@ -614,7 +614,6 @@ describe('validate scenario', () => {
 
       it('should succeed with a state with instructions', () => {
         const scenario = {
-          title: '',
           actors: {
             user: {},
           },
@@ -650,7 +649,6 @@ describe('validate scenario', () => {
 
       it('should succeed for transitions with a condition', () => {
         const scenario = {
-          title: '',
           actions: {
             next: {},
           },
@@ -675,7 +673,6 @@ describe('validate scenario', () => {
 
       it('should fail if `goto` references an unknown state', () => {
         const scenario = {
-          title: '',
           actions: {
             next: {},
           },
@@ -710,7 +707,6 @@ describe('validate scenario', () => {
     describe('end state', () => {
       it('should succeed with an end state', () => {
         const scenario = {
-          title: '',
           actions: {
             next: {},
           },

@@ -2,7 +2,7 @@ import ajvFormats from 'ajv-formats';
 import Ajv from 'ajv/dist/2020';
 import { expect } from 'chai';
 import { uuid } from '../../src';
-import { instantiate, InstantiateEvent, Process } from '../../src/process';
+import { instantiate, InstantiateEvent, Process, step } from '../../src/process';
 import { hash } from '../../src/process/hash';
 import { instantiateAction, instantiateState } from '../../src/process/instantiate';
 import { normalize, NormalizedScenario } from '../../src/scenario';
@@ -88,7 +88,7 @@ describe('instantiate', () => {
         $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'complete',
         description: 'Complete some scenario',
-        actor: ['*'],
+        actor: ['actor'],
         response: {},
         key: 'complete',
       });
@@ -357,7 +357,7 @@ describe('instantiate', () => {
         $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'complete',
         description: 'Complete some scenario',
-        actor: ['*'],
+        actor: ['client'],
         response: {},
         key: 'complete',
       });
@@ -406,20 +406,44 @@ describe('instantiate', () => {
       scenario = normalize({
         title: 'some scenario',
         actors: {
-          client: {},
+          'client_*': {},
           admin: {},
         },
         actions: {
-          complete: {
+          set_actors: {
+            update: {
+              set: 'actors',
+              mode: 'merge',
+            },
+          },
+          one: {
             description: { '<tpl>': 'Complete {{scenario.title}}' },
             actor: { '<ref>': 'vars.act' },
             if: { '<ref>': 'vars.amount > 100' },
           },
+          two: {
+            actor: 'client_*',
+          },
+          three: {
+            actor: ['*'],
+          },
         },
         states: {
+          '*': {
+            on: 'set_actors',
+            goto: null,
+          },
           initial: {
-            on: 'complete',
-            goto: '(done)',
+            transitions: [
+              {
+                on: 'complete',
+                goto: '(done)',
+              },
+              {
+                on: 'other',
+                goto: '(done)',
+              },
+            ],
           },
         },
         vars: {
@@ -433,21 +457,77 @@ describe('instantiate', () => {
           },
         },
       });
+    });
 
+    beforeEach(() => {
       process = instantiate(scenario, { ajv });
     });
 
     it('should instantiate an action', () => {
-      const action = instantiateAction('complete', scenario.actions['complete'], process);
+      const action = instantiateAction('one', scenario.actions['one'], process);
 
       expect(action).to.deep.eq({
         $schema: 'https://schemas.letsflow.io/v1.0/action',
-        title: 'complete',
+        title: 'one',
         description: 'Complete some scenario',
         if: false,
         actor: ['admin'],
         response: {},
-        key: 'complete',
+        key: 'one',
+      });
+    });
+
+    it('should instantiate an action with a wildcard actor', () => {
+      process = step(process, 'set_actors', 'admin', {
+        client_1: { title: 'client 1' },
+        client_2: { title: 'client 2' },
+      });
+      expect(Object.keys(process.actors)).to.deep.eq(['admin', 'client_1', 'client_2']);
+
+      const action = instantiateAction('two', scenario.actions['two'], process);
+
+      expect(action).to.deep.eq({
+        $schema: 'https://schemas.letsflow.io/v1.0/action',
+        title: 'two',
+        description: '',
+        actor: ['client_1', 'client_2'],
+        if: true,
+        response: {},
+        key: 'two',
+      });
+    });
+
+    it('should set the if condition to false if the actor is not found', () => {
+      const action = instantiateAction('two', scenario.actions['two'], process);
+
+      expect(action).to.deep.eq({
+        $schema: 'https://schemas.letsflow.io/v1.0/action',
+        title: 'two',
+        description: '',
+        actor: [],
+        if: false,
+        response: {},
+        key: 'two',
+      });
+    });
+
+    it('should set the actor to all actors if the actor is a wildcard', () => {
+      process = step(process, 'set_actors', 'admin', {
+        client_1: { title: 'client 1' },
+        client_2: { title: 'client 2' },
+      });
+      expect(Object.keys(process.actors)).to.deep.eq(['admin', 'client_1', 'client_2']);
+
+      const action = instantiateAction('three', scenario.actions['three'], process);
+
+      expect(action).to.deep.eq({
+        $schema: 'https://schemas.letsflow.io/v1.0/action',
+        title: 'three',
+        description: '',
+        actor: ['admin', 'client_1', 'client_2'],
+        if: true,
+        response: {},
+        key: 'three',
       });
     });
   });

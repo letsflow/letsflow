@@ -22,7 +22,7 @@ export function instantiate(
     scenario: { id: scenarioId, ...scenario },
     actors: instantiateActors(scenario.actors, {}, options),
     vars: defaultValues(scenario.vars, options),
-    result: scenario.result ? defaultValue(scenario.result, options) ?? null : null,
+    result: scenario.result ? (defaultValue(scenario.result, options) ?? null) : null,
     events: [],
   };
 
@@ -133,6 +133,19 @@ export function instantiateAction(
   } else if (!processAction.actor) {
     processAction.actor = [];
   }
+
+  processAction.actor = processAction.actor
+    .map((actor) => {
+      if (actor === '*') return Object.keys(process.actors);
+      if (actor.endsWith('*')) {
+        return Object.keys(process.actors).filter((key) => key.replace(/\d+$/, '*') === actor);
+      }
+      if (actor in process.actors) return [actor];
+      return [];
+    })
+    .flat();
+
+  processAction.if = processAction.if && processAction.actor.length > 0;
 
   return processAction;
 }

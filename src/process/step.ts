@@ -159,13 +159,7 @@ function validateStep(ajv: Ajv, process: Process, action: string, actor: StepAct
     }
   }
 
-  if (
-    process.actors[actor.key] &&
-    currentAction &&
-    !currentAction.actor.includes(actor.key) &&
-    !currentAction.actor.includes(actor.key.replace(/\d+$/, '*')) &&
-    !currentAction.actor.includes('*')
-  ) {
+  if (process.actors[actor.key] && currentAction && !currentAction.actor.includes(actor.key)) {
     const actorDesc = actor.key.startsWith('service:') ? `Service '${service}'` : `Actor '${actor.key}'`;
     errors.push(`${actorDesc} is not allowed to perform action '${action}'`);
   }
