@@ -42,7 +42,6 @@ export interface Action {
   description: string;
   actor: string[];
   response: Schema;
-  if: boolean;
 
   [_: string]: any;
 }
@@ -63,7 +62,6 @@ export interface State {
   notify: Array<Notify>;
   actions: Array<Action>;
   response?: any;
-  actor?: Actor;
 
   [_: string]: any;
 }

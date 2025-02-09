@@ -152,7 +152,7 @@
         {
           "set": "vars.document",
           "value": {
-            "<ref>": "current.response"
+            "<ref>": "current.response.document"
           },
           "stub": null,
           "mode": "replace",
@@ -196,28 +196,6 @@
       "description": "",
       "if": true
     },
-    "accept": {
-      "actor": [
-        "client"
-      ],
-      "$schema": "https://schemas.letsflow.io/v1.0/action",
-      "title": "accept",
-      "description": "",
-      "if": true,
-      "response": {},
-      "update": []
-    },
-    "reject": {
-      "actor": [
-        "client"
-      ],
-      "$schema": "https://schemas.letsflow.io/v1.0/action",
-      "title": "reject",
-      "description": "",
-      "if": true,
-      "response": {},
-      "update": []
-    },
     "cancel": {
       "actor": [
         "company"
@@ -232,6 +210,28 @@
       "title": "cancel",
       "description": "",
       "if": true,
+      "response": {},
+      "update": []
+    },
+    "review_quote.accept": {
+      "$schema": "https://schemas.letsflow.io/v1.0/action",
+      "title": "accept",
+      "description": "",
+      "if": true,
+      "actor": [
+        "client"
+      ],
+      "response": {},
+      "update": []
+    },
+    "review_quote.reject": {
+      "$schema": "https://schemas.letsflow.io/v1.0/action",
+      "title": "reject",
+      "description": "",
+      "if": true,
+      "actor": [
+        "client"
+      ],
       "response": {},
       "update": []
     }
@@ -383,18 +383,18 @@
       "transitions": [
         {
           "on": "accept",
-          "goto": "(success)",
           "by": [
-            "*"
+            "client"
           ],
+          "goto": "(success)",
           "if": true
         },
         {
           "on": "reject",
-          "goto": "(failed)",
           "by": [
-            "*"
+            "client"
           ],
+          "goto": "(failed)",
           "if": true
         },
         {

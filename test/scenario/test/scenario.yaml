@@ -37,7 +37,9 @@ actions:
       properties:
         document:
           type: string
-    update: vars.document
+    update:
+      set: vars.document
+      value: !ref current.response.document
   change_client_info:
     actor: company
     response: !ref scenario.actors.client
@@ -49,10 +51,6 @@ actions:
       button:
         placement: top
         title: Change Client Info
-  accept:
-    actor: client
-  reject:
-    actor: client
   cancel:
     actor: company
     ui:
@@ -101,8 +99,10 @@ states:
         {{ vars.quote_request.description }}
     transitions:
       - on: accept
+        by: client
         goto: (success)
       - on: reject
+        by: client
         goto: (failed)
 
 vars:

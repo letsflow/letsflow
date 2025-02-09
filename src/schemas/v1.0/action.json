@@ -88,6 +88,7 @@
           ]
         },
         "value": {},
+        "stub": {},
         "mode": {
           "type": "string",
           "enum": [

@@ -14,7 +14,7 @@ describe('predict', () => {
     const process = instantiate(scenario);
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['initial', 'middle', '(done)']);
+    expect(result.map((s) => s.key)).to.deep.equal(['middle', '(done)']);
   });
 
   it('should start from the current state', () => {
@@ -28,7 +28,7 @@ describe('predict', () => {
     const process = step(instantiate(scenario), 'next');
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['middle', '(done)']);
+    expect(result.map((s) => s.key)).to.deep.equal(['(done)']);
   });
 
   it('should follow a timeout transition', () => {
@@ -41,7 +41,7 @@ describe('predict', () => {
     const process = instantiate(scenario);
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['initial', '(done)']);
+    expect(result.map((s) => s.key)).to.deep.equal(['(done)']);
   });
 
   it('should prevent infinite loops', () => {
@@ -56,7 +56,7 @@ describe('predict', () => {
     const process = instantiate(scenario);
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['initial', 'loop1', 'loop2', 'loop1']);
+    expect(result.map((s) => s.key)).to.deep.equal(['loop1', 'loop2', 'loop1']);
   });
 
   it('should take the first available transition', () => {
@@ -74,7 +74,7 @@ describe('predict', () => {
     const process = instantiate(scenario);
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['initial', '(success)']);
+    expect(result.map((s) => s.key)).to.deep.equal(['(success)']);
   });
 
   it('should take the first available transition with a condition', () => {
@@ -92,7 +92,7 @@ describe('predict', () => {
     const process = instantiate(scenario);
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['initial', '(success)']);
+    expect(result.map((s) => s.key)).to.deep.equal(['(success)']);
   });
 
   it('should take the first available timeout with a condition', () => {
@@ -110,7 +110,7 @@ describe('predict', () => {
     const process = instantiate(scenario);
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['initial', '(success)']);
+    expect(result.map((s) => s.key)).to.deep.equal(['(success)']);
   });
 
   it('should take the first available transition based on the action condition', () => {
@@ -134,7 +134,7 @@ describe('predict', () => {
     const process = instantiate(scenario);
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['initial', '(success)']);
+    expect(result.map((s) => s.key)).to.deep.equal(['(success)']);
   });
 
   it('should skip a transition if the action is not allowed for the actor', () => {
@@ -162,7 +162,7 @@ describe('predict', () => {
     const process = instantiate(scenario);
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['initial', '(success)']);
+    expect(result.map((s) => s.key)).to.deep.equal(['(success)']);
   });
 
   it('should skip response validation', () => {
@@ -191,7 +191,7 @@ describe('predict', () => {
     const process = instantiate(scenario);
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['initial', '(success)']);
+    expect(result.map((s) => s.key)).to.deep.equal(['(success)']);
   });
 
   it('should allow for a transition to be picked based on `is_prediction`', () => {
@@ -220,7 +220,7 @@ describe('predict', () => {
     const process = instantiate(scenario);
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['initial', '(done)']);
+    expect(result.map((s) => s.key)).to.deep.equal(['(done)']);
 
     const stepped = step(process, 'next');
     expect(stepped.current.key).to.equal('second');
@@ -260,7 +260,7 @@ describe('predict', () => {
     const process = instantiate(scenario);
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['initial', '(happy)']);
+    expect(result.map((s) => s.key)).to.deep.equal(['(happy)']);
 
     const stepped = step(process, 'sing', 'actor', '');
     expect(stepped.vars.song).to.equal('');
@@ -304,7 +304,7 @@ describe('predict', () => {
     const process = instantiate(scenario);
     const result = predict(process);
 
-    expect(result.map((s) => s.key)).to.deep.equal(['initial', 'middle', 'initial', '(done)']);
+    expect(result.map((s) => s.key)).to.deep.equal(['middle', 'initial', '(done)']);
   });
 
   it('should throw an error on max iterations reached', () => {

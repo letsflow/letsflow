@@ -45,7 +45,7 @@ describe('instantiate', () => {
     ajvFormats(ajv);
   });
 
-  describe('scenario', () => {
+  describe('instantiate', () => {
     it('should instantiate', () => {
       const scenario: NormalizedScenario = normalize({
         title: 'some scenario',
@@ -88,7 +88,6 @@ describe('instantiate', () => {
         $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'complete',
         description: 'Complete some scenario',
-        if: true,
         actor: ['*'],
         response: {},
         key: 'complete',
@@ -358,7 +357,6 @@ describe('instantiate', () => {
         $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'complete',
         description: 'Complete some scenario',
-        if: true,
         actor: ['*'],
         response: {},
         key: 'complete',
@@ -368,7 +366,6 @@ describe('instantiate', () => {
       expect(current.notify[0]).to.deep.eq({
         service: 'email',
         after: 0,
-        if: true,
         message: {
           recipient: {
             name: 'John Doe',

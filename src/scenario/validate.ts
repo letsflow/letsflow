@@ -59,28 +59,11 @@ function validateStates(scenario: Scenario): ErrorObject[] {
   return Object.entries(scenario.states || {})
     .map(([key, state]) => {
       const errors: ErrorObject[] = [];
-      if (state !== null && 'on' in state && !actions.includes(state.on)) {
-        errors.push(
-          error(`/states/${key}/on`, 'must reference an action', { value: state.on, allowedValues: actions }),
-        );
-      }
 
       if (state !== null && 'goto' in state && !states.includes(state.goto) && !state.goto.match(/^\(.*\)$/)) {
         errors.push(
           error(`/states/${key}/goto`, 'must reference a state', { value: state.goto, allowedValues: states }),
         );
-      }
-
-      if (state !== null && 'actions' in state && state.actions) {
-        state.actions.forEach((action, index) => {
-          if (actions.includes(action)) return;
-          errors.push(
-            error(`/states/${key}/actions/${index}`, 'must reference an action', {
-              value: action,
-              allowedValues: actions,
-            }),
-          );
-        });
       }
 
       const transitionErrors = state && !isEndState(state) ? validateTransitions(state, key, actions, states) : [];
@@ -96,15 +79,6 @@ function validateTransitions(state: State, key: string, actions: string[], state
   const errors: ErrorObject[] = [];
 
   Object.entries(state.transitions || {}).forEach(([index, transition]) => {
-    if ('on' in transition && !actions.includes(transition.on)) {
-      errors.push(
-        error(`/states/${key}/transitions/${index}/on`, 'must reference an action', {
-          value: transition.on,
-          allowedValues: actions,
-        }),
-      );
-    }
-
     if (
       'goto' in transition &&
       transition.goto !== null &&

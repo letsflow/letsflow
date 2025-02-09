@@ -92,25 +92,40 @@ export function instantiateState(
 
   state.key = key;
   state.timestamp = timestamp ?? new Date();
+
   state.actions = ((state.transitions ?? []) as Transition[])
     .filter((transition) => 'on' in transition)
     .map((transition) => transition.on)
-    .map((k: string): Action => {
+    .map((k: string): Action & { if: boolean } => {
       const action = scenario.actions[`${key}.${k}`] ?? scenario.actions[k];
       if (!action) {
         throw new Error(`Action '${k}' is used in state '${key}', but not defined in the scenario`);
       }
       return instantiateAction(k, action, process);
     })
-    .filter((action: Action) => action.if);
-  state.notify = (state.notify as Array<Notify & { if: boolean }>).filter((notify) => notify.if);
+    .filter((action) => action.if)
+    .map((action) => {
+      const { if: _, ...rest } = action;
+      return rest;
+    });
+
+  state.notify = (state.notify as Array<Notify & { if: boolean }>)
+    .filter((notify) => notify.if)
+    .map((notify): Notify => {
+      const { if: _, ...rest } = notify;
+      return rest;
+    });
 
   return state;
 }
 
-export function instantiateAction(key: string, action: NormalizedAction, process: Omit<Process, 'current'>): Action {
+export function instantiateAction(
+  key: string,
+  action: NormalizedAction,
+  process: Omit<Process, 'current'>,
+): Action & { if: boolean } {
   const { update: _, ...scenarioAction } = action;
-  const processAction: Action = { ...applyFn(scenarioAction, process), key };
+  const processAction: Action & { if: boolean } = { ...applyFn(scenarioAction, process), key };
 
   // noinspection SuspiciousTypeOfGuard
   if (typeof processAction.actor === 'string') {

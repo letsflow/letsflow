@@ -30,6 +30,8 @@ export function predict(input: Process, options: { ajv?: Ajv; max?: number } = {
     next.push(asPredictedState(process.current));
   }
 
+  next.shift(); // Remove the current state
+
   return next;
 }
 

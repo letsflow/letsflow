@@ -62,7 +62,12 @@
           }
         }
       },
-      "update": "vars.document"
+      "update": {
+        "set": "vars.document",
+        "value": {
+          "<ref>": "current.response.document"
+        }
+      }
     },
     "change_client_info": {
       "actor": "company",
@@ -82,12 +87,6 @@
           "title": "Change Client Info"
         }
       }
-    },
-    "accept": {
-      "actor": "client"
-    },
-    "reject": {
-      "actor": "client"
     },
     "cancel": {
       "actor": "company",
@@ -172,10 +171,12 @@
       "transitions": [
         {
           "on": "accept",
+          "by": "client",
           "goto": "(success)"
         },
         {
           "on": "reject",
+          "by": "client",
           "goto": "(failed)"
         }
       ]

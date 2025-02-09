@@ -509,33 +509,6 @@ describe('validate scenario', () => {
         });
       });
 
-      it('should fail if `on` references an unknown action', () => {
-        const scenario = {
-          title: '',
-          actions: {},
-          states: {
-            initial: {
-              on: 'foo',
-              goto: '(done)',
-            },
-          },
-        };
-
-        const result = validate(scenario);
-
-        expect(result).to.be.false;
-        expect(validate.errors).to.deep.contain({
-          instancePath: '/states/initial/on',
-          keyword: '',
-          message: 'must reference an action',
-          params: {
-            value: 'foo',
-            allowedValues: [],
-          },
-          schemaPath: '',
-        });
-      });
-
       it('should fail if `goto` references an unknown state', () => {
         const scenario = {
           title: '',
@@ -698,71 +671,6 @@ describe('validate scenario', () => {
 
         expect(validate.errors).to.eq(null);
         expect(result).to.be.true;
-      });
-
-      it('should fail if state references an unknown action', () => {
-        const scenario = {
-          title: '',
-          actions: {
-            next: {},
-          },
-          states: {
-            initial: {
-              actions: ['foo', 'next'],
-              transitions: [
-                {
-                  on: 'next',
-                  goto: '(done)',
-                },
-              ],
-            },
-          },
-        };
-
-        const result = validate(scenario);
-
-        expect(result).to.be.false;
-        expect(validate.errors).to.deep.contain({
-          instancePath: '/states/initial/actions/0',
-          keyword: '',
-          message: 'must reference an action',
-          params: {
-            allowedValues: ['next'],
-            value: 'foo',
-          },
-          schemaPath: '',
-        });
-      });
-
-      it('should fail if `on` references an unknown action', () => {
-        const scenario = {
-          title: '',
-          actions: {},
-          states: {
-            initial: {
-              transitions: [
-                {
-                  on: 'foo',
-                  goto: '(done)',
-                },
-              ],
-            },
-          },
-        };
-
-        const result = validate(scenario);
-
-        expect(result).to.be.false;
-        expect(validate.errors).to.deep.contain({
-          instancePath: '/states/initial/transitions/0/on',
-          keyword: '',
-          message: 'must reference an action',
-          params: {
-            allowedValues: [],
-            value: 'foo',
-          },
-          schemaPath: '',
-        });
       });
 
       it('should fail if `goto` references an unknown state', () => {
