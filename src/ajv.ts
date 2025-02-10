@@ -1,6 +1,6 @@
 import ajvFormats from 'ajv-formats';
 import Ajv from 'ajv/dist/2020';
-import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from './schemas/v1.0';
+import { actionSchema, actorSchema, fnSchema, processSchema, scenarioSchema, schemaSchema } from './schemas/v1.0';
 
 export const ajv = new Ajv({
   allErrors: true,
@@ -21,6 +21,6 @@ export const ajv = new Ajv({
 });
 
 ajv.addKeyword('$anchor'); // Workaround for https://github.com/ajv-validator/ajv/issues/1854
-ajv.addSchema([scenarioSchema, actionSchema, actorSchema, fnSchema, schemaSchema]);
+ajv.addSchema([scenarioSchema, actionSchema, actorSchema, fnSchema, schemaSchema, processSchema]);
 
 ajvFormats(ajv);
