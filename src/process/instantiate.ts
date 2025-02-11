@@ -5,11 +5,11 @@ import { NormalizedAction, NormalizedScenario, Schema, Transition } from '../sce
 import { uuid } from '../uuid';
 import { applyFn } from './fn';
 import { withHash } from './hash';
-import { Action, Actor, InstantiateEvent, Notify, Process, State } from './interfaces/process';
+import { Action, Actor, HashFn, InstantiateEvent, Notify, Process, State } from './interfaces/process';
 
 export function instantiate(
   scenario: NormalizedScenario & { id?: string },
-  options: { hashFn?: typeof withHash; ajv?: Ajv } = {},
+  options: { hashFn?: HashFn<InstantiateEvent>; ajv?: Ajv } = {},
 ): Process {
   const id = uuidv4();
   const scenarioId = scenario.id ?? uuid(scenario);

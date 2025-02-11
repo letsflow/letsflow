@@ -6,7 +6,7 @@ import { NormalizedTransition, Transition } from '../scenario';
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { defaultValue, instantiateAction, instantiateActor, instantiateState } from './instantiate';
-import { ActionEvent, Process, TimeoutEvent } from './interfaces/process';
+import { ActionEvent, HashFn, Process, TimeoutEvent } from './interfaces/process';
 import { clean } from './utils';
 import { validateProcess } from './validate';
 
@@ -35,14 +35,14 @@ export function step<T extends Process>(
   actor: StepActor | string = 'actor',
   response?: any,
   options: {
-    hashFn?: typeof withHash;
+    hashFn?: HashFn<ActionEvent>;
     ajv?: Ajv;
   } = {},
 ): T {
   const process = structuredClone(input);
   if (typeof actor === 'string') actor = { key: actor };
 
-  const hashFn = options.hashFn ?? withHash;
+  const hashFn: HashFn<ActionEvent> = options.hashFn ?? withHash;
   const ajv = options.ajv ?? defaultAjv;
 
   const currentAction =
@@ -190,8 +190,11 @@ function validateStep(ajv: Ajv, process: Process, action: string, actor: StepAct
  * Step the process forward in case of a timeout.
  * @return The updated process.
  */
-export function timeout<T extends Process>(input: T, options: { hashFn?: typeof withHash; force?: boolean } = {}): T {
-  const hashFn = options.hashFn ?? withHash;
+export function timeout<T extends Process>(
+  input: T,
+  options: { hashFn?: HashFn<TimeoutEvent>; force?: boolean } = {},
+): T {
+  const hashFn: HashFn<TimeoutEvent> = options.hashFn ?? withHash;
 
   const process = structuredClone(input);
   const current = process.scenario.states[process.current.key];
