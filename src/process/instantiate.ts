@@ -9,7 +9,7 @@ import { Action, Actor, HashFn, InstantiateEvent, Notify, Process, State } from 
 
 export function instantiate(
   scenario: NormalizedScenario & { id?: string },
-  options: { hashFn?: HashFn<InstantiateEvent>; ajv?: Ajv } = {},
+  options: { hashFn?: HashFn; ajv?: Ajv } = {},
 ): Process {
   const id = uuidv4();
   const scenarioId = scenario.id ?? uuid(scenario);
@@ -26,7 +26,7 @@ export function instantiate(
     events: [],
   };
 
-  const event: InstantiateEvent = hashFn({
+  const event = hashFn<InstantiateEvent>({
     id,
     timestamp: new Date(),
     scenario: scenarioId,

@@ -8,7 +8,7 @@ type HashFn = typeof withHash;
 
 export function predict(input: Process, options: { ajv?: Ajv; max?: number } = {}): PredictedState[] {
   const { ajv } = options;
-  const hashFn = <T extends Record<string, any>>(data: T): T & { hash: string } => ({ ...data, hash: '' });
+  const hashFn: HashFn = (event) => ({ ...event, hash: '' }) as any;
   const max = options.max ?? 100;
 
   let process = { ...input, is_prediction: true };

@@ -35,7 +35,7 @@ export interface TimeoutEvent {
   hash: string;
 }
 
-export type Event = InstantiateEvent | ActionEvent | TimeoutEvent;
+export type ProcessEvent = InstantiateEvent | ActionEvent | TimeoutEvent;
 
 export interface Action {
   $schema: string;
@@ -77,9 +77,9 @@ export interface Process {
   vars: Record<string, any>;
   result: any;
   current: State;
-  events: Array<Event>;
+  events: Array<ProcessEvent>;
 }
 
 export type PredictedState = Omit<State, 'timestamp' | 'notify'>;
 
-export type HashFn<T extends Event = Event> = (event: Omit<T, 'hash' | 'signature'>) => T;
+export type HashFn = <T extends ProcessEvent = ProcessEvent>(event: Omit<T, 'hash'>) => T;

@@ -35,14 +35,14 @@ export function step<T extends Process>(
   actor: StepActor | string = 'actor',
   response?: any,
   options: {
-    hashFn?: HashFn<ActionEvent>;
+    hashFn?: HashFn;
     ajv?: Ajv;
   } = {},
 ): T {
   const process = structuredClone(input);
   if (typeof actor === 'string') actor = { key: actor };
 
-  const hashFn: HashFn<ActionEvent> = options.hashFn ?? withHash;
+  const hashFn: HashFn = options.hashFn ?? withHash;
   const ajv = options.ajv ?? defaultAjv;
 
   const currentAction =
@@ -60,7 +60,7 @@ export function step<T extends Process>(
 
   if (stepErrors.length > 0) {
     const reverted = structuredClone(input);
-    reverted.events.push(hashFn({ ...event, skipped: true, errors: stepErrors }));
+    reverted.events.push(hashFn<ActionEvent>({ ...event, skipped: true, errors: stepErrors }));
     return reverted;
   }
 
@@ -88,7 +88,7 @@ export function step<T extends Process>(
 
   if (updateErrors.length > 0) {
     const reverted = structuredClone(input);
-    reverted.events.push(hashFn({ ...event, skipped: true, errors: updateErrors }));
+    reverted.events.push(hashFn<ActionEvent>({ ...event, skipped: true, errors: updateErrors }));
     return reverted;
   }
 
@@ -190,11 +190,8 @@ function validateStep(ajv: Ajv, process: Process, action: string, actor: StepAct
  * Step the process forward in case of a timeout.
  * @return The updated process.
  */
-export function timeout<T extends Process>(
-  input: T,
-  options: { hashFn?: HashFn<TimeoutEvent>; force?: boolean } = {},
-): T {
-  const hashFn: HashFn<TimeoutEvent> = options.hashFn ?? withHash;
+export function timeout<T extends Process>(input: T, options: { hashFn?: HashFn; force?: boolean } = {}): T {
+  const hashFn: HashFn = options.hashFn ?? withHash;
 
   const process = structuredClone(input);
   const current = process.scenario.states[process.current.key];
