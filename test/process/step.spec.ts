@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import { uuid } from '../../src';
-import { ActionEvent, chain, instantiate, step } from '../../src/process';
-import { hash } from '../../src/process/hash';
+import { ActionEvent, chain, hash, instantiate, step } from '../../src/process';
 import { normalize } from '../../src/scenario';
 
 describe('step', () => {

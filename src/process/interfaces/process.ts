@@ -11,7 +11,7 @@ export interface InstantiateEvent {
   id: string;
   timestamp: Date;
   scenario: string;
-  actors: Record<string, Omit<Actor, 'title'>>;
+  actors: Record<string, Actor>;
   vars: Record<string, any>;
   result: any;
   hash: string;
@@ -82,4 +82,4 @@ export interface Process {
 
 export type PredictedState = Omit<State, 'timestamp' | 'notify'>;
 
-export type HashFn = <T extends Event = Event>(event: Omit<T, 'hash'>) => T;
+export type HashFn = <T extends Event>(event: Omit<T, 'hash'>) => T;
