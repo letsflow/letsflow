@@ -2,8 +2,7 @@ import ajvFormats from 'ajv-formats';
 import Ajv from 'ajv/dist/2020';
 import { expect } from 'chai';
 import { uuid } from '../../src';
-import { instantiate, InstantiateEvent, Process, step } from '../../src/process';
-import { hash } from '../../src/process/hash';
+import { hash, HashFn, instantiate, InstantiateEvent, Process, step } from '../../src/process';
 import { instantiateAction, instantiateState } from '../../src/process/instantiate';
 import { normalize, NormalizedScenario } from '../../src/scenario';
 import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from '../../src/schemas/v1.0';
@@ -594,6 +593,35 @@ describe('instantiate', () => {
         response: {},
         key: 'three',
       });
+    });
+  });
+
+  describe('options', () => {
+    const scenario = normalize({
+      states: {
+        initial: {
+          on: 'complete',
+          goto: '(done)',
+        },
+      },
+    });
+
+    it('should use the hashFn', () => {
+      const hash = 'some-hash';
+      const hashFn: HashFn = <T>(data: Omit<T, 'hash'>) => ({ ...data, hash }) as T;
+
+      const process = instantiate(scenario, { hashFn, ajv });
+
+      expect(process.events[0].hash).to.eq(hash);
+    });
+
+    it('should use the idFn', () => {
+      const id = 'some-id';
+      const idFn = () => id;
+
+      const process = instantiate(scenario, { idFn, ajv });
+
+      expect(process.id).to.eq(id);
     });
   });
 });

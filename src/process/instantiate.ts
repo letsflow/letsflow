@@ -9,9 +9,9 @@ import { Action, Actor, HashFn, InstantiateEvent, Notify, Process, State } from 
 
 export function instantiate(
   scenario: NormalizedScenario & { id?: string },
-  options: { hashFn?: HashFn; ajv?: Ajv } = {},
+  options: { hashFn?: HashFn; idFn?: () => string; ajv?: Ajv } = {},
 ): Process {
-  const id = uuidv4();
+  const id = (options.idFn ?? uuidv4)();
   const scenarioId = scenario.id ?? uuid(scenario);
   const hashFn = options.hashFn ?? withHash;
 
