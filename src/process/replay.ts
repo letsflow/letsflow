@@ -35,7 +35,9 @@ export function replay(input: Process | NormalizedScenario, events: Event[], opt
     const previous = process.events[process.events.length - 1];
 
     if (event.previous !== previous.hash) {
-      throw new Error(`Event ${event.hash} does not follow previous event ${previous.hash}`);
+      throw new Error(
+        `Event ${event.hash} does not follow previous event; expected ${previous.hash}, got ${event.previous}`,
+      );
     }
 
     if (isActionEvent(event) && !event.skipped) {
@@ -54,7 +56,7 @@ function replayInstantiate(scenario: NormalizedScenario & { id?: string }, event
   const scenarioId = scenario.id ?? uuid(scenario);
 
   if (event.scenario !== scenarioId) {
-    throw new Error(`Event scenario id ${event.scenario} does not match scenario id ${scenarioId}`);
+    throw new Error(`Event scenario id '${event.scenario}' does not match scenario id '${scenarioId}'`);
   }
 
   const process: Omit<Process, 'current'> = {
@@ -85,7 +87,7 @@ function replayAction(process: Process, event: ActionEvent, options: { ajv?: Ajv
 
   const stepErrors = validateStep(ajv, process, event.action, event.actor, event.response);
   if (stepErrors.length > 0) {
-    throw new Error(`Event ${event.hash} is should have been skipped:\n${stepErrors.join('\n')}`);
+    throw new Error(`Event ${event.hash} should have been skipped:\n${stepErrors.join('\n')}`);
   }
 
   const currentAction =
@@ -103,12 +105,13 @@ function replayAction(process: Process, event: ActionEvent, options: { ajv?: Ajv
   const next = findActionTransition(process, event.action, event.actor.key);
   if (!next) {
     updateErrors.push(
-      `No transition found for action '${event.action}' in state '${process.current.key}' for actor ${event.actor.key}`,
+      `No transition found for action '${event.action}' in state '${process.current.key}' for actor` +
+        (event.actor.key === 'actor' ? '' : ` '${event.actor.key}'`),
     );
   }
 
   if (updateErrors.length > 0) {
-    throw new Error(`Event ${event.hash} is should have been skipped:\n${updateErrors.join('\n')}`);
+    throw new Error(`Event ${event.hash} should have been skipped:\n${updateErrors.join('\n')}`);
   }
 
   process.current = instantiateState(
