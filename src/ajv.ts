@@ -7,14 +7,14 @@ export const ajv = new Ajv({
   loadSchema: async (uri) => {
     const response = await fetch(uri);
     if (!response.ok) {
-      console && console.warn(`Failed to fetch schema at ${uri}: ${response.status} ${response.statusText}`);
+      if (console) console.warn(`Failed to fetch schema at ${uri}: ${response.status} ${response.statusText}`);
       return {};
     }
 
     try {
       return await response.json();
     } catch (error) {
-      console && console.warn(`Failed to parse schema at ${uri}: ${error}`);
+      if (console) console.warn(`Failed to parse schema at ${uri}: ${error}`);
       return {};
     }
   },

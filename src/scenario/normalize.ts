@@ -273,7 +273,7 @@ function normalizeNotify(notify?: string | Notify | Array<string | Notify>): Nor
       const { service, if: ifParam, after, ...rest } = item;
       return {
         service,
-        after: typeof after === 'string' ? convertTimePeriodToSeconds(after) : after ?? 0,
+        after: typeof after === 'string' ? convertTimePeriodToSeconds(after) : (after ?? 0),
         if: ifParam ?? true,
         ...rest,
       };

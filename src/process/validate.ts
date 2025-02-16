@@ -83,7 +83,7 @@ function validateResult(ajv: Ajv, process: Process): string[] {
 }
 
 function findSchema(scenario: NormalizedScenario, property: string, key: string): Schema | undefined {
-  return scenario[property][key] ? scenario[property][key] : scenario[property][key.replace(/\d+$/, '*')] ?? {};
+  return scenario[property][key] ? scenario[property][key] : (scenario[property][key.replace(/\d+$/, '*')] ?? {});
 }
 
 function areRolesEqual(a: string | string[], b: string | string[]): boolean {

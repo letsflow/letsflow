@@ -279,8 +279,9 @@ export function update(
   for (const actor of addedActors) {
     try {
       process.actors[actor] = instantiateActor(process.scenario.actors, actor, process.actors[actor], options);
-    } catch (e) {
+    } catch (error) {
       // Will fail at validation, so no need to do anything
+      void error;
     }
   }
 }

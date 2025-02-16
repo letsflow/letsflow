@@ -21,7 +21,7 @@ export default [
   ...compat.extends('plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'),
   {
     plugins: {
-      '@typescript-eslint': eslintPlugin
+      '@typescript-eslint': eslintPlugin,
     },
 
     languageOptions: {
@@ -48,6 +48,12 @@ export default [
         'warn',
         { vars: 'all', args: 'after-used', argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+    },
+  },
+  {
+    files: ['**/*.spec.ts'],
+    rules: {
+      '@typescript-eslint/no-unused-expressions': 'off',
     },
   },
 ];
