@@ -3,7 +3,7 @@ import { ErrorObject } from 'ajv/dist/types';
 import { ajv as defaultAjv } from '../ajv';
 import { isFn } from '../process/fn';
 import { scenarioSchema } from '../schemas/v1.0';
-import { EndState, Notify, Scenario, State } from './interfaces/scenario';
+import { EndState, Notify, Scenario, State, Transition } from './interfaces/scenario';
 
 export interface ValidateFunction {
   (data: any): boolean;
@@ -78,7 +78,7 @@ function validateTransitions(state: State, key: string, actions: string[], state
 
   const errors: ErrorObject[] = [];
 
-  Object.entries(state.transitions || {}).forEach(([index, transition]) => {
+  Object.entries(state.transitions || {}).forEach(([index, transition]: [string, Transition]) => {
     if (
       'goto' in transition &&
       transition.goto !== null &&

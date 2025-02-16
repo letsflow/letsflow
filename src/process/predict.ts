@@ -47,7 +47,7 @@ function tryToStep<T extends Process>(process: T, options: { ajv?: Ajv; hashFn?:
 
   // No transitions, try timeout
   if (transitions.length === 0) {
-    return timeout(process, { ...options, force: true });
+    return timeout(process, { ...options, timePassed: Number.MAX_SAFE_INTEGER });
   }
 
   const tried = new Set<string>();

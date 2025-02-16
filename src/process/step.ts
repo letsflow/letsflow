@@ -2,7 +2,7 @@ import Ajv from 'ajv/dist/2020';
 import get from 'get-value';
 import set from 'set-value';
 import { ajv as defaultAjv } from '../ajv';
-import { NormalizedTransition, Transition } from '../scenario';
+import { NormalizedExplicitTransition, NormalizedTransition, Transition } from '../scenario';
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { defaultValue, instantiateAction, instantiateActor, instantiateState } from './instantiate';
@@ -10,7 +10,7 @@ import { ActionEvent, HashFn, Process, TimeoutEvent } from './interfaces/process
 import { clean } from './utils';
 import { validateProcess } from './validate';
 
-interface InstantiatedUpdateInstructions {
+export interface InstantiatedUpdateInstructions {
   set: string;
   value: any;
   stub: any;
@@ -73,13 +73,7 @@ export function step<T extends Process>(
 
   const updateErrors = !isPrediction(process) ? validateProcess(process, { ajv }) : [];
 
-  const next: NormalizedTransition = process.scenario.states[process.current.key].transitions
-    .filter((transition: NormalizedTransition) => 'on' in transition)
-    .find((transition: NormalizedTransition): boolean => {
-      const tr = applyFn(transition, process);
-      return tr.if && tr.on === action && includesActor(tr.by, actor.key);
-    });
-
+  const next = findActionTransition(process, action, actor.key);
   if (!next) {
     updateErrors.push(
       `No transition found for action '${action}' in state '${process.current.key}' for actor ${actor.key}`,
@@ -94,11 +88,24 @@ export function step<T extends Process>(
 
   process.current = instantiateState(
     process,
-    next.goto ?? process.current.key,
-    next.goto ? event.timestamp : process.current.timestamp,
+    next!.goto ?? process.current.key,
+    next!.goto ? event.timestamp : process.current.timestamp,
   );
 
   return process;
+}
+
+export function findActionTransition(
+  process: Process,
+  action: string,
+  actor: string,
+): NormalizedExplicitTransition | undefined {
+  return process.scenario.states[process.current.key].transitions
+    .filter((transition: NormalizedTransition) => 'on' in transition)
+    .find((transition: NormalizedTransition): boolean => {
+      const tr = applyFn(transition, process);
+      return tr.if && tr.on === action && includesActor(tr.by, actor);
+    });
 }
 
 function createEvent(
@@ -119,7 +126,7 @@ function createEvent(
   };
 }
 
-function validateStep(ajv: Ajv, process: Process, action: string, actor: StepActor, response: any): string[] {
+export function validateStep(ajv: Ajv, process: Process, action: string, actor: StepActor, response: any): string[] {
   const errors: string[] = [];
 
   const key =
@@ -130,7 +137,7 @@ function validateStep(ajv: Ajv, process: Process, action: string, actor: StepAct
     : undefined;
   const service = actor.key.startsWith('service:') ? actor.key.split(':', 2)[1] : undefined;
 
-  const transitions = process.scenario.states[process.current.key].transitions ?? [];
+  const transitions: Transition[] = process.scenario.states[process.current.key].transitions ?? [];
   if (!transitions.some((tr) => 'on' in tr && tr.on === action)) {
     errors.push(`Action '${action}' is not allowed in state '${process.current.key}'`);
   }
@@ -190,23 +197,13 @@ function validateStep(ajv: Ajv, process: Process, action: string, actor: StepAct
  * Step the process forward in case of a timeout.
  * @return The updated process.
  */
-export function timeout<T extends Process>(input: T, options: { hashFn?: HashFn; force?: boolean } = {}): T {
+export function timeout<T extends Process>(input: T, options: { hashFn?: HashFn; timePassed?: number } = {}): T {
   const hashFn: HashFn = options.hashFn ?? withHash;
 
   const process = structuredClone(input);
-  const current = process.scenario.states[process.current.key];
 
   const timestamp = new Date();
-  const timeout = !options.force ? timestamp.getTime() - process.current.timestamp.getTime() : Number.MAX_SAFE_INTEGER;
-
-  const next = (current.transitions ?? [])
-    .filter((transition: NormalizedTransition) => 'after' in transition)
-    .find((transition: NormalizedTransition) => {
-      const tr: Transition & { after: number } = applyFn(transition, process);
-      return tr.if && tr.after <= timeout;
-    });
-
-  if (!next) return process; // No timeout transition
+  const timePassed = options.timePassed ?? timestamp.getTime() - process.current.timestamp.getTime();
 
   const event: TimeoutEvent = hashFn({
     previous: process.events[process.events.length - 1].hash,
@@ -215,6 +212,9 @@ export function timeout<T extends Process>(input: T, options: { hashFn?: HashFn;
 
   process.events.push(event);
 
+  const next = findTimeoutTransition(process, timePassed);
+  if (!next) return input; // No timeout transition
+
   if (next.goto !== null) {
     process.current = instantiateState(process, next.goto, event.timestamp);
   }
@@ -222,7 +222,18 @@ export function timeout<T extends Process>(input: T, options: { hashFn?: HashFn;
   return process;
 }
 
-function update(
+export function findTimeoutTransition(process: Process, timePassed: number): NormalizedTransition | undefined {
+  const current = process.scenario.states[process.current.key];
+
+  return (current.transitions ?? [])
+    .filter((transition: NormalizedTransition) => 'after' in transition)
+    .find((transition: NormalizedTransition) => {
+      const tr: Transition & { after: number } = applyFn(transition, process);
+      return tr.if && tr.after <= timePassed;
+    });
+}
+
+export function update(
   process: Process,
   instructions: InstantiatedUpdateInstructions,
   currentActor: string,
