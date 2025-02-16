@@ -1,7 +1,7 @@
 ![letsflow](https://github.com/letsflow/workflow-engine/assets/100821/3852a14e-90f8-4f8f-a334-09516f43bbc1)
 [![CI](https://github.com/letsflow/letsflow/actions/workflows/main.yml/badge.svg)](https://github.com/letsflow/letsflow/actions/workflows/main.yml)
 
-LetsFlow is a workflow engine for running processes, described in YAML or JSON.
+Letsflow is a human-centric workflow automation engine that blends automation with human decision-making, enabling dynamic interactions between people and automated steps.
 
 ```yaml
 actors:
@@ -23,9 +23,7 @@ states:
     goto: (done)
 ```
 
-The scenario models a process as a fine state machine. The actors are persons, organizations or systems that are allowed
-to participate on the process by performing actions. Which actions can be performed depends on the current state of the
-process. After an action has been, the process will transition to a different state.
+The *scenario* models a *process* as a fine-state machine. The *actors* are persons, organizations, or systems that can participate in the process by performing *actions*. Which actions can be performed depends on the current *state* of the process. By executing an action, the process can *transition* to a different state.
 
 ### [Read the documentation](https://www.letsflow.io/)
 
@@ -47,7 +45,10 @@ const scenario = normalize({
     user: {
       title: 'The user',
       properties: {
-        feeling: 'sad'
+        feeling: {
+          type: 'string,
+          default: 'sad'
+        }
       }
     }
   },
@@ -73,6 +74,7 @@ const process = chain(
   (process) => step(process, 'complete', 'user')
 );
 
-console.log(process.current.state); // done
+console.log(process.current.state.key); // (done)
 console.log(process.actors.user.feeling); // happy
 ```
+
