@@ -46,7 +46,7 @@ const scenario = normalize({
       title: 'The user',
       properties: {
         feeling: {
-          type: 'string,
+          type: 'string',
           default: 'sad'
         }
       }
