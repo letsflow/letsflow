@@ -15,7 +15,6 @@ export interface InstantiateEvent {
   vars: Record<string, any>;
   result: any;
   hash: string;
-  errors?: string[];
 }
 
 export interface ActionEvent {
