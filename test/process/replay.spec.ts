@@ -1,7 +1,16 @@
 import { expect } from 'chai';
 import { uuid } from '../../src';
-import { ActionEvent, chain, instantiate, Process, step, TimeoutEvent, withHash } from '../../src/process';
-import { migrate, replay } from '../../src/process/replay';
+import {
+  ActionEvent,
+  chain,
+  instantiate,
+  migrate,
+  Process,
+  replay,
+  step,
+  TimeoutEvent,
+  withHash,
+} from '../../src/process';
 import { normalize } from '../../src/scenario';
 
 describe('replay', () => {

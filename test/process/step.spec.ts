@@ -344,6 +344,7 @@ describe('step', () => {
               type: 'string',
               default: 'default value',
             },
+            update: 'result',
           },
         },
         states: {
@@ -355,9 +356,10 @@ describe('step', () => {
       });
 
       const process = step(instantiate(scenario), 'complete', 'actor');
+      expect(process.result).to.eq('default value');
 
       const event = process.events[1] as ActionEvent;
-      expect(event.response).to.eq('default value');
+      expect(event.response).to.be.undefined;
     });
 
     it('should not use the default response if the response is set', () => {

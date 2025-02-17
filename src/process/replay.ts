@@ -1,10 +1,9 @@
 import Ajv from 'ajv/dist/2020';
-import { ajv as defaultAjv } from '../ajv';
 import { NormalizedScenario } from '../scenario';
 import { uuid } from '../uuid';
 import { applyFn } from './fn';
 import { withHash } from './hash';
-import { instantiateState } from './instantiate';
+import { createProcess, instantiateState } from './instantiate';
 import { ActionEvent, Event, HashFn, InstantiateEvent, Process } from './interfaces/process';
 import {
   findActionTransition,
@@ -52,24 +51,18 @@ export function replay(input: Process | NormalizedScenario, events: Event[], opt
   return process;
 }
 
-function replayInstantiate(scenario: NormalizedScenario & { id?: string }, event: InstantiateEvent): Process {
+function replayInstantiate(
+  scenario: NormalizedScenario & { id?: string },
+  event: InstantiateEvent,
+  options: { ajv?: Ajv } = {},
+): Process {
   const scenarioId = scenario.id ?? uuid(scenario);
 
   if (event.scenario !== scenarioId) {
     throw new Error(`Event scenario id '${event.scenario}' does not match scenario id '${scenarioId}'`);
   }
 
-  const process: Omit<Process, 'current'> = {
-    id: event.id,
-    title: scenario.title ?? `Process ${event.id}`,
-    tags: scenario.tags,
-    scenario: { id: scenarioId, ...scenario },
-    actors: event.actors,
-    vars: event.vars,
-    result: event.result,
-    events: [],
-  };
-
+  const process = createProcess(scenario, { ...options, idFn: () => event.id });
   process.events.push(event);
 
   const current = instantiateState(process, 'initial', event.timestamp);
@@ -78,14 +71,12 @@ function replayInstantiate(scenario: NormalizedScenario & { id?: string }, event
 }
 
 function replayAction(process: Process, event: ActionEvent, options: { ajv?: Ajv } = {}) {
-  const ajv = options.ajv ?? defaultAjv;
-
   process.current.response = event.response;
   process.current.actor = process.actors[event.actor.key];
 
   process.events.push(event);
 
-  const stepErrors = validateStep(ajv, process, event.action, event.actor, event.response);
+  const stepErrors = validateStep(process, event.action, event.actor, event.response, options);
   if (stepErrors.length > 0) {
     throw new Error(`Event ${event.hash} should have been skipped:\n${stepErrors.join('\n')}`);
   }
@@ -97,10 +88,10 @@ function replayAction(process: Process, event: ActionEvent, options: { ajv?: Ajv
     const instructions: InstantiatedUpdateInstructions = applyFn(scenarioInstructions, process);
     if (!instructions.if) continue;
 
-    update(process, instructions, event.actor.key, { ajv });
+    update(process, instructions, event.actor.key, options);
   }
 
-  const updateErrors = validateProcess(process, { ajv });
+  const updateErrors = validateProcess(process, options);
 
   const next = findActionTransition(process, event.action, event.actor.key);
   if (!next) {

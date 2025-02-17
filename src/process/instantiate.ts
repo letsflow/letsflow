@@ -11,11 +11,30 @@ export function instantiate(
   scenario: NormalizedScenario & { id?: string },
   options: { hashFn?: HashFn; idFn?: () => string; ajv?: Ajv } = {},
 ): Process {
-  const id = (options.idFn ?? uuidv4)();
-  const scenarioId = scenario.id ?? uuid(scenario);
   const hashFn = options.hashFn ?? withHash;
 
-  const process: Omit<Process, 'current'> = {
+  const process = createProcess(scenario, options);
+
+  const event = hashFn<InstantiateEvent>({
+    id: process.id,
+    timestamp: new Date(),
+    scenario: process.scenario.id,
+  });
+  process.events.push(event);
+
+  const current = instantiateState(process, 'initial', event.timestamp);
+
+  return { ...process, current };
+}
+
+export function createProcess(
+  scenario: NormalizedScenario,
+  options: { idFn?: () => string; ajv?: Ajv } = {},
+): Omit<Process, 'current'> {
+  const id = (options.idFn ?? uuidv4)();
+  const scenarioId = scenario.id ?? uuid(scenario);
+
+  return {
     id,
     title: scenario.title ?? `Process ${id}`,
     tags: scenario.tags,
@@ -25,24 +44,9 @@ export function instantiate(
     result: scenario.result ? (defaultValue(scenario.result, options) ?? null) : null,
     events: [],
   };
-
-  const event = hashFn<InstantiateEvent>({
-    id,
-    timestamp: new Date(),
-    scenario: scenarioId,
-    actors: process.actors,
-    vars: process.vars,
-    result: process.result,
-  });
-
-  process.events.push(event);
-
-  const current = instantiateState(process, 'initial', event.timestamp);
-
-  return { ...process, current };
 }
 
-function instantiateActors(
+export function instantiateActors(
   schemas: Record<string, Schema>,
   values: Record<string, Omit<Actor, 'title' | 'role'>>,
   options: { ajv?: Ajv } = {},

@@ -1,4 +1,4 @@
-import Ajv from 'ajv/dist/2020';
+import Ajv, { Ajv2020 } from 'ajv/dist/2020';
 import get from 'get-value';
 import set from 'set-value';
 import { ajv as defaultAjv } from '../ajv';
@@ -48,15 +48,15 @@ export function step<T extends Process>(
   const currentAction =
     process.scenario.actions[`${process.current.key}.${action}`] || process.scenario.actions[action];
 
-  response ??= currentAction?.response ? defaultValue(currentAction.response, { ajv }) : undefined;
-
   const event = hashFn(createEvent(process, action, actor, response));
   process.events.push(event);
+
+  response ??= currentAction?.response ? defaultValue(currentAction.response, { ajv }) : undefined;
 
   process.current.response = response;
   process.current.actor = process.actors[actor.key];
 
-  const stepErrors = validateStep(ajv, process, action, actor, response);
+  const stepErrors = validateStep(process, action, actor, response, { ajv });
 
   if (stepErrors.length > 0) {
     const reverted = structuredClone(input);
@@ -126,7 +126,13 @@ function createEvent(
   };
 }
 
-export function validateStep(ajv: Ajv, process: Process, action: string, actor: StepActor, response: any): string[] {
+export function validateStep(
+  process: Process,
+  action: string,
+  actor: StepActor,
+  response: any,
+  options: { ajv?: Ajv2020 } = {},
+): string[] {
   const errors: string[] = [];
 
   const key =
@@ -180,6 +186,8 @@ export function validateStep(ajv: Ajv, process: Process, action: string, actor: 
   if (currentAction && !currentAction.if) {
     errors.push(`Action '${action}' is not allowed due to if condition`);
   }
+
+  const ajv = options.ajv ?? defaultAjv;
 
   if (
     !isPrediction(process) &&

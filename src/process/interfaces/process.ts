@@ -11,9 +11,6 @@ export interface InstantiateEvent {
   id: string;
   timestamp: Date;
   scenario: string;
-  actors: Record<string, Actor>;
-  vars: Record<string, any>;
-  result: any;
   hash: string;
 }
 

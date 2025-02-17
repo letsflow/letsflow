@@ -73,10 +73,6 @@ describe('instantiate', () => {
       const { hash: eventHash, ...event } = process.events[0] as InstantiateEvent;
       expect(event.timestamp).to.be.instanceof(Date);
       expect(event.scenario).to.eq('b6068b54-e9b4-5c74-a084-b0c2b88a05c4');
-      expect(event.actors).to.deep.eq({
-        actor: { title: 'actor' },
-      });
-      expect(event.vars).to.deep.eq({});
       expect(eventHash).to.eq(hash(event));
 
       expect(process.current.key).to.eq('initial');
@@ -135,7 +131,7 @@ describe('instantiate', () => {
 
       expect(Object.keys(process.actors)).to.deep.eq(['user', 'admin', 'support']);
 
-      expect((process.events[0] as InstantiateEvent).actors).to.deep.eq({
+      expect(process.actors).to.deep.eq({
         user: {
           title: 'Main user',
           verified: false,
@@ -182,11 +178,6 @@ describe('instantiate', () => {
         foo: 'hello',
         bar: 10,
       });
-
-      expect((process.events[0] as InstantiateEvent).vars).to.deep.eq({
-        foo: 'hello',
-        bar: 10,
-      });
     });
 
     it('should instantiate result', () => {
@@ -208,11 +199,6 @@ describe('instantiate', () => {
       const process = instantiate(scenario, { ajv });
 
       expect(process.result).to.deep.eq({
-        amount: 0,
-        signed: false,
-      });
-
-      expect((process.events[0] as InstantiateEvent).result).to.deep.eq({
         amount: 0,
         signed: false,
       });

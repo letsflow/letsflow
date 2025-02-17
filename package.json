@@ -1,6 +1,6 @@
 {
   "name": "@letsflow/core",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Shared library for LetsFlow",
   "author": "Arnold Daniels <arnold@jasny.net>",
   "license": "MIT",
