@@ -290,7 +290,10 @@
           "type": "string"
         }
       },
-      "required": ["previous", "timestamp", "hash"]
+      "required": ["previous", "timestamp", "hash"],
+      "not": {
+        "required": ["action", "actor"]
+      }
     }
   }
 }
