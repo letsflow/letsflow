@@ -1,0 +1,18 @@
+/v1.0/action
+  Content-Type: application/json
+
+/v1.0/actor
+  Content-Type: application/json
+
+/v1.0/fn
+  Content-Type: application/json
+
+/v1.0/process
+  Content-Type: application/json
+
+/v1.0/scenario
+  Content-Type: application/json
+
+/v1.0/schema
+  Content-Type: application/json
+

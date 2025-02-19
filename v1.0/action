@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.letsflow.io/v1.0/action",
+  "type": "object",
+  "nullable": true,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0/fn"
+        }
+      ]
+    },
+    "actor": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0/fn"
+        },
+        {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "https://schemas.letsflow.io/v1.0/fn"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "if": {
+      "$ref": "#/$defs/booleanFn"
+    },
+    "response": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0/schema"
+        }
+      ]
+    },
+    "update": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/updateInstruction"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/updateInstruction"
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "updateInstruction": {
+      "type": "object",
+      "properties": {
+        "set": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "https://schemas.letsflow.io/v1.0/fn"
+            }
+          ]
+        },
+        "value": {},
+        "stub": {},
+        "mode": {
+          "type": "string",
+          "enum": [
+            "merge",
+            "replace",
+            "append"
+          ]
+        },
+        "if": {
+          "$ref": "#/$defs/booleanFn"
+        }
+      },
+      "required": [
+        "set"
+      ]
+    },
+    "booleanFn": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0/fn"
+        }
+      ]
+    }
+  }
+}

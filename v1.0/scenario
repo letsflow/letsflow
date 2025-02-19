@@ -1,0 +1,374 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.letsflow.io/v1.0/scenario",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "const": "https://schemas.letsflow.io/v1.0/scenario"
+    },
+    "name": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "actors": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "https://schemas.letsflow.io/v1.0/actor"
+      }
+    },
+    "actions": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "https://schemas.letsflow.io/v1.0/action"
+      }
+    },
+    "states": {
+      "type": "object",
+      "properties": {
+        "*": {
+          "$ref": "#/$defs/partialState"
+        }
+      },
+      "patternProperties": {
+        "^\\(.+\\)$": {
+          "$ref": "#/$defs/endState"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/state"
+      },
+      "required": [
+        "initial"
+      ]
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "https://schemas.letsflow.io/v1.0/schema"
+      }
+    },
+    "result": {
+      "$ref": "https://schemas.letsflow.io/v1.0/schema"
+    }
+  },
+  "required": [
+    "states"
+  ],
+  "anyOf": [
+    {
+      "not": {
+        "required": ["name"]
+      }
+    },
+    {
+      "required": ["name", "version"]
+    }
+  ],
+  "$defs": {
+    "state": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/explicitState"
+        },
+        {
+          "$ref": "#/$defs/simpleState"
+        },
+        {
+          "$ref": "#/$defs/timeoutState"
+        }
+      ]
+    },
+    "partialState": {
+      "oneOf": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/explicitState"
+            },
+            {
+              "type": "object",
+              "required": []
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/simpleState"
+        },
+        {
+          "$ref": "#/$defs/timeoutState"
+        }
+      ]
+    },
+    "explicitState": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/stringFn"
+        },
+        "instructions": {
+          "$ref": "#/$defs/instructions"
+        },
+        "notify": {
+          "$ref": "#/$defs/notify"
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/transition"
+          }
+        }
+      },
+      "required": [
+        "transitions"
+      ]
+    },
+    "simpleState": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/stringFn"
+        },
+        "instructions": {
+          "$ref": "#/$defs/instructions"
+        },
+        "notify": {
+          "$ref": "#/$defs/notify"
+        },
+        "on": {
+          "type": "string"
+        },
+        "by": {
+          "$ref": "#/$defs/multiString"
+        },
+        "if": {
+          "type": "null"
+        },
+        "goto": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "on",
+        "goto"
+      ]
+    },
+    "timeoutState": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/stringFn"
+        },
+        "instructions": {
+          "$ref": "#/$defs/instructions"
+        },
+        "notify": {
+          "$ref": "#/$defs/notify"
+        },
+        "after": {
+          "$ref": "#/$defs/timePeriod"
+        },
+        "if": {
+          "type": "null"
+        },
+        "goto": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "after",
+        "goto"
+      ]
+    },
+    "endState": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/stringFn"
+        },
+        "instructions": {
+          "$ref": "#/$defs/instructions"
+        },
+        "notify": {
+          "$ref": "#/$defs/notify"
+        }
+      },
+      "nullable": true
+    },
+    "transition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "on": {
+              "type": "string"
+            },
+            "by": {
+              "$ref": "#/$defs/multiString"
+            },
+            "if": {
+              "$ref": "#/$defs/booleanFn"
+            },
+            "goto": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "on",
+            "goto"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "after": {
+              "$ref": "#/$defs/timePeriod"
+            },
+            "if": {
+              "$ref": "#/$defs/booleanFn"
+            },
+            "goto": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "after",
+            "goto"
+          ]
+        }
+      ]
+    },
+    "instructions": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/stringFn"
+      }
+    },
+    "notify": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/notifyExplicit"
+        },
+        {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/notifyExplicit"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "notifyExplicit": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "type": "string"
+        },
+        "if": {
+          "$ref": "#/$defs/booleanFn"
+        },
+        "after": {
+          "$ref": "#/$defs/timePeriod"
+        },
+        "trigger": {
+          "$ref": "#/$defs/stringFn"
+        },
+        "message": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "https://schemas.letsflow.io/v1.0/fn"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "<ref>": false,
+                "<tpl>": false
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "service"
+      ]
+    },
+    "stringFn": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0/fn"
+        }
+      ]
+    },
+    "booleanFn": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0/fn"
+        }
+      ]
+    },
+    "multiString": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "timePeriod": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^(\\d+)\\s*(s|second|seconds|m|minute|minutes|h|hour|hours|d|day|days|w|week|weeks)$"
+        },
+        {
+          "type": "integer",
+          "minimum": 0
+        }
+      ]
+    }
+  }
+}

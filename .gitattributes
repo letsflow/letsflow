@@ -1,0 +1,18 @@
+v1.0/action text eol=lf
+v1.0/action mime-type=application/json
+
+v1.0/actor text eol=lf
+v1.0/actor mime-type=application/json
+
+v1.0/fn text eol=lf
+v1.0/fn mime-type=application/json
+
+v1.0/process text eol=lf
+v1.0/process mime-type=application/json
+
+v1.0/scenario text eol=lf
+v1.0/scenario mime-type=application/json
+
+v1.0/schema text eol=lf
+v1.0/schema mime-type=application/json
+

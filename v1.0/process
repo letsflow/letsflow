@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.letsflow.io/v1.0/process",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "title": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scenario": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0/scenario"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      ]
+    },
+    "actors": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/actor"
+      }
+    },
+    "vars": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "result": {},
+    "current": {
+      "$ref": "#/$defs/state"
+    },
+    "next": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/predictedState"
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/event"
+      }
+    }
+  },
+  "$defs": {
+    "actor": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "state": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "instructions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "notify": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/notify"
+          }
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/action"
+          }
+        }
+      }
+    },
+    "predictedState": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "instructions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/action"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "notify": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "type": "string"
+        },
+        "after": {
+          "type": "integer"
+        },
+        "trigger": {
+          "type": "string"
+        },
+        "message": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "response": {
+          "$ref": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "update": {
+          "type": "string"
+        }
+      }
+    },
+    "event": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/instantiateEvent"
+        },
+        {
+          "$ref": "#/$defs/actionEvent"
+        },
+        {
+          "$ref": "#/$defs/timeoutEvent"
+        }
+      ]
+    },
+    "instantiateEvent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "scenario": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "hash": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "timestamp", "scenario", "hash"]
+    },
+    "actionEvent": {
+      "type": "object",
+      "properties": {
+        "previous": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "action": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "response": {},
+        "skipped": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hash": {
+          "type": "string"
+        }
+      },
+      "required": ["previous", "timestamp", "action", "actor", "skipped", "hash"]
+    },
+    "timeoutEvent": {
+      "type": "object",
+      "properties": {
+        "previous": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "hash": {
+          "type": "string"
+        }
+      },
+      "required": ["previous", "timestamp", "hash"]
+    }
+  }
+}

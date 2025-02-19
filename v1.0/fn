@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.letsflow.io/v1.0/fn",
+  "type": "object",
+  "oneOf": [
+    {
+      "properties": {
+        "<ref>": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "<ref>"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "<tpl>": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "<tpl>"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "<tpl>": {
+          "type": "object",
+          "properties": {
+            "template": {
+              "type": "string"
+            },
+            "view": {},
+            "partials": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "template"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "<tpl>"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}
