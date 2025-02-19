@@ -4,7 +4,8 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": "string",
+      "format": "uuid"
     },
     "title": {
       "type": "string"
@@ -16,13 +17,20 @@
       }
     },
     "scenario": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
+      "allOf": [
+        {
+          "$ref": "https://schemas.letsflow.io/v1.0/scenario"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
         }
-      },
-      "additionalProperties": true
+      ]
     },
     "actors": {
       "type": "object",
@@ -196,41 +204,93 @@
     "event": {
       "oneOf": [
         {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "timestamp": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "scenario": {
-              "type": "string"
-            },
-            "actors": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/actor"
-              }
-            },
-            "vars": {
-              "type": "object",
-              "additionalProperties": true
-            },
-            "result": {},
-            "hash": {
-              "type": "string"
-            },
-            "errors": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
+          "$ref": "#/$defs/instantiateEvent"
+        },
+        {
+          "$ref": "#/$defs/actionEvent"
+        },
+        {
+          "$ref": "#/$defs/timeoutEvent"
         }
       ]
+    },
+    "instantiateEvent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "scenario": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "hash": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "timestamp", "scenario", "hash"]
+    },
+    "actionEvent": {
+      "type": "object",
+      "properties": {
+        "previous": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "action": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "response": {},
+        "skipped": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hash": {
+          "type": "string"
+        }
+      },
+      "required": ["previous", "timestamp", "action", "actor", "skipped", "hash"]
+    },
+    "timeoutEvent": {
+      "type": "object",
+      "properties": {
+        "previous": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "hash": {
+          "type": "string"
+        }
+      },
+      "required": ["previous", "timestamp", "hash"]
     }
   }
 }
