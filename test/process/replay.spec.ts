@@ -1,11 +1,12 @@
 import { expect } from 'chai';
+import sinon from 'sinon';
 import { uuid } from '../../src';
 import {
   ActionEvent,
   chain,
+  Index,
   instantiate,
   migrate,
-  Process,
   replay,
   step,
   TimeoutEvent,
@@ -170,7 +171,7 @@ describe('replay', () => {
       },
     });
 
-    let process: Process;
+    let process: Index;
 
     beforeEach(() => {
       process = instantiate(scenario);
@@ -242,6 +243,39 @@ describe('replay', () => {
         `Event scenario id '${uuid(scenario)}' does not match scenario id '${uuid(scenario2)}'`,
       );
     });
+  });
+
+  it('should call the callback for each step', () => {
+    const scenario = normalize({
+      states: {
+        initial: {
+          on: 'next',
+          goto: 'second',
+        },
+        second: {
+          on: 'complete',
+          goto: '(done)',
+        },
+      },
+    });
+
+    const process0 = instantiate(scenario);
+    const process1 = step(process0, 'next');
+    const processFinal = step(process1, 'complete');
+
+    const events = processFinal.events;
+
+    const callback = sinon.spy();
+
+    replay(scenario, events, { callback });
+
+    expect(callback.callCount).to.equal(2);
+
+    expect(callback.firstCall.args[0]).to.deep.equal(process0);
+    expect(callback.firstCall.args[1]).to.deep.equal(events[1]);
+
+    expect(callback.secondCall.args[0]).to.deep.equal(process1);
+    expect(callback.secondCall.args[1]).to.deep.equal(events[2]);
   });
 });
 

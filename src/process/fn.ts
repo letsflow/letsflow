@@ -1,6 +1,5 @@
 import jmespath from '@letsflow/jmespath';
 import { render } from 'mustache';
-import { Fn } from '../scenario';
 
 type JSONData = Parameters<typeof jmespath.search>[0];
 
@@ -32,16 +31,6 @@ export function applyFn(subject: any, data: Record<string, any>): any {
   }
 
   return Object.fromEntries(Object.entries(subject).map(([key, value]) => [key, applyFn(value, data)]));
-}
-
-export function isFn(subject: any): subject is Fn {
-  return (
-    typeof subject === 'object' &&
-    subject !== null &&
-    !(subject instanceof Date) &&
-    !Array.isArray(subject) &&
-    ('<ref>' in subject || '<tpl>' in subject)
-  );
 }
 
 export function ref(expression: string, data: JSONData): any {

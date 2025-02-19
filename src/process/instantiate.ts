@@ -1,16 +1,16 @@
 import Ajv from 'ajv';
 import { v4 as uuidv4 } from 'uuid';
 import { ajv as defaultAjv } from '../ajv';
-import { NormalizedAction, NormalizedScenario, Schema, Transition } from '../scenario';
+import { NormalizedAction, NormalizedScenario, Schema, Transition } from '../scenario/interfaces';
 import { uuid } from '../uuid';
 import { applyFn } from './fn';
 import { withHash } from './hash';
-import { Action, Actor, HashFn, InstantiateEvent, Notify, Process, State } from './interfaces/process';
+import { Action, Actor, HashFn, Index, InstantiateEvent, Notify, State } from './interfaces';
 
 export function instantiate(
   scenario: NormalizedScenario & { id?: string },
   options: { hashFn?: HashFn; idFn?: () => string; ajv?: Ajv } = {},
-): Process {
+): Index {
   const hashFn = options.hashFn ?? withHash;
 
   const process = createProcess(scenario, options);
@@ -30,7 +30,7 @@ export function instantiate(
 export function createProcess(
   scenario: NormalizedScenario,
   options: { idFn?: () => string; ajv?: Ajv } = {},
-): Omit<Process, 'current'> {
+): Omit<Index, 'current'> {
   const id = (options.idFn ?? uuidv4)();
   const scenarioId = scenario.id ?? uuid(scenario);
 
@@ -83,7 +83,7 @@ export function instantiateActor(
   };
 }
 
-export function instantiateState(process: Omit<Process, 'current'>, key: string, timestamp?: Date): State {
+export function instantiateState(process: Omit<Index, 'current'>, key: string, timestamp?: Date): State {
   const scenario = process.scenario;
   const scenarioState = scenario.states[key];
   if (!scenarioState) throw new Error(`State '${key}' not found in scenario`);
@@ -131,7 +131,7 @@ export function instantiateState(process: Omit<Process, 'current'>, key: string,
 }
 
 export function instantiateAction(
-  process: Omit<Process, 'current'>,
+  process: Omit<Index, 'current'>,
   key: string,
   action?: NormalizedAction,
   by?: string[],

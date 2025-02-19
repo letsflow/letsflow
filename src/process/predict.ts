@@ -1,12 +1,12 @@
 import Ajv from 'ajv/dist/2020';
-import { isEndState, NormalizedExplicitTransition, NormalizedTransition } from '../scenario';
+import { EndState, NormalizedExplicitTransition, NormalizedTransition } from '../scenario/interfaces';
 import { hash, withHash } from './hash';
-import { ActionEvent, PredictedState, Process, State } from './interfaces/process';
+import { ActionEvent, Index, PredictedState, State } from './interfaces';
 import { step, timeout } from './step';
 
 type HashFn = typeof withHash;
 
-export function predict(input: Process, options: { ajv?: Ajv; max?: number } = {}): PredictedState[] {
+export function predict(input: Index, options: { ajv?: Ajv; max?: number } = {}): PredictedState[] {
   const { ajv } = options;
   const hashFn: HashFn = (event) => ({ ...event, hash: '' }) as any;
   const max = options.max ?? 100;
@@ -35,7 +35,7 @@ export function predict(input: Process, options: { ajv?: Ajv; max?: number } = {
   return next;
 }
 
-function tryToStep<T extends Process>(process: T, options: { ajv?: Ajv; hashFn?: HashFn } = {}): T {
+function tryToStep<T extends Index>(process: T, options: { ajv?: Ajv; hashFn?: HashFn } = {}): T {
   const state = process.scenario.states[process.current.key];
   if (isEndState(state)) {
     return process;
@@ -85,7 +85,7 @@ function asPredictedState(state: State): PredictedState {
 }
 
 // Hash the state of the process; everything that is variable
-function hashProcess(process: Process) {
+function hashProcess(process: Index) {
   const { title, tags, actors, vars, result, current } = process;
 
   return hash({
@@ -96,4 +96,8 @@ function hashProcess(process: Process) {
     result,
     current: current.key,
   });
+}
+
+function isEndState(state: { transitions: any } | { goto: any } | EndState): state is EndState {
+  return !('transitions' in state || 'goto' in state);
 }

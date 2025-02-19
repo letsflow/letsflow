@@ -1,4 +1,3 @@
-import { isFn } from '../process/fn';
 import { actionSchema, scenarioSchema, schemaSchema } from '../schemas/v1.0';
 import {
   NormalizedAction,
@@ -20,6 +19,7 @@ import {
   Transition,
   UpdateInstruction,
 } from './interfaces/scenario';
+import { isFn } from './utils';
 import { isEndState } from './validate';
 
 type InferReturnType<T> = T extends Scenario ? NormalizedScenario : Schema;

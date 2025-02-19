@@ -1,4 +1,4 @@
-export * from './interfaces/process';
+export * from './interfaces';
 export { instantiate } from './instantiate';
 export { step, timeout } from './step';
 export { predict } from './predict';

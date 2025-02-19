@@ -1,4 +1,4 @@
-import { NormalizedScenario, Schema } from '../../scenario';
+import { NormalizedScenario, Schema } from '../../scenario/interfaces';
 
 export interface Actor {
   id?: string;
@@ -20,9 +20,9 @@ export interface ActionEvent {
   action: string;
   actor: { key: string; id?: string; [_: string]: any };
   response?: any;
-  hash: string;
   skipped: boolean;
   errors?: string[];
+  hash: string;
 }
 
 export interface TimeoutEvent {
@@ -64,7 +64,7 @@ export interface State {
   [_: string]: any;
 }
 
-export interface Process {
+export interface Index {
   id: string;
   title: string;
   tags: string[];

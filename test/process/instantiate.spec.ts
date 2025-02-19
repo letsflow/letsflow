@@ -2,7 +2,7 @@ import ajvFormats from 'ajv-formats';
 import Ajv from 'ajv/dist/2020';
 import { expect } from 'chai';
 import { uuid } from '../../src';
-import { hash, HashFn, instantiate, InstantiateEvent, Process, step } from '../../src/process';
+import { hash, HashFn, Index, instantiate, InstantiateEvent, step } from '../../src/process';
 import { instantiateAction, instantiateState } from '../../src/process/instantiate';
 import { normalize, NormalizedScenario } from '../../src/scenario';
 import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from '../../src/schemas/v1.0';
@@ -256,7 +256,7 @@ describe('instantiate', () => {
 
   describe('state', () => {
     let scenario: NormalizedScenario;
-    let process: Process;
+    let process: Index;
 
     beforeEach(() => {
       scenario = normalize({
@@ -424,8 +424,8 @@ describe('instantiate', () => {
 
   describe('action', () => {
     let scenario: NormalizedScenario;
-    let processOnlyAdmin: Process;
-    let process: Process;
+    let processOnlyAdmin: Index;
+    let process: Index;
 
     before(() => {
       scenario = normalize({

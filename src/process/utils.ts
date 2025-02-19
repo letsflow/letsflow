@@ -1,10 +1,10 @@
-import { ActionEvent, Event, InstantiateEvent, Process, TimeoutEvent } from './interfaces/process';
+import { ActionEvent, Event, Index, InstantiateEvent, TimeoutEvent } from './interfaces';
 
-export function hasEnded(process: Process): boolean {
+export function hasEnded(process: Index): boolean {
   return !!process.current.key.match(/^\(.+\)$/);
 }
 
-export function chain<T extends Process>(process: T, ...fns: Array<(value: T) => T>): T {
+export function chain<T extends Index>(process: T, ...fns: Array<(value: T) => T>): T {
   return fns.reduce((p, fn) => ((p.events[p.events.length - 1] as any).skipped ? p : fn(p)), process);
 }
 

@@ -1,10 +1,10 @@
 import Ajv from 'ajv/dist/2020';
-import { NormalizedScenario } from '../scenario';
+import { NormalizedScenario } from '../scenario/interfaces';
 import { uuid } from '../uuid';
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { createProcess, instantiateState } from './instantiate';
-import { ActionEvent, Event, HashFn, InstantiateEvent, Process } from './interfaces/process';
+import { ActionEvent, Event, HashFn, Index, InstantiateEvent } from './interfaces';
 import {
   findActionTransition,
   findTimeoutTransition,
@@ -15,7 +15,15 @@ import {
 import { isActionEvent, isInstantiateEvent, isTimeoutEvent } from './utils';
 import { validateProcess } from './validate';
 
-export function replay(input: Process | NormalizedScenario, events: Event[], options: { ajv?: Ajv } = {}): Process {
+export function replay(
+  input: Index | NormalizedScenario,
+  events: Event[],
+  options: {
+    ajv?: Ajv;
+    callback?: (process: Index, event: Event) => void;
+  } = {},
+): Index {
+  const { callback } = options;
   const isProcess = 'current' in input;
 
   if (!isProcess && !isInstantiateEvent(events[0])) {
@@ -23,8 +31,8 @@ export function replay(input: Process | NormalizedScenario, events: Event[], opt
   }
 
   const process = isProcess
-    ? structuredClone(input as Process)
-    : replayInstantiate(input, events[0] as InstantiateEvent);
+    ? structuredClone(input as Index)
+    : replayInstantiate(input, events[0] as InstantiateEvent, options);
 
   for (const event of isProcess ? events : events.slice(1)) {
     if (isInstantiateEvent(event)) {
@@ -37,6 +45,10 @@ export function replay(input: Process | NormalizedScenario, events: Event[], opt
       throw new Error(
         `Event ${event.hash} does not follow previous event; expected ${previous.hash}, got ${event.previous}`,
       );
+    }
+
+    if (callback) {
+      callback(structuredClone(process), event);
     }
 
     if (isActionEvent(event) && !event.skipped) {
@@ -55,7 +67,7 @@ function replayInstantiate(
   scenario: NormalizedScenario & { id?: string },
   event: InstantiateEvent,
   options: { ajv?: Ajv } = {},
-): Process {
+): Index {
   const scenarioId = scenario.id ?? uuid(scenario);
 
   if (event.scenario !== scenarioId) {
@@ -70,7 +82,7 @@ function replayInstantiate(
   return { ...process, current };
 }
 
-function replayAction(process: Process, event: ActionEvent, options: { ajv?: Ajv } = {}) {
+function replayAction(process: Index, event: ActionEvent, options: { ajv?: Ajv } = {}) {
   process.current.response = event.response;
   process.current.actor = process.actors[event.actor.key];
 
@@ -112,7 +124,7 @@ function replayAction(process: Process, event: ActionEvent, options: { ajv?: Ajv
   );
 }
 
-function replayTimeout(process: Process, event: Event) {
+function replayTimeout(process: Index, event: Event) {
   const timePassed = event.timestamp.getTime() - process.events[process.events.length - 1].timestamp.getTime();
 
   process.events.push(event);
@@ -131,7 +143,7 @@ export function migrate(
   scenario: NormalizedScenario,
   events: Event[],
   options: { ajv?: Ajv; hashFn?: HashFn } = {},
-): Process {
+): Index {
   if (!isInstantiateEvent(events[0])) {
     throw new Error('First event must be an instantiate event when migrating');
   }

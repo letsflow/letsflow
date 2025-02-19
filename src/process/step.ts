@@ -6,7 +6,7 @@ import { NormalizedExplicitTransition, NormalizedTransition, Transition } from '
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { defaultValue, instantiateAction, instantiateActor, instantiateState } from './instantiate';
-import { ActionEvent, HashFn, Process, TimeoutEvent } from './interfaces/process';
+import { ActionEvent, HashFn, Index, TimeoutEvent } from './interfaces';
 import { clean } from './utils';
 import { validateProcess } from './validate';
 
@@ -29,7 +29,7 @@ interface StepActor {
  * Step the process forward by one action.
  * @return The updated process.
  */
-export function step<T extends Process>(
+export function step<T extends Index>(
   input: T,
   action: string,
   actor: StepActor | string = 'actor',
@@ -96,7 +96,7 @@ export function step<T extends Process>(
 }
 
 export function findActionTransition(
-  process: Process,
+  process: Index,
   action: string,
   actor: string,
 ): NormalizedExplicitTransition | undefined {
@@ -109,7 +109,7 @@ export function findActionTransition(
 }
 
 function createEvent(
-  process: Process,
+  process: Index,
   action: string,
   actor: StepActor,
   response: any,
@@ -127,7 +127,7 @@ function createEvent(
 }
 
 export function validateStep(
-  process: Process,
+  process: Index,
   action: string,
   actor: StepActor,
   response: any,
@@ -205,7 +205,7 @@ export function validateStep(
  * Step the process forward in case of a timeout.
  * @return The updated process.
  */
-export function timeout<T extends Process>(input: T, options: { hashFn?: HashFn; timePassed?: number } = {}): T {
+export function timeout<T extends Index>(input: T, options: { hashFn?: HashFn; timePassed?: number } = {}): T {
   const hashFn: HashFn = options.hashFn ?? withHash;
 
   const process = structuredClone(input);
@@ -230,7 +230,7 @@ export function timeout<T extends Process>(input: T, options: { hashFn?: HashFn;
   return process;
 }
 
-export function findTimeoutTransition(process: Process, timePassed: number): NormalizedTransition | undefined {
+export function findTimeoutTransition(process: Index, timePassed: number): NormalizedTransition | undefined {
   const current = process.scenario.states[process.current.key];
 
   return (current.transitions ?? [])
@@ -242,7 +242,7 @@ export function findTimeoutTransition(process: Process, timePassed: number): Nor
 }
 
 export function update(
-  process: Process,
+  process: Index,
   instructions: InstantiatedUpdateInstructions,
   currentActor: string,
   options: { ajv?: Ajv } = {},
@@ -298,6 +298,6 @@ function includesActor(actors: string[], key: string): boolean {
   return actors.includes(key) || actors.includes('*') || actors.includes(key.replace(/\d+$/, '*'));
 }
 
-function isPrediction(process: Process): boolean {
+function isPrediction(process: Index): boolean {
   return 'is_prediction' in process && (process.is_prediction as boolean);
 }

@@ -1,9 +1,10 @@
 import Ajv from 'ajv';
 import { ErrorObject } from 'ajv/dist/types';
 import { ajv as defaultAjv } from '../ajv';
-import { isFn } from '../process/fn';
+
 import { scenarioSchema } from '../schemas/v1.0';
 import { EndState, Notify, Scenario, State, Transition } from './interfaces/scenario';
+import { isFn } from './utils';
 
 export interface ValidateFunction {
   (data: any): boolean;
