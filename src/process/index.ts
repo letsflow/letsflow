@@ -6,3 +6,7 @@ export { replay, migrate } from './replay';
 export { etag, lastModified } from './etag';
 export { hasEnded, chain } from './utils';
 export { hash, withHash } from './hash';
+export { Event } from './interfaces';
+export { TimeoutEvent } from './interfaces';
+export { ActionEvent } from './interfaces';
+export { InstantiateEvent } from './interfaces';

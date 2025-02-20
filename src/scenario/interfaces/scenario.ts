@@ -1,26 +1,11 @@
 import { Fn } from './fn';
+import { Schema } from './schema';
 
 type Forbidden<T, K extends keyof any> = {
   [P in keyof T]: P extends K ? never : T[P];
 } & {
   [_ in K]?: never;
 };
-
-export interface Schema {
-  $schema?: string;
-  $ref?: string;
-  type?: string | string[];
-  title?: string;
-  default?: any;
-  description?: string;
-  properties?: Record<string, string | Schema>;
-  patternProperties?: Record<string, string | Schema>;
-  additionalProperties?: boolean | string | Schema;
-  required?: string[];
-  items?: string | Schema;
-
-  [_: string]: any;
-}
 
 export interface ActorSchema extends Schema {
   role?: string | string[];
@@ -46,7 +31,11 @@ export interface UpdateInstruction {
   if?: boolean | Fn;
 }
 
-export type State = ExplicitState | SimpleState | SimpleTimeoutState;
+export interface Log {
+  title?: string | Fn;
+  description?: string | Fn;
+  if?: boolean | Fn;
+}
 
 interface BaseState {
   title?: string | Fn;
@@ -62,33 +51,38 @@ interface SimpleState extends BaseState {
   on: string;
   by?: string | string[];
   goto: string | null;
+  log?: Log | false;
 }
 
 interface SimpleTimeoutState extends BaseState {
   after: string | number;
   goto: string;
+  log?: Log | false;
 }
 
 export interface ExplicitState extends BaseState {
   transitions: Array<Transition>;
 }
 
-export type EndState = Forbidden<BaseState, 'actions' | 'transitions' | 'on' | 'after' | 'goto'>;
-
-export type Transition = ActionTransition | TimeoutTransition;
+export type State = ExplicitState | SimpleState | SimpleTimeoutState;
+export type EndState = Forbidden<BaseState, 'transitions' | 'on' | 'after' | 'goto'>;
 
 interface ActionTransition {
   on: string;
   by?: string | string[];
   if?: boolean | Fn;
   goto: string | null;
+  log?: Log | false;
 }
 
 interface TimeoutTransition {
   after: string | number;
   if?: boolean | Fn;
   goto: string;
+  log?: Log | false;
 }
+
+export type Transition = ActionTransition | TimeoutTransition;
 
 export interface Notify {
   service: string;

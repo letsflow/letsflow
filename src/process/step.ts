@@ -6,7 +6,8 @@ import { NormalizedExplicitTransition, NormalizedTransition, Transition } from '
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { defaultValue, instantiateAction, instantiateActor, instantiateState } from './instantiate';
-import { ActionEvent, HashFn, Index, TimeoutEvent } from './interfaces';
+import { HashFn, Process } from './interfaces';
+import { ActionEvent, TimeoutEvent } from './interfaces/event';
 import { clean } from './utils';
 import { validateProcess } from './validate';
 
@@ -29,7 +30,7 @@ interface StepActor {
  * Step the process forward by one action.
  * @return The updated process.
  */
-export function step<T extends Index>(
+export function step<T extends Process>(
   input: T,
   action: string,
   actor: StepActor | string = 'actor',
@@ -54,7 +55,8 @@ export function step<T extends Index>(
   response ??= currentAction?.response ? defaultValue(currentAction.response, { ajv }) : undefined;
 
   process.current.response = response;
-  process.current.actor = process.actors[actor.key];
+  process.current.actor = { ...process.actors[actor.key], key: actor.key };
+  process.current.action = process.current.actions.find((a) => a.key === action);
 
   const stepErrors = validateStep(process, action, actor, response, { ajv });
 
@@ -96,7 +98,7 @@ export function step<T extends Index>(
 }
 
 export function findActionTransition(
-  process: Index,
+  process: Process,
   action: string,
   actor: string,
 ): NormalizedExplicitTransition | undefined {
@@ -109,7 +111,7 @@ export function findActionTransition(
 }
 
 function createEvent(
-  process: Index,
+  process: Process,
   action: string,
   actor: StepActor,
   response: any,
@@ -127,7 +129,7 @@ function createEvent(
 }
 
 export function validateStep(
-  process: Index,
+  process: Process,
   action: string,
   actor: StepActor,
   response: any,
@@ -205,7 +207,7 @@ export function validateStep(
  * Step the process forward in case of a timeout.
  * @return The updated process.
  */
-export function timeout<T extends Index>(input: T, options: { hashFn?: HashFn; timePassed?: number } = {}): T {
+export function timeout<T extends Process>(input: T, options: { hashFn?: HashFn; timePassed?: number } = {}): T {
   const hashFn: HashFn = options.hashFn ?? withHash;
 
   const process = structuredClone(input);
@@ -230,7 +232,7 @@ export function timeout<T extends Index>(input: T, options: { hashFn?: HashFn; t
   return process;
 }
 
-export function findTimeoutTransition(process: Index, timePassed: number): NormalizedTransition | undefined {
+export function findTimeoutTransition(process: Process, timePassed: number): NormalizedTransition | undefined {
   const current = process.scenario.states[process.current.key];
 
   return (current.transitions ?? [])
@@ -242,7 +244,7 @@ export function findTimeoutTransition(process: Index, timePassed: number): Norma
 }
 
 export function update(
-  process: Index,
+  process: Process,
   instructions: InstantiatedUpdateInstructions,
   currentActor: string,
   options: { ajv?: Ajv } = {},
@@ -279,8 +281,9 @@ export function update(
 
   set(process, path, value);
 
-  if (path.match(/^current\.actor(\.|$)/) && currentActor in process.actors) {
-    process.actors[currentActor] = process.current.actor!;
+  if (path.match(/^current\.actor(\.|$)/) && currentActor in process.actors && process.current.actor) {
+    const { key: _, ...actor } = process.current.actor;
+    process.actors[currentActor] = actor;
   }
 
   const addedActors = Object.keys(process.actors).filter((key) => !exitingActors.includes(key));
@@ -298,6 +301,6 @@ function includesActor(actors: string[], key: string): boolean {
   return actors.includes(key) || actors.includes('*') || actors.includes(key.replace(/\d+$/, '*'));
 }
 
-function isPrediction(process: Index): boolean {
+function isPrediction(process: Process): boolean {
   return 'is_prediction' in process && (process.is_prediction as boolean);
 }

@@ -1,7 +1,8 @@
 import Ajv from 'ajv';
 import { ajv as defaultAjv } from '../ajv';
 import { NormalizedScenario } from './interfaces/normalized';
-import { Schema } from './interfaces/scenario';
+
+import { Schema } from './interfaces/schema';
 
 export async function loadSchemas(scenario: NormalizedScenario, options: { ajv?: Ajv } = {}): Promise<void> {
   const ajv = options.ajv ?? defaultAjv;

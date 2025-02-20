@@ -5,12 +5,12 @@ import { NormalizedAction, NormalizedScenario, Schema, Transition } from '../sce
 import { uuid } from '../uuid';
 import { applyFn } from './fn';
 import { withHash } from './hash';
-import { Action, Actor, HashFn, Index, InstantiateEvent, Notify, State } from './interfaces';
+import { Action, Actor, HashFn, InstantiateEvent, Notify, Process, State } from './interfaces';
 
 export function instantiate(
   scenario: NormalizedScenario & { id?: string },
   options: { hashFn?: HashFn; idFn?: () => string; ajv?: Ajv } = {},
-): Index {
+): Process {
   const hashFn = options.hashFn ?? withHash;
 
   const process = createProcess(scenario, options);
@@ -30,7 +30,7 @@ export function instantiate(
 export function createProcess(
   scenario: NormalizedScenario,
   options: { idFn?: () => string; ajv?: Ajv } = {},
-): Omit<Index, 'current'> {
+): Omit<Process, 'current'> {
   const id = (options.idFn ?? uuidv4)();
   const scenarioId = scenario.id ?? uuid(scenario);
 
@@ -43,6 +43,7 @@ export function createProcess(
     vars: defaultValues(scenario.vars, options),
     result: scenario.result ? (defaultValue(scenario.result, options) ?? null) : null,
     events: [],
+    previous: [],
   };
 }
 
@@ -83,7 +84,7 @@ export function instantiateActor(
   };
 }
 
-export function instantiateState(process: Omit<Index, 'current'>, key: string, timestamp?: Date): State {
+export function instantiateState(process: Omit<Process, 'current'>, key: string, timestamp?: Date): State {
   const scenario = process.scenario;
   const scenarioState = scenario.states[key];
   if (!scenarioState) throw new Error(`State '${key}' not found in scenario`);
@@ -127,11 +128,13 @@ export function instantiateState(process: Omit<Index, 'current'>, key: string, t
       return rest;
     });
 
+  delete state.transitions;
+
   return state;
 }
 
 export function instantiateAction(
-  process: Omit<Index, 'current'>,
+  process: Omit<Process, 'current'>,
   key: string,
   action?: NormalizedAction,
   by?: string[],

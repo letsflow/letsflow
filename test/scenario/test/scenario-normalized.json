@@ -249,7 +249,16 @@
             "*"
           ],
           "if": true,
-          "goto": "wait_on_client"
+          "goto": "wait_on_client",
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         },
         {
           "on": "cancel",
@@ -257,7 +266,16 @@
           "by": [
             "*"
           ],
-          "if": true
+          "if": true,
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         },
         {
           "on": "change_client_info",
@@ -265,7 +283,16 @@
           "by": [
             "*"
           ],
-          "if": true
+          "if": true,
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         }
       ]
     },
@@ -310,12 +337,26 @@
           "by": [
             "*"
           ],
-          "if": true
+          "if": true,
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         },
         {
           "after": 864000,
           "goto": "(failed)",
-          "if": true
+          "if": true,
+          "log": {
+            "title": "",
+            "description": "",
+            "if": false
+          }
         },
         {
           "on": "cancel",
@@ -323,7 +364,16 @@
           "by": [
             "*"
           ],
-          "if": true
+          "if": true,
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         },
         {
           "on": "change_client_info",
@@ -331,7 +381,16 @@
           "by": [
             "*"
           ],
-          "if": true
+          "if": true,
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         }
       ],
       "title": "wait on_client",
@@ -354,7 +413,16 @@
             "*"
           ],
           "if": true,
-          "goto": "review_quote"
+          "goto": "review_quote",
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         },
         {
           "on": "cancel",
@@ -362,7 +430,16 @@
           "by": [
             "*"
           ],
-          "if": true
+          "if": true,
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         },
         {
           "on": "change_client_info",
@@ -370,7 +447,16 @@
           "by": [
             "*"
           ],
-          "if": true
+          "if": true,
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         }
       ]
     },
@@ -387,7 +473,16 @@
             "client"
           ],
           "goto": "(success)",
-          "if": true
+          "if": true,
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         },
         {
           "on": "reject",
@@ -395,7 +490,16 @@
             "client"
           ],
           "goto": "(failed)",
-          "if": true
+          "if": true,
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         },
         {
           "on": "cancel",
@@ -403,7 +507,16 @@
           "by": [
             "*"
           ],
-          "if": true
+          "if": true,
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         },
         {
           "on": "change_client_info",
@@ -411,7 +524,16 @@
           "by": [
             "*"
           ],
-          "if": true
+          "if": true,
+          "log": {
+            "title": {
+              "<ref>": "current.action.title"
+            },
+            "description": {
+              "<ref>": "current.action.description"
+            },
+            "if": true
+          }
         }
       ],
       "title": "review quote",

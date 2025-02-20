@@ -1,9 +1,9 @@
 import Ajv from 'ajv';
 import { ajv as defaultAjv } from '../ajv';
 import { ActorSchema, NormalizedScenario, Schema } from '../scenario';
-import { Index } from './interfaces';
+import { Process } from './interfaces';
 
-export function validateProcess(process: Index, options: { ajv?: Ajv } = {}): string[] {
+export function validateProcess(process: Process, options: { ajv?: Ajv } = {}): string[] {
   const ajv = options.ajv ?? defaultAjv;
 
   return [
@@ -14,12 +14,12 @@ export function validateProcess(process: Index, options: { ajv?: Ajv } = {}): st
   ];
 }
 
-function validateTitle(process: Index): string[] {
+function validateTitle(process: Process): string[] {
   // noinspection SuspiciousTypeOfGuard
   return typeof process.title === 'string' ? [] : ['Title is invalid: must be a string'];
 }
 
-function validateActors(ajv: Ajv, process: Index): string[] {
+function validateActors(ajv: Ajv, process: Process): string[] {
   const errors: string[] = [];
 
   for (const [key, actor] of Object.entries(process.actors)) {
@@ -50,7 +50,7 @@ function validateActors(ajv: Ajv, process: Index): string[] {
   return errors;
 }
 
-function validateVars(ajv: Ajv, process: Index): string[] {
+function validateVars(ajv: Ajv, process: Process): string[] {
   const errors: string[] = [];
 
   for (const [key, value] of Object.entries(process.vars)) {
@@ -69,7 +69,7 @@ function validateVars(ajv: Ajv, process: Index): string[] {
   return errors;
 }
 
-function validateResult(ajv: Ajv, process: Index): string[] {
+function validateResult(ajv: Ajv, process: Process): string[] {
   const errors: string[] = [];
 
   if (process.result) {

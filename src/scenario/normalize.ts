@@ -12,13 +12,14 @@ import {
   ActorSchema,
   EndState,
   ExplicitState,
+  Log,
   Notify,
   Scenario,
-  Schema,
   State,
   Transition,
   UpdateInstruction,
 } from './interfaces/scenario';
+import { Schema } from './interfaces/schema';
 import { isFn } from './utils';
 import { isEndState } from './validate';
 
@@ -347,11 +348,13 @@ function addImplicitEndStates(states: Record<string, State | EndState>): void {
 function normalizeTransitions(key: string, state: State): Array<Transition> {
   if ('on' in state) {
     const by = Array.isArray(state.by) ? state.by : [state.by ?? '*'];
-    return [{ on: state.on, by, if: true, goto: state.goto }];
+    return [{ on: state.on, by, if: true, goto: state.goto, log: normalizeLog(state.log) }];
   }
 
   if ('after' in state) {
-    return [{ after: convertTimePeriodToSeconds(state.after), if: true, goto: state.goto }];
+    const after = convertTimePeriodToSeconds(state.after);
+    const log = normalizeLog(state.log ?? false);
+    return [{ after, if: true, goto: state.goto, log }];
   }
 
   if ('goto' in state) {
@@ -368,9 +371,22 @@ function normalizeTransitions(key: string, state: State): Array<Transition> {
     }
 
     transition.if ??= true;
+    transition.log = transition.log || 'on' in transition ? normalizeLog(transition.log) : normalizeLog(false);
   }
 
   return state.transitions;
+}
+
+function normalizeLog(log?: Log | false): Required<Log> {
+  if (log === false) {
+    return { title: '', description: '', if: false };
+  }
+
+  return {
+    title: log?.title ?? { '<ref>': 'current.action.title' },
+    description: log?.description ?? { '<ref>': 'current.action.description' },
+    if: log?.if ?? true,
+  };
 }
 
 function normalizeResult(scenario: Scenario): void {

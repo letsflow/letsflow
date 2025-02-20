@@ -58,6 +58,11 @@ describe('normalize', () => {
                 by: ['*'],
                 if: true,
                 goto: '(done)',
+                log: {
+                  title: { '<ref>': 'current.action.title' },
+                  description: { '<ref>': 'current.action.description' },
+                  if: true,
+                },
               },
             ],
           },
@@ -437,6 +442,11 @@ describe('normalize', () => {
             by: ['actor'],
             if: true,
             goto: '(done)',
+            log: {
+              title: { '<ref>': 'current.action.title' },
+              description: { '<ref>': 'current.action.description' },
+              if: true,
+            },
           },
         ],
       });
@@ -474,6 +484,11 @@ describe('normalize', () => {
             after: 60,
             if: true,
             goto: '(done)',
+            log: {
+              title: '',
+              description: '',
+              if: false,
+            },
           },
         ],
       });
@@ -520,18 +535,33 @@ describe('normalize', () => {
             by: ['client'],
             if: true,
             goto: '(done)',
+            log: {
+              title: { '<ref>': 'current.action.title' },
+              description: { '<ref>': 'current.action.description' },
+              if: true,
+            },
           },
           {
             on: 'complete',
             by: ['admin'],
             if: true,
             goto: '(ready)',
+            log: {
+              title: { '<ref>': 'current.action.title' },
+              description: { '<ref>': 'current.action.description' },
+              if: true,
+            },
           },
           {
             on: 'cancel',
             by: ['*'],
             if: true,
             goto: '(cancelled)',
+            log: {
+              title: { '<ref>': 'current.action.title' },
+              description: { '<ref>': 'current.action.description' },
+              if: true,
+            },
           },
         ],
       });

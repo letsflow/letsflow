@@ -159,7 +159,11 @@
           "type": "null"
         },
         "goto": {
-          "type": "string"
+          "type": "string",
+          "nullable": true
+        },
+        "log": {
+          "$ref": "#/$defs/logOrFalse"
         }
       },
       "required": [
@@ -186,7 +190,11 @@
           "type": "null"
         },
         "goto": {
-          "type": "string"
+          "type": "string",
+          "nullable": true
+        },
+        "log": {
+          "$ref": "#/$defs/logOrFalse"
         }
       },
       "required": [
@@ -224,14 +232,11 @@
               "$ref": "#/$defs/booleanFn"
             },
             "goto": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
+              "type": "string",
+              "nullable": true
+            },
+            "log": {
+              "$ref": "#/$defs/logOrFalse"
             }
           },
           "required": [
@@ -323,6 +328,31 @@
       },
       "required": [
         "service"
+      ]
+    },
+    "log": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/stringFn"
+        },
+        "description": {
+          "$ref": "#/$defs/stringFn"
+        },
+        "if": {
+          "$ref": "#/$defs/booleanFn"
+        }
+      }
+    },
+    "logOrFalse": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/log"
+        },
+        {
+          "type": "boolean",
+          "const": false
+        }
       ]
     },
     "stringFn": {

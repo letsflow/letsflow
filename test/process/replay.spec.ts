@@ -4,9 +4,9 @@ import { uuid } from '../../src';
 import {
   ActionEvent,
   chain,
-  Index,
   instantiate,
   migrate,
+  Process,
   replay,
   step,
   TimeoutEvent,
@@ -171,7 +171,7 @@ describe('replay', () => {
       },
     });
 
-    let process: Index;
+    let process: Process;
 
     beforeEach(() => {
       process = instantiate(scenario);

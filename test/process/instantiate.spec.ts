@@ -2,7 +2,7 @@ import ajvFormats from 'ajv-formats';
 import Ajv from 'ajv/dist/2020';
 import { expect } from 'chai';
 import { uuid } from '../../src';
-import { hash, HashFn, Index, instantiate, InstantiateEvent, step } from '../../src/process';
+import { hash, HashFn, instantiate, InstantiateEvent, Process, step } from '../../src/process';
 import { instantiateAction, instantiateState } from '../../src/process/instantiate';
 import { normalize, NormalizedScenario } from '../../src/scenario';
 import { actionSchema, actorSchema, fnSchema, scenarioSchema, schemaSchema } from '../../src/schemas/v1.0';
@@ -72,7 +72,7 @@ describe('instantiate', () => {
       expect(process.events.length).to.eq(1);
       const { hash: eventHash, ...event } = process.events[0] as InstantiateEvent;
       expect(event.timestamp).to.be.instanceof(Date);
-      expect(event.scenario).to.eq('b6068b54-e9b4-5c74-a084-b0c2b88a05c4');
+      expect(event.scenario).to.eq('fb933140-21d4-534c-98bf-dfd3cbbd19ea');
       expect(eventHash).to.eq(hash(event));
 
       expect(process.current.key).to.eq('initial');
@@ -256,7 +256,7 @@ describe('instantiate', () => {
 
   describe('state', () => {
     let scenario: NormalizedScenario;
-    let process: Index;
+    let process: Process;
 
     beforeEach(() => {
       scenario = normalize({
@@ -424,8 +424,8 @@ describe('instantiate', () => {
 
   describe('action', () => {
     let scenario: NormalizedScenario;
-    let processOnlyAdmin: Index;
-    let process: Index;
+    let processOnlyAdmin: Process;
+    let process: Process;
 
     before(() => {
       scenario = normalize({

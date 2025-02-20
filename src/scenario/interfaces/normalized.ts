@@ -1,5 +1,6 @@
 import { Fn } from './fn';
-import { ActorSchema, EndState, ExplicitState, Schema, UpdateInstruction } from './scenario';
+import { ActorSchema, EndState, ExplicitState, Log, UpdateInstruction } from './scenario';
+import { Schema } from './schema';
 
 export interface NormalizedAction {
   $schema: string;
@@ -17,12 +18,14 @@ export interface NormalizedExplicitTransition {
   by: string[];
   if: boolean | Fn;
   goto: string | null;
+  log: Required<Log>;
 }
 
 interface NormalizedTimeoutTransition {
   after: string;
   if: boolean | Fn;
   goto: string | null;
+  log: Required<Log>;
 }
 
 export interface NormalizedNotify {
