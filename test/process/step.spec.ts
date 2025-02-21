@@ -417,7 +417,7 @@ describe('step', () => {
         },
       },
       vars: {
-        foo: { type: 'string' },
+        foo: 'string',
       },
     });
 
@@ -685,7 +685,7 @@ describe('step', () => {
           },
         },
         vars: {
-          foo: { type: 'string' },
+          foo: 'string',
         },
       });
 
@@ -705,7 +705,10 @@ describe('step', () => {
         },
         actions: {
           complete: {
-            update: [{ set: 'current.actor.title', value: { '<ref>': 'current.response.title' } }],
+            update: {
+              set: 'current.actor.title',
+              value: { '<ref>': 'current.response.title' },
+            },
           },
         },
         states: {
@@ -715,7 +718,7 @@ describe('step', () => {
           },
         },
         vars: {
-          foo: { type: 'string' },
+          foo: 'string',
         },
       });
 
@@ -724,6 +727,43 @@ describe('step', () => {
       expect(process.current.key).to.eq('(done)');
       expect(process.actors.client).to.deep.eq({
         title: 'Updated actor',
+      });
+    });
+
+    it('should use the current action in the update instructions', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        actions: {
+          complete: {
+            title: 'Complete the process',
+            update: {
+              set: 'vars.foo',
+              value: { '<ref>': 'current.action | { key: key, title: title }' },
+            },
+          },
+        },
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+        vars: {
+          foo: {
+            properties: {
+              key: 'string',
+              title: 'string',
+            },
+          },
+        },
+      });
+
+      const process = step(instantiate(scenario), 'complete');
+
+      expect(process.current.key).to.eq('(done)');
+      expect(process.vars.foo).to.deep.eq({
+        key: 'complete',
+        title: 'Complete the process',
       });
     });
 
@@ -742,7 +782,7 @@ describe('step', () => {
           },
         },
         vars: {
-          foo: { type: 'string' },
+          foo: 'string',
         },
       });
 
@@ -771,6 +811,43 @@ describe('step', () => {
       expect(() => step(instantiate(scenario), 'complete', 'actor')).to.throw(
         "Not allowed to set 'current.key' through update instructions",
       );
+    });
+
+    it('should allow updating previous through update instructions', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        actions: {
+          complete: {
+            update: {
+              set: 'previous',
+              value: { '<ref>': 'previous[:1]' },
+            },
+          },
+        },
+        states: {
+          initial: {
+            transitions: [
+              { on: 'nop', goto: null },
+              { on: 'complete', goto: '(done)' },
+            ],
+          },
+        },
+      });
+
+      const process = chain(
+        instantiate(scenario),
+        (process) => step(process, 'nop'),
+        (process) => step(process, 'nop'),
+        (process) => step(process, 'nop'),
+      );
+
+      const completedProcess = step(process, 'complete', 'actor');
+
+      expect(process.previous).to.have.length(3);
+      expect(process.previous.map((p) => p.title)).to.deep.eq(['nop', 'nop', 'nop']);
+
+      expect(completedProcess.previous).to.have.length(2);
+      expect(completedProcess.previous.map((p) => p.title)).to.deep.eq(['nop', 'complete']);
     });
   });
 
@@ -872,6 +949,170 @@ describe('step', () => {
       expect(event.skipped).to.be.true;
       expect(event.errors).to.have.length(1);
       expect(event.errors![0]).to.eq("Role of actor 'admin' must not be changed");
+    });
+  });
+
+  describe('log transition', () => {
+    it('should add the transition to previous', () => {
+      const scenario = normalize({
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const process = step(instantiate(scenario), 'complete');
+
+      expect(process.previous).to.have.length(1);
+      expect(process.previous[0]).to.deep.eq({
+        title: 'complete',
+        description: '',
+        timestamp: process.events[1].timestamp,
+        actor: { key: 'actor' },
+      });
+    });
+
+    it('use the title and description of the action', () => {
+      const scenario = normalize({
+        actions: {
+          complete: {
+            title: 'Complete',
+            description: "You're all done after this",
+          },
+        },
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const process = step(instantiate(scenario), 'complete');
+
+      expect(process.previous).to.have.length(1);
+      expect(process.previous[0]).to.deep.eq({
+        title: 'Complete',
+        description: "You're all done after this",
+        timestamp: process.events[1].timestamp,
+        actor: { key: 'actor' },
+      });
+    });
+
+    it('should use the log entry of the transition', () => {
+      const scenario = normalize({
+        actions: {
+          complete: {
+            title: 'Complete',
+            description: "You're all done after this",
+          },
+        },
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+            log: {
+              title: 'Completed',
+              description: 'You have completed the scenario',
+            },
+          },
+        },
+      });
+
+      const process = step(instantiate(scenario), 'complete');
+
+      expect(process.previous).to.have.length(1);
+      expect(process.previous[0]).to.deep.eq({
+        title: 'Completed',
+        description: 'You have completed the scenario',
+        timestamp: process.events[1].timestamp,
+        actor: { key: 'actor' },
+      });
+    });
+
+    it('should copy the actor of the event to the log', () => {
+      const scenario = normalize({
+        actors: {
+          org: {
+            role: 'team',
+          },
+        },
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const process = step(instantiate(scenario), 'complete', { key: 'org', id: '1', roles: ['team'], name: 'Alice' });
+
+      expect(process.previous).to.have.length(1);
+      expect(process.previous[0].actor).to.deep.eq({ key: 'org', id: '1', name: 'Alice' });
+    });
+
+    it('should not log if disabled', () => {
+      const scenario = normalize({
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+            log: false,
+          },
+        },
+      });
+
+      const process = step(instantiate(scenario), 'complete');
+
+      expect(process.previous).to.have.length(0);
+    });
+
+    it('should apply fn to the log entry after update instructions', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        actions: {
+          setTitle: {
+            update: [
+              { set: 'title', value: 'this great process' },
+              { set: 'vars.log', value: true },
+            ],
+          },
+        },
+        states: {
+          initial: {
+            transitions: [
+              {
+                on: 'nop',
+                goto: null,
+                log: {
+                  title: { '<tpl>': 'Running {{ title }}!' },
+                  if: { '<ref>': 'vars.log' },
+                },
+              },
+              { on: 'setTitle', goto: null, log: false },
+              { on: 'complete', goto: '(done)' },
+            ],
+          },
+        },
+        vars: {
+          log: {
+            type: 'boolean',
+            default: false,
+          },
+        },
+      });
+
+      const process = chain(
+        instantiate(scenario),
+        (process) => step(process, 'nop'),
+        (process) => step(process, 'setTitle'),
+        (process) => step(process, 'nop'),
+      );
+
+      expect(process.previous).to.have.length(1);
+      expect(process.previous[0].title).to.eq('Running this great process!');
     });
   });
 });

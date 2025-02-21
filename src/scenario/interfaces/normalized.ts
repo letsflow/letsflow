@@ -22,7 +22,7 @@ export interface NormalizedExplicitTransition {
 }
 
 interface NormalizedTimeoutTransition {
-  after: string;
+  after: number;
   if: boolean | Fn;
   goto: string | null;
   log: Required<Log>;

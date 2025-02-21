@@ -89,7 +89,7 @@ export function instantiateState(process: Omit<Process, 'current'>, key: string,
   const scenarioState = scenario.states[key];
   if (!scenarioState) throw new Error(`State '${key}' not found in scenario`);
 
-  const state: State = applyFn(scenarioState, process);
+  const state: State = applyFn(scenarioState, process) as any;
 
   state.key = key;
   state.timestamp = timestamp ?? new Date();
@@ -140,7 +140,7 @@ export function instantiateAction(
   by?: string[],
 ): Action & { if: boolean } {
   const { update: _, ...scenarioAction } = action ?? process.scenario.actions[key];
-  const processAction: Action & { if: boolean } = { ...applyFn(scenarioAction, process), key };
+  const processAction: Action & { if: boolean } = { ...applyFn(scenarioAction, process), key } as any;
 
   if (by?.includes('*')) by = undefined;
 

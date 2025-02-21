@@ -348,12 +348,12 @@ function addImplicitEndStates(states: Record<string, State | EndState>): void {
 function normalizeTransitions(key: string, state: State): Array<Transition> {
   if ('on' in state) {
     const by = Array.isArray(state.by) ? state.by : [state.by ?? '*'];
-    return [{ on: state.on, by, if: true, goto: state.goto, log: normalizeLog(state.log) }];
+    return [{ on: state.on, by, if: true, goto: state.goto, log: normalizeActionLog(state.log) }];
   }
 
   if ('after' in state) {
     const after = convertTimePeriodToSeconds(state.after);
-    const log = normalizeLog(state.log ?? false);
+    const log = normalizeTimeoutLog(state.log);
     return [{ after, if: true, goto: state.goto, log }];
   }
 
@@ -371,13 +371,13 @@ function normalizeTransitions(key: string, state: State): Array<Transition> {
     }
 
     transition.if ??= true;
-    transition.log = transition.log || 'on' in transition ? normalizeLog(transition.log) : normalizeLog(false);
+    transition.log = 'on' in transition ? normalizeActionLog(transition.log) : normalizeTimeoutLog(transition.log);
   }
 
   return state.transitions;
 }
 
-function normalizeLog(log?: Log | false): Required<Log> {
+function normalizeActionLog(log?: Log | false): Required<Log> {
   if (log === false) {
     return { title: '', description: '', if: false };
   }
@@ -385,6 +385,18 @@ function normalizeLog(log?: Log | false): Required<Log> {
   return {
     title: log?.title ?? { '<ref>': 'current.action.title' },
     description: log?.description ?? { '<ref>': 'current.action.description' },
+    if: log?.if ?? true,
+  };
+}
+
+function normalizeTimeoutLog(log?: Log | false): Required<Log> {
+  if (!log) {
+    return { title: '', description: '', if: false };
+  }
+
+  return {
+    title: log?.title ?? '',
+    description: log?.description ?? '',
     if: log?.if ?? true,
   };
 }

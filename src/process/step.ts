@@ -2,22 +2,14 @@ import Ajv, { Ajv2020 } from 'ajv/dist/2020';
 import get from 'get-value';
 import set from 'set-value';
 import { ajv as defaultAjv } from '../ajv';
-import { NormalizedExplicitTransition, NormalizedTransition, Transition } from '../scenario';
-import { applyFn } from './fn';
+import { NormalizedExplicitTransition, NormalizedTransition, Transition, UpdateInstruction } from '../scenario';
+import { applyFn, ReplaceFn } from './fn';
 import { withHash } from './hash';
 import { defaultValue, instantiateAction, instantiateActor, instantiateState } from './instantiate';
 import { HashFn, Process } from './interfaces';
 import { ActionEvent, TimeoutEvent } from './interfaces/event';
 import { clean } from './utils';
 import { validateProcess } from './validate';
-
-export interface InstantiatedUpdateInstructions {
-  set: string;
-  value: any;
-  stub: any;
-  mode: 'replace' | 'merge' | 'append';
-  if: boolean;
-}
 
 interface StepActor {
   key: string;
@@ -67,7 +59,7 @@ export function step<T extends Process>(
   }
 
   for (const scenarioInstructions of currentAction.update) {
-    const instructions: InstantiatedUpdateInstructions = applyFn(scenarioInstructions, process);
+    const instructions = applyFn(scenarioInstructions, process);
     if (!instructions.if) continue;
 
     update(process, instructions, actor.key, { ajv });
@@ -88,6 +80,8 @@ export function step<T extends Process>(
     return reverted;
   }
 
+  logTransition(process, next!);
+
   process.current = instantiateState(
     process,
     next!.goto ?? process.current.key,
@@ -102,12 +96,11 @@ export function findActionTransition(
   action: string,
   actor: string,
 ): NormalizedExplicitTransition | undefined {
-  return process.scenario.states[process.current.key].transitions
-    .filter((transition: NormalizedTransition) => 'on' in transition)
-    .find((transition: NormalizedTransition): boolean => {
-      const tr = applyFn(transition, process);
-      return tr.if && tr.on === action && includesActor(tr.by, actor);
-    });
+  return process.scenario.states[process.current.key].transitions.find((transition: NormalizedTransition): boolean => {
+    if (!('on' in transition)) return false;
+    const tr = applyFn(transition, process);
+    return tr.if && tr.on === action && includesActor(tr.by, actor);
+  });
 }
 
 function createEvent(
@@ -225,6 +218,8 @@ export function timeout<T extends Process>(input: T, options: { hashFn?: HashFn;
   const next = findTimeoutTransition(process, timePassed);
   if (!next) return input; // No timeout transition
 
+  logTransition(process, next);
+
   if (next.goto !== null) {
     process.current = instantiateState(process, next.goto, event.timestamp);
   }
@@ -235,17 +230,16 @@ export function timeout<T extends Process>(input: T, options: { hashFn?: HashFn;
 export function findTimeoutTransition(process: Process, timePassed: number): NormalizedTransition | undefined {
   const current = process.scenario.states[process.current.key];
 
-  return (current.transitions ?? [])
-    .filter((transition: NormalizedTransition) => 'after' in transition)
-    .find((transition: NormalizedTransition) => {
-      const tr: Transition & { after: number } = applyFn(transition, process);
-      return tr.if && tr.after <= timePassed;
-    });
+  return (current.transitions ?? []).find((transition: NormalizedTransition) => {
+    if (!('after' in transition)) return false;
+    const tr = applyFn(transition, process);
+    return tr.if && tr.after <= timePassed;
+  });
 }
 
 export function update(
   process: Process,
-  instructions: InstantiatedUpdateInstructions,
+  instructions: ReplaceFn<Required<UpdateInstruction>>,
   currentActor: string,
   options: { ajv?: Ajv } = {},
 ): void {
@@ -253,7 +247,7 @@ export function update(
   let value = isPrediction(process) && instructions.stub !== null ? instructions.stub : instructions.value;
   const mode = instructions.mode ?? 'replace';
 
-  if (!path.match(/^title$|^(vars|actors|result|current\.actor)(\.|$)/)) {
+  if (!path.match(/^title|previous$|^(vars|actors|result|current\.actor)(\.|$)/)) {
     throw new Error(`Not allowed to set '${path}' through update instructions`);
   }
 
@@ -294,6 +288,20 @@ export function update(
       // Will fail at validation, so no need to do anything
       void error;
     }
+  }
+}
+
+export function logTransition(process: Process, transition: NormalizedTransition): void {
+  const log = applyFn(transition!.log, process);
+  const event = process.events[process.events.length - 1];
+
+  if (log.if) {
+    process.previous.push({
+      title: log.title,
+      description: log.description,
+      timestamp: event.timestamp,
+      ...('actor' in event ? { actor: event.actor } : {}),
+    });
   }
 }
 

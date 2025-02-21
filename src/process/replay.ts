@@ -5,13 +5,7 @@ import { applyFn } from './fn';
 import { withHash } from './hash';
 import { createProcess, instantiateState } from './instantiate';
 import { ActionEvent, Event, HashFn, InstantiateEvent, Process } from './interfaces';
-import {
-  findActionTransition,
-  findTimeoutTransition,
-  InstantiatedUpdateInstructions,
-  update,
-  validateStep,
-} from './step';
+import { findActionTransition, findTimeoutTransition, logTransition, update, validateStep } from './step';
 import { isActionEvent, isInstantiateEvent, isTimeoutEvent } from './utils';
 import { validateProcess } from './validate';
 
@@ -85,6 +79,7 @@ function replayInstantiate(
 function replayAction(process: Process, event: ActionEvent, options: { ajv?: Ajv } = {}) {
   process.current.response = event.response;
   process.current.actor = process.actors[event.actor.key];
+  process.current.action = process.current.actions.find((action) => action.key === event.action)!;
 
   process.events.push(event);
 
@@ -97,7 +92,7 @@ function replayAction(process: Process, event: ActionEvent, options: { ajv?: Ajv
     process.scenario.actions[`${process.current.key}.${event.action}`] || process.scenario.actions[event.action];
 
   for (const scenarioInstructions of currentAction.update) {
-    const instructions: InstantiatedUpdateInstructions = applyFn(scenarioInstructions, process);
+    const instructions = applyFn(scenarioInstructions, process);
     if (!instructions.if) continue;
 
     update(process, instructions, event.actor.key, options);
@@ -117,6 +112,8 @@ function replayAction(process: Process, event: ActionEvent, options: { ajv?: Ajv
     throw new Error(`Event ${event.hash} should have been skipped:\n${updateErrors.join('\n')}`);
   }
 
+  logTransition(process, next!);
+
   process.current = instantiateState(
     process,
     next!.goto ?? process.current.key,
@@ -133,6 +130,8 @@ function replayTimeout(process: Process, event: Event) {
   if (!next) {
     throw new Error(`Timeout event ${event.hash} should not have been triggered`);
   }
+
+  logTransition(process, next);
 
   if (next.goto !== null) {
     process.current = instantiateState(process, next.goto, event.timestamp);

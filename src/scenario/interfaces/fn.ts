@@ -1,10 +1,10 @@
-export type Fn = FnRef | FnSub;
+export type Fn = FnRef | FnTpl;
 
 interface FnRef {
   '<ref>': string;
 }
 
-interface FnSub {
+interface FnTpl {
   '<tpl>':
     | string
     | {

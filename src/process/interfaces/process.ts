@@ -54,7 +54,7 @@ export interface Process {
 
 export interface LogEntry {
   title: string;
-  description?: string;
+  description: string;
   timestamp: Date;
   actor?: { key: string; id?: string; [_: string]: any };
 }
