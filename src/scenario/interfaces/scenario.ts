@@ -35,6 +35,8 @@ export interface Log {
   title?: string | Fn;
   description?: string | Fn;
   if?: boolean | Fn;
+
+  [_: string]: any;
 }
 
 interface BaseState {

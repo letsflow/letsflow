@@ -1114,5 +1114,41 @@ describe('step', () => {
       expect(process.previous).to.have.length(1);
       expect(process.previous[0].title).to.eq('Running this great process!');
     });
+
+    it('should allow additional properties in the log entry', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+            log: {
+              title: 'test',
+              description: 'test',
+              foo: { '<ref>': 'vars.foo' },
+              amount: 42,
+            },
+          },
+        },
+        vars: {
+          foo: {
+            type: 'string',
+            default: 'bar',
+          },
+        },
+      });
+
+      const process = step(instantiate(scenario), 'complete');
+
+      expect(process.previous).to.have.length(1);
+      expect(process.previous[0]).to.deep.eq({
+        title: 'test',
+        description: 'test',
+        foo: 'bar',
+        amount: 42,
+        timestamp: process.events[1].timestamp,
+        actor: { key: 'actor' },
+      });
+    });
   });
 });

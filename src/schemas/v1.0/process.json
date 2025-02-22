@@ -152,7 +152,8 @@
           },
           "additionalProperties": true
         }
-      }
+      },
+      "additionalProperties": true
     },
     "predictedState": {
       "type": "object",

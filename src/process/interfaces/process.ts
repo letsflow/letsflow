@@ -57,6 +57,8 @@ export interface LogEntry {
   description: string;
   timestamp: Date;
   actor?: { key: string; id?: string; [_: string]: any };
+
+  [_: string]: any;
 }
 
 export type PredictedState = Omit<State, 'timestamp' | 'notify'>;

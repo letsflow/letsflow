@@ -641,6 +641,67 @@ describe('normalize', () => {
         update: [],
       });
     });
+
+    it('should normalize state transition log', () => {
+      const scenario: Scenario = {
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+            log: false,
+          },
+          second: {
+            on: 'complete',
+            goto: '(done)',
+            log: {
+              title: 'foo',
+              description: 'bar',
+            },
+          },
+          third: {
+            on: 'complete',
+            goto: '(done)',
+          },
+          fourth: {
+            on: 'complete',
+            goto: '(done)',
+            log: {
+              title: 'foo',
+              description: 'bar',
+              if: { '<ref>': 'vars.foo' },
+              extra: 'baz',
+            },
+          },
+        },
+      };
+
+      const normalized = normalize(scenario);
+
+      expect(normalized.states.initial.transitions[0].log).to.deep.eq({
+        title: '',
+        description: '',
+        if: false,
+      });
+
+      expect(normalized.states.second.transitions[0].log).to.deep.eq({
+        title: 'foo',
+        description: 'bar',
+        if: true,
+      });
+
+      expect(normalized.states.third.transitions[0].log).to.deep.eq({
+        title: { '<ref>': 'current.action.title' },
+        description: { '<ref>': 'current.action.description' },
+        if: true,
+      });
+
+      expect(normalized.states.fourth.transitions[0].log).to.deep.eq({
+        title: 'foo',
+        description: 'bar',
+        if: { '<ref>': 'vars.foo' },
+        extra: 'baz',
+      });
+    });
   });
 
   describe('vars and result', () => {

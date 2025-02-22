@@ -292,13 +292,12 @@ export function update(
 }
 
 export function logTransition(process: Process, transition: NormalizedTransition): void {
-  const log = applyFn(transition!.log, process);
+  const { if: shouldLog, ...log } = applyFn(transition!.log, process);
   const event = process.events[process.events.length - 1];
 
-  if (log.if) {
+  if (shouldLog) {
     process.previous.push({
-      title: log.title,
-      description: log.description,
+      ...log,
       timestamp: event.timestamp,
       ...('actor' in event ? { actor: event.actor } : {}),
     });

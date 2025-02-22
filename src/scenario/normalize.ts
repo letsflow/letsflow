@@ -383,22 +383,15 @@ function normalizeActionLog(log?: Log | false): Required<Log> {
   }
 
   return {
-    title: log?.title ?? { '<ref>': 'current.action.title' },
-    description: log?.description ?? { '<ref>': 'current.action.description' },
-    if: log?.if ?? true,
+    title: { '<ref>': 'current.action.title' },
+    description: { '<ref>': 'current.action.description' },
+    if: true,
+    ...log,
   };
 }
 
 function normalizeTimeoutLog(log?: Log | false): Required<Log> {
-  if (!log) {
-    return { title: '', description: '', if: false };
-  }
-
-  return {
-    title: log?.title ?? '',
-    description: log?.description ?? '',
-    if: log?.if ?? true,
-  };
+  return { title: '', description: '', if: false, ...(log || {}) };
 }
 
 function normalizeResult(scenario: Scenario): void {
