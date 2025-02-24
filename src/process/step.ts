@@ -172,7 +172,9 @@ export function validateStep(
   }
 
   if (
+    currentAction &&
     actor.key.startsWith('service:') &&
+    (process.current.key !== 'initial' || !currentAction.actor.includes(actor.key)) &&
     !process.current.notify.some((notify) => notify.service === service && notify.trigger === action)
   ) {
     errors.push(`Service '${service}' is not expected to trigger action '${action}'`);

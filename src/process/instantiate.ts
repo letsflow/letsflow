@@ -115,7 +115,7 @@ export function instantiateState(process: Omit<Process, 'current'>, key: string,
       }
       return instantiateAction(process, on, action, by as string[]);
     })
-    .filter((action) => action.if)
+    .filter((action) => action.if && action.actor.length > 0)
     .map((action) => {
       const { if: _, ...rest } = action;
       return rest;
@@ -157,13 +157,11 @@ export function instantiateAction(
       if (actor.endsWith('*')) {
         return Object.keys(process.actors).filter((key) => key.replace(/\d+$/, '*') === actor);
       }
-      if (actor in process.actors) return [actor];
+      if (actor in process.actors || actor.startsWith('service:')) return [actor];
       return [];
     })
     .flat()
     .filter((actor) => !by || by.includes(actor) || by.includes(actor.replace(/\d+$/, '*')));
-
-  processAction.if = processAction.if && processAction.actor.length > 0;
 
   return processAction;
 }

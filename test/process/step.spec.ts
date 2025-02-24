@@ -659,6 +659,50 @@ describe('step', () => {
       expect(event.errors).to.have.length(1);
       expect(event.errors![0]).to.eq("Service 'my-app' is not expected to trigger action 'complete'");
     });
+
+    it('should allow a service to start a process', () => {
+      const scenario = normalize({
+        states: {
+          initial: {
+            on: 'start',
+            by: 'service:my-app',
+            goto: 'main',
+          },
+          main: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const process = step(instantiate(scenario), 'start', 'service:my-app');
+      const event = process.events[1] as ActionEvent;
+
+      expect(event.skipped).to.be.false;
+      expect(process.current.key).to.eq('main');
+    });
+
+    it('should not allow a service to start a process when not specified', () => {
+      const scenario = normalize({
+        states: {
+          initial: {
+            on: 'start',
+            goto: 'main',
+          },
+          main: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const process = step(instantiate(scenario), 'start', 'service:my-app');
+      const event = process.events[1] as ActionEvent;
+
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(1);
+      expect(event.errors![0]).to.eq("Service 'my-app' is not expected to trigger action 'start'");
+    });
   });
 
   describe('update instructions', () => {

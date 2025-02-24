@@ -511,20 +511,6 @@ describe('instantiate', () => {
       });
     });
 
-    it('should set the if condition to false if the actor is not found', () => {
-      const action = instantiateAction(processOnlyAdmin, 'two');
-
-      expect(action).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0/action',
-        title: 'two',
-        description: '',
-        actor: [],
-        if: false,
-        response: {},
-        key: 'two',
-      });
-    });
-
     it('should set the actor to all actors if the actor is a wildcard', () => {
       const action = instantiateAction(process, 'three');
 
