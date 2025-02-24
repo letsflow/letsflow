@@ -39,7 +39,7 @@
     "get-value": "^4.0.1",
     "mustache": "^4.2.0",
     "set-value": "^4.1.0",
-    "uuid": "^11.0.5",
+    "uuid": "^11.1.0",
     "yaml": "^2.7.0"
   },
   "devDependencies": {
