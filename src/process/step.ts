@@ -285,7 +285,7 @@ export function update(
   const addedActors = Object.keys(process.actors).filter((key) => !exitingActors.includes(key));
   for (const actor of addedActors) {
     try {
-      process.actors[actor] = instantiateActor(process.scenario.actors, actor, process.actors[actor], options);
+      process.actors[actor] = instantiateActor(process.scenario.actors, actor, process.actors[actor] || {}, options);
     } catch (error) {
       // Will fail at validation, so no need to do anything
       void error;

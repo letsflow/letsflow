@@ -555,6 +555,7 @@ describe('step', () => {
                   name: 'string',
                   email: 'string',
                 },
+                nullable: true,
               },
             },
             update: {
@@ -576,6 +577,7 @@ describe('step', () => {
         { name: 'Alice', email: 'alice@example.com' },
         { name: 'Bob', email: 'bob@example.com' },
         { name: 'Charlie', email: 'charlie@example.com' },
+        null,
       ]);
 
       expect((process.events[process.events.length - 1] as ActionEvent).errors ?? []).to.deep.eq([]);
@@ -586,6 +588,7 @@ describe('step', () => {
         client_1: { title: 'client 1', name: 'Alice', email: 'alice@example.com', signed: false },
         client_2: { title: 'client 2', name: 'Bob', email: 'bob@example.com', signed: false },
         client_3: { title: 'client 3', name: 'Charlie', email: 'charlie@example.com', signed: false },
+        client_4: { title: 'client 4', signed: false },
       });
     });
   });

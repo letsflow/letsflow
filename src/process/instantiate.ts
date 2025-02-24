@@ -153,7 +153,9 @@ export function instantiateAction(
 
   processAction.actor = processAction.actor
     .map((actor) => {
-      if (actor === '*') return Object.keys(process.actors);
+      if (actor === '*') {
+        return [...Object.keys(process.actors), ...(by ?? []).filter((a) => a.startsWith('service:'))];
+      }
       if (actor.endsWith('*')) {
         return Object.keys(process.actors).filter((key) => key.replace(/\d+$/, '*') === actor);
       }
