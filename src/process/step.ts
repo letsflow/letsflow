@@ -172,18 +172,13 @@ export function validateStep(
     }
   }
 
-  if (process.actors[actor.key] && currentAction && !currentAction.actor.includes(actor.key)) {
+  if (
+    (process.actors[actor.key] || actor.key.startsWith('service:')) &&
+    currentAction &&
+    !currentAction.actor.includes(actor.key)
+  ) {
     const actorDesc = actor.key.startsWith('service:') ? `Service '${service}'` : `Actor '${actor.key}'`;
     errors.push(`${actorDesc} is not allowed to perform action '${action}'`);
-  }
-
-  if (
-    currentAction &&
-    actor.key.startsWith('service:') &&
-    (process.current.key !== 'initial' || !currentAction.actor.includes(actor.key)) &&
-    !process.current.notify.some((notify) => notify.service === service && notify.trigger === action)
-  ) {
-    errors.push(`Service '${service}' is not expected to trigger action '${action}'`);
   }
 
   if (currentAction && !currentAction.if) {

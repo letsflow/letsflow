@@ -13,7 +13,6 @@ import {
   EndState,
   ExplicitState,
   Log,
-  Notify,
   Scenario,
   State,
   Transition,
@@ -56,14 +55,17 @@ function normalizeScenario<T extends Scenario>(input: T): NormalizedScenario {
 
   normalizeActors(scenario.actors);
   normalizeActions(scenario.actions);
-  normalizeStates(scenario.states);
+  normalizeStates(scenario.states, scenario.actions as Record<string, NormalizedAction>);
   normalizeSchemas(scenario.vars, true);
   normalizeResult(scenario);
 
-  addImplicitActions(scenario as NormalizedScenario);
-  addImplicitEndStates(scenario.states as Record<string, State | EndState>);
+  const normalized = scenario as NormalizedScenario;
 
-  return scenario as NormalizedScenario;
+  addImplicitActions(normalized);
+  addImplicitEndStates(normalized.states);
+  addImplicitNotify(normalized);
+
+  return normalized;
 }
 
 function normalizeActors(items: Record<string, ActorSchema | string | null>): void {
@@ -232,14 +234,16 @@ function normalizeUpdateInstructions(
   }));
 }
 
-function normalizeStates(states: Record<string, State | EndState | null>): void {
+function normalizeStates(
+  states: Record<string, State | EndState | null>,
+  actions: Record<string, NormalizedAction>,
+): void {
   for (const key in states) {
     const state = (states[key] || {}) as ExplicitState | EndState;
 
     state.title ??= keyToTitle(key);
     state.description ??= '';
     state.instructions ??= {};
-    state.notify = normalizeNotify(state.notify);
 
     if (!isEndState(state)) {
       state.transitions = normalizeTransitions(key, state);
@@ -249,6 +253,8 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
       delete (state as any).after;
       delete (state as any).goto;
     }
+
+    state.notify = normalizeNotify(state, actions);
   }
 
   if ('*' in states) {
@@ -261,88 +267,47 @@ function normalizeStates(states: Record<string, State | EndState | null>): void 
   }
 }
 
-function normalizeNotify(notify?: string | Notify | Array<string | Notify>): NormalizedNotify[] {
-  if (!notify) return [];
-
-  if (!Array.isArray(notify)) {
-    notify = [notify];
-  }
+function normalizeNotify(
+  state: ExplicitState | EndState,
+  actions: Record<string, NormalizedAction>,
+): NormalizedNotify[] {
+  const notify = !state.notify ? [] : Array.isArray(state.notify) ? state.notify : [state.notify];
 
   return notify
     .map((item) => (typeof item === 'string' ? { service: item } : item))
-    .map((item): NormalizedNotify => {
-      const { service, if: ifParam, after, ...rest } = item;
-      return {
-        service,
-        after: typeof after === 'string' ? convertTimePeriodToSeconds(after) : (after ?? 0),
-        if: ifParam ?? true,
-        ...rest,
-      };
-    });
+    .map(
+      (item): NormalizedNotify => ({
+        service: item.service.replace('service:', ''),
+        after: typeof item.after === 'string' ? convertTimePeriodToSeconds(item.after) : (item.after ?? 0),
+        if: item.if ?? true,
+        trigger: item.trigger ?? determineTrigger(item.service, state as NormalizedState, actions),
+        ...(item.message ? { message: item.message } : {}),
+      }),
+    );
 }
 
-function addImplicitActions(scenario: NormalizedScenario): void {
-  const allActors = Object.keys(scenario.actors);
+function determineTrigger(
+  service: string,
+  state: NormalizedState,
+  actions: Record<string, NormalizedAction>,
+): string | null {
+  if (isEndState(state)) return null;
 
-  const filterActors = (by: string[]) => [
-    ...(by.includes('*')
-      ? allActors
-      : allActors.filter((actor) => by.includes(actor) || by.includes(actor.replace(/\d+$/, '*')))),
-    ...by.filter((actor) => actor.startsWith('service:') && !allActors.includes(actor)),
-  ];
+  service = service.replace('service:', '');
 
-  const actions = Object.entries(scenario.states)
-    .filter(([, state]) => !isEndState(state))
-    .map(([key, state]) => {
-      const actions = state.transitions
-        .filter((tr: NormalizedTransition): tr is NormalizedExplicitTransition => 'on' in tr)
-        .map((tr: NormalizedExplicitTransition) => [tr.on, filterActors(tr.by)] as const)
-        .filter(([action]: [string]) => !scenario.actions[action]);
+  const transitions = state.transitions
+    .filter((tr: NormalizedTransition) => {
+      if (!('on' in tr)) return false;
+      if (tr.by.includes(`service:${service}`)) return true;
+      if (!tr.by.includes('*')) return false;
+      if (!actions[tr.on]) return true;
 
-      const map = new Map<string, string[]>();
-      for (const [action, actors] of actions) {
-        if (!map.has(action)) map.set(action, []);
-        map.get(action)!.push(...actors);
-      }
-
-      return Array.from(map.entries()).map(([action, actors]) => [key, action, dedup(actors)] as const);
+      const actor = actions[tr.on].actor;
+      return !isFn(actor) && actor.includes(`service:${service}`);
     })
-    .flat();
+    .map((tr: NormalizedExplicitTransition) => tr.on);
 
-  for (const [state, action, actors] of actions) {
-    const key = `${state}.${action}`;
-
-    if (scenario.actions[key]) {
-      throw new Error(`Unable to create implicit action '${key}', because key is used for action in scenario`);
-    }
-
-    scenario.actions[key] = {
-      $schema: actionSchema.$id,
-      title: keyToTitle(action),
-      description: '',
-      if: true,
-      actor: actors,
-      response: {},
-      update: [],
-    };
-  }
-}
-
-function addImplicitEndStates(states: Record<string, State | EndState>): void {
-  const endStates = Object.values(states)
-    .map((state) => ('transitions' in state ? state.transitions : []))
-    .flat()
-    .map((transition) => transition.goto)
-    .filter((goto) => goto && goto.match(/^\(.+\)$/));
-
-  for (const key of endStates) {
-    states[key] ??= {
-      title: keyToTitle(key.replace(/^\(|\)$/g, '')),
-      description: '',
-      instructions: {},
-      notify: [],
-    };
-  }
+  return transitions.length === 1 ? transitions[0] : null;
 }
 
 function normalizeTransitions(key: string, state: State): Array<Transition> {
@@ -406,6 +371,104 @@ function normalizeResult(scenario: Scenario): void {
   }
 
   normalizeSchema(scenario.result);
+}
+
+function addImplicitActions(scenario: NormalizedScenario): void {
+  const allActors = Object.keys(scenario.actors);
+
+  const filterActors = (by: string[]) => [
+    ...(by.includes('*')
+      ? allActors
+      : allActors.filter((actor) => by.includes(actor) || by.includes(actor.replace(/\d+$/, '*')))),
+    ...by.filter((actor) => actor.startsWith('service:') && !allActors.includes(actor)),
+  ];
+
+  const actions = Object.entries(scenario.states)
+    .filter(([, state]) => !isEndState(state))
+    .map(([key, state]) => {
+      const actions = state.transitions
+        .filter((tr: NormalizedTransition): tr is NormalizedExplicitTransition => 'on' in tr)
+        .map((tr: NormalizedExplicitTransition) => [tr.on, filterActors(tr.by)] as const)
+        .filter(([action]: [string]) => !scenario.actions[action]);
+
+      const map = new Map<string, string[]>();
+      for (const [action, actors] of actions) {
+        if (!map.has(action)) map.set(action, []);
+        map.get(action)!.push(...actors);
+      }
+
+      return Array.from(map.entries()).map(([action, actors]) => [key, action, dedup(actors)] as const);
+    })
+    .flat();
+
+  for (const [state, action, actors] of actions) {
+    const key = `${state}.${action}`;
+
+    if (scenario.actions[key]) {
+      throw new Error(`Unable to create implicit action '${key}', because key is used for action in scenario`);
+    }
+
+    scenario.actions[key] = {
+      $schema: actionSchema.$id,
+      title: keyToTitle(action),
+      description: '',
+      if: true,
+      actor: actors,
+      response: {},
+      update: [],
+    };
+  }
+}
+
+function addImplicitEndStates(states: Record<string, NormalizedState>): void {
+  const endStates = Object.values(states)
+    .map((state) => ('transitions' in state ? state.transitions : []))
+    .flat()
+    .map((transition) => transition.goto)
+    .filter((goto) => goto && goto.match(/^\(.+\)$/));
+
+  for (const key of endStates) {
+    states[key] ??= {
+      title: keyToTitle(key.replace(/^\(|\)$/g, '')),
+      description: '',
+      instructions: {},
+      notify: [],
+    };
+  }
+}
+
+function addImplicitNotify(scenario: NormalizedScenario): void {
+  for (const [key, state] of Object.entries(scenario.states)) {
+    const actionsPerService = ((state.transitions ?? []) as NormalizedTransition[])
+      .filter((tr) => 'on' in tr)
+      .map((tr): Array<{ action: string; actor: string }> => {
+        const action = scenario.actions[tr.on] ?? scenario.actions[`${key}.${tr.on}`];
+        return (tr.by.includes('*') ? (action?.actors ?? []) : tr.by)
+          .filter((actor: string) => actor.startsWith('service:'))
+          .map((actor: string) => ({ action: tr.on, actor: actor }));
+      })
+      .flat()
+      .reduce(
+        (acc, { actor, action }) => {
+          const service = actor.replace('service:', '');
+          acc[service] ??= [];
+          acc[service].push(action);
+          return acc;
+        },
+        {} as Record<string, string[]>,
+      );
+
+    const implicit = Object.entries(actionsPerService)
+      .filter(([service]) => !state.notify.some((n) => n.service === service))
+      .map(([service, actions]) => ({
+        service,
+        after: 0,
+        if: true,
+        trigger: actions.length === 1 ? actions[0] : null,
+      }));
+
+    state.notify.push(...implicit);
+  }
 }
 
 function mergeStates(state: NormalizedState, partialState: NormalizedState): void {

@@ -43,7 +43,6 @@ interface BaseState {
   title?: string | Fn;
   description?: string | Fn;
   instructions?: Record<string, string | Fn>;
-  actions?: string[];
   notify?: string | Notify | Array<string | Notify>;
 
   [_: string]: any;
@@ -90,7 +89,7 @@ export interface Notify {
   service: string;
   after?: string | number;
   if?: boolean | Fn;
-  trigger?: string | Fn;
+  trigger?: string | null | Fn;
   message?: string | Fn | Record<string, any>;
 }
 

@@ -306,7 +306,17 @@
           "$ref": "#/$defs/timePeriod"
         },
         "trigger": {
-          "$ref": "#/$defs/stringFn"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "https://schemas.letsflow.io/v1.0/fn"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "message": {
           "oneOf": [

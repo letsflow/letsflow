@@ -241,7 +241,6 @@
       "title": "initial",
       "description": "",
       "instructions": {},
-      "notify": [],
       "transitions": [
         {
           "on": "new_lead",
@@ -294,19 +293,22 @@
             "if": true
           }
         }
-      ]
+      ],
+      "notify": []
     },
     "wait_on_client": {
       "notify": [
         {
           "service": "sms",
           "after": 0,
-          "if": true
+          "if": true,
+          "trigger": null
         },
         {
           "service": "email",
           "after": 0,
           "if": true,
+          "trigger": null,
           "message": {
             "recipient": {
               "<ref>": "actors.client"
@@ -320,6 +322,7 @@
           "service": "email",
           "after": 432000,
           "if": true,
+          "trigger": null,
           "message": {
             "recipient": {
               "<ref>": "actors.client"
@@ -405,7 +408,6 @@
       },
       "title": "wait for_quote",
       "description": "",
-      "notify": [],
       "transitions": [
         {
           "on": "create_quote",
@@ -458,7 +460,8 @@
             "if": true
           }
         }
-      ]
+      ],
+      "notify": []
     },
     "review_quote": {
       "instructions": {

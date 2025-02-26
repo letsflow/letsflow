@@ -588,6 +588,52 @@ describe('normalize', () => {
       });
     });
 
+    it('should set an implicit notify', () => {
+      const scenario: Scenario = {
+        states: {
+          initial: {
+            on: 'complete',
+            by: 'service:foo',
+            goto: '(done)',
+          },
+          second: {
+            transitions: [
+              {
+                on: 'complete',
+                by: 'service:foo',
+                goto: '(done)',
+              },
+              {
+                on: 'cancel',
+                by: 'service:foo',
+                goto: '(cancelled)',
+              },
+            ],
+          },
+        },
+      };
+
+      const normalized = normalize(scenario);
+
+      expect(normalized.states.initial.notify).to.deep.eq([
+        {
+          service: 'foo',
+          after: 0,
+          if: true,
+          trigger: 'complete',
+        },
+      ]);
+
+      expect(normalized.states.second.notify).to.deep.eq([
+        {
+          service: 'foo',
+          after: 0,
+          if: true,
+          trigger: null,
+        },
+      ]);
+    });
+
     it('should normalize notify', () => {
       const scenario: Scenario = {
         states: {
@@ -617,10 +663,12 @@ describe('normalize', () => {
 
       const normalized = normalize(scenario);
 
-      expect(normalized.states.initial.notify).to.deep.eq([{ service: 'foo', after: 0, if: true }]);
+      expect(normalized.states.initial.notify).to.deep.eq([
+        { service: 'foo', after: 0, if: true, trigger: 'complete' },
+      ]);
       expect(normalized.states.second.notify).to.deep.eq([
-        { service: 'foo', after: 0, if: true },
-        { service: 'bar', after: 0, if: true },
+        { service: 'foo', after: 0, if: true, trigger: 'complete' },
+        { service: 'bar', after: 0, if: true, trigger: 'complete' },
       ]);
       expect(normalized.states.third.notify).to.deep.eq([
         {
@@ -640,6 +688,60 @@ describe('normalize', () => {
         response: {},
         update: [],
       });
+    });
+
+    it('should set trigger when normalizing notify', () => {
+      const scenario: Scenario = {
+        states: {
+          initial: {
+            on: 'complete',
+            by: 'service:foo',
+            goto: '(done)',
+            notify: {
+              service: 'service:foo',
+              after: 10,
+            },
+          },
+          second: {
+            transitions: [
+              {
+                on: 'complete',
+                by: 'service:foo',
+                goto: '(done)',
+              },
+              {
+                on: 'cancel',
+                by: 'service:foo',
+                goto: '(cancelled)',
+              },
+            ],
+            notify: {
+              service: 'service:foo',
+              after: 10,
+            },
+          },
+        },
+      };
+
+      const normalized = normalize(scenario);
+
+      expect(normalized.states.initial.notify).to.deep.eq([
+        {
+          service: 'foo',
+          after: 10,
+          if: true,
+          trigger: 'complete',
+        },
+      ]);
+
+      expect(normalized.states.second.notify).to.deep.eq([
+        {
+          service: 'foo',
+          after: 10,
+          if: true,
+          trigger: null,
+        },
+      ]);
     });
 
     it('should normalize state transition log', () => {

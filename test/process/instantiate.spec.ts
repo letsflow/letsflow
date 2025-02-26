@@ -318,6 +318,7 @@ describe('instantiate', () => {
             service: 'email',
             after: 0,
             if: true,
+            trigger: null,
             message: {
               recipient: { '<ref>': 'actors.client' },
               body: { '<tpl>': 'Welcome {{actors.client.name}}' },
@@ -375,6 +376,7 @@ describe('instantiate', () => {
             service: 'email',
             after: 0,
             if: false,
+            trigger: null,
           },
         ],
       };

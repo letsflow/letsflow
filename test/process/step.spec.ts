@@ -598,11 +598,8 @@ describe('step', () => {
       const scenario = normalize({
         states: {
           initial: {
-            notify: {
-              service: 'my-app',
-              trigger: 'complete',
-            },
             on: 'complete',
+            by: 'service:my-app',
             goto: '(done)',
           },
         },
@@ -610,57 +607,11 @@ describe('step', () => {
 
       uuid(scenario);
 
-      const process = step(instantiate(scenario), 'complete', 'service:my-app');
+      const process = instantiate(scenario);
+      expect(process.current.notify).to.be.deep.eq([{service: 'my-app', after: 0 }]);
 
-      expect(process.current.key).to.eq('(done)');
-    });
-
-    it('should not allow a service to perform action without a trigger', () => {
-      const scenario = normalize({
-        states: {
-          initial: {
-            notify: {
-              service: 'my-app',
-            },
-            on: 'complete',
-            goto: '(done)',
-          },
-        },
-      });
-
-      uuid(scenario);
-
-      const process = step(instantiate(scenario), 'complete', 'service:my-app');
-      const event = process.events[1] as ActionEvent;
-
-      expect(event.skipped).to.be.true;
-      expect(event.errors).to.have.length(1);
-      expect(event.errors![0]).to.eq("Service 'my-app' is not expected to trigger action 'complete'");
-    });
-
-    it('should not allow a service to trigger an action when the notification is disabled', () => {
-      const scenario = normalize({
-        states: {
-          initial: {
-            notify: {
-              service: 'my-app',
-              trigger: 'complete',
-              if: false,
-            },
-            on: 'complete',
-            goto: '(done)',
-          },
-        },
-      });
-
-      uuid(scenario);
-
-      const process = step(instantiate(scenario), 'complete', 'service:my-app');
-      const event = process.events[1] as ActionEvent;
-
-      expect(event.skipped).to.be.true;
-      expect(event.errors).to.have.length(1);
-      expect(event.errors![0]).to.eq("Service 'my-app' is not expected to trigger action 'complete'");
+      const stepped = step(process, 'complete', 'service:my-app');
+      expect(stepped.current.key).to.eq('(done)');
     });
 
     it('should allow a service to start a process', () => {
@@ -704,7 +655,7 @@ describe('step', () => {
 
       expect(event.skipped).to.be.true;
       expect(event.errors).to.have.length(1);
-      expect(event.errors![0]).to.eq("Service 'my-app' is not expected to trigger action 'start'");
+      expect(event.errors![0]).to.eq("Service 'my-app' is not allowed to perform action 'start'");
     });
   });
 

@@ -32,7 +32,7 @@ export interface NormalizedNotify {
   service: string;
   after: number;
   if: boolean | Fn;
-  trigger?: string | Fn;
+  trigger: string | Fn | null;
   message?: string | Fn | Record<string, any>;
 }
 
@@ -43,7 +43,7 @@ export type NormalizedState =
       transitions: NormalizedTransition[];
       notify: NormalizedNotify[];
     })
-  | (Required<Omit<EndState, 'notify'>> & { notify: Array<Omit<NormalizedNotify, 'trigger'>> });
+  | (Required<Omit<EndState, 'notify'>> & { notify: NormalizedNotify[] });
 
 export interface NormalizedScenario {
   $schema: string;
