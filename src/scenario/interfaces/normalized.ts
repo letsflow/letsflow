@@ -21,7 +21,7 @@ export interface NormalizedExplicitTransition {
   log: Required<Log>;
 }
 
-interface NormalizedTimeoutTransition {
+export interface NormalizedTimeoutTransition {
   after: number;
   if: boolean | Fn;
   goto: string | null;

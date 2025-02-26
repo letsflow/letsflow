@@ -2,7 +2,13 @@ import Ajv, { Ajv2020 } from 'ajv/dist/2020';
 import get from 'get-value';
 import set from 'set-value';
 import { ajv as defaultAjv } from '../ajv';
-import { NormalizedExplicitTransition, NormalizedTransition, Transition, UpdateInstruction } from '../scenario';
+import {
+  NormalizedExplicitTransition,
+  NormalizedTimeoutTransition,
+  NormalizedTransition,
+  Transition,
+  UpdateInstruction,
+} from '../scenario';
 import { applyFn, ReplaceFn } from './fn';
 import { withHash } from './hash';
 import { defaultValue, instantiateAction, instantiateActor, instantiateState } from './instantiate';
@@ -229,14 +235,19 @@ export function timeout<T extends Process>(input: T, options: { hashFn?: HashFn;
   return process;
 }
 
-export function findTimeoutTransition(process: Process, timePassed: number): NormalizedTransition | undefined {
+export function findTimeoutTransition(
+  process: Process,
+  timePassed: number = Number.MAX_SAFE_INTEGER,
+): NormalizedTimeoutTransition | undefined {
   const current = process.scenario.states[process.current.key];
 
-  return (current.transitions ?? []).find((transition: NormalizedTransition) => {
-    if (!('after' in transition)) return false;
-    const tr = applyFn(transition, process);
-    return tr.if && tr.after <= timePassed;
-  });
+  return (current.transitions ?? [])
+    .filter((tr: NormalizedTransition) => 'after' in tr)
+    .toSorted((a: NormalizedTimeoutTransition, b: NormalizedTimeoutTransition) => (a.after < b.after ? -1 : 1))
+    .find((transition: NormalizedTimeoutTransition) => {
+      const tr = applyFn(transition, process);
+      return tr.if && tr.after <= timePassed;
+    });
 }
 
 export function update(

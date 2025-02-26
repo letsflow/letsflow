@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "alwaysStrict": true,
-    "lib": ["es2019", "es6", "dom"],
+    "lib": ["ES2023", "es6", "dom"],
     "module": "commonjs",
     "sourceMap": true,
     "declaration": true,
