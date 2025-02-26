@@ -22,7 +22,6 @@ export interface Action {
 export interface Notify {
   service: string;
   after: number;
-  trigger?: string;
   message?: string | Record<string, any>;
 }
 

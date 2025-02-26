@@ -1,7 +1,7 @@
 import Ajv from 'ajv';
 import { v4 as uuidv4 } from 'uuid';
 import { ajv as defaultAjv } from '../ajv';
-import { NormalizedAction, NormalizedScenario, Schema, Transition } from '../scenario/interfaces';
+import { NormalizedAction, NormalizedNotify, NormalizedScenario, Schema, Transition } from '../scenario/interfaces';
 import { uuid } from '../uuid';
 import { applyFn } from './fn';
 import { withHash } from './hash';
@@ -121,10 +121,10 @@ export function instantiateState(process: Omit<Process, 'current'>, key: string,
       return rest;
     });
 
-  state.notify = ((state.notify ?? []) as Array<Notify & { if: boolean }>)
+  state.notify = ((state.notify ?? []) as NormalizedNotify[])
     .filter((notify) => notify.if)
     .map((notify): Notify => {
-      const { if: _, ...rest } = notify;
+      const { if: _, trigger: __, ...rest } = notify;
       return rest;
     });
 
