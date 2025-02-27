@@ -639,11 +639,13 @@ describe('normalize', () => {
         states: {
           initial: {
             on: 'complete',
+            by: 'service:foo',
             goto: '(done)',
             notify: 'foo',
           },
           second: {
             on: 'complete',
+            by: 'service:foo',
             goto: '(done)',
             notify: ['foo', 'bar'],
           },
@@ -668,7 +670,7 @@ describe('normalize', () => {
       ]);
       expect(normalized.states.second.notify).to.deep.eq([
         { service: 'foo', after: 0, if: true, trigger: 'complete' },
-        { service: 'bar', after: 0, if: true, trigger: 'complete' },
+        { service: 'bar', after: 0, if: true, trigger: null },
       ]);
       expect(normalized.states.third.notify).to.deep.eq([
         {
@@ -742,6 +744,20 @@ describe('normalize', () => {
           trigger: null,
         },
       ]);
+    });
+
+    it('should not set trigger when normalizing notify and service has no action', () => {
+      const scenario = normalize({
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+            notify: 'service:foo',
+          },
+        },
+      });
+
+      expect(scenario.states.initial.notify).to.deep.eq([{ service: 'foo', after: 0, if: true, trigger: null }]);
     });
 
     it('should normalize state transition log', () => {

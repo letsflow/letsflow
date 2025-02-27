@@ -299,8 +299,7 @@ function determineTrigger(
     .filter((tr: NormalizedTransition) => {
       if (!('on' in tr)) return false;
       if (tr.by.includes(`service:${service}`)) return true;
-      if (!tr.by.includes('*')) return false;
-      if (!actions[tr.on]) return true;
+      if (!tr.by.includes('*') || !actions[tr.on]) return false;
 
       const actor = actions[tr.on].actor;
       return !isFn(actor) && actor.includes(`service:${service}`);
