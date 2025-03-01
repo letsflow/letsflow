@@ -1,7 +1,7 @@
 import { isFn } from '../scenario/utils';
-import { etag } from './etag';
 import { applyFn } from './fn';
 import { Process, StandardMessage } from './interfaces';
+import { clean } from './utils';
 
 export function createMessage(process: Process, service: string): StandardMessage {
   service = service.replace('service:', '');
@@ -9,12 +9,7 @@ export function createMessage(process: Process, service: string): StandardMessag
   const actions = process.current.actions.filter((a) => a.actor.includes(`service:${service}`));
   const instructions = process.current.instructions[`service:${service}`];
 
-  return {
-    process: process.id,
-    actions,
-    ...(instructions ? { instructions } : {}),
-    etag: etag(process),
-  };
+  return clean({ actions, instructions });
 }
 
 export function determineTrigger(process: Process, service: string, response?: any) {

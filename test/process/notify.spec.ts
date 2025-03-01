@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { createMessage, determineTrigger, etag, instantiate } from '../../src/process';
+import { createMessage, determineTrigger, instantiate } from '../../src/process';
 import { normalize } from '../../src/scenario';
 
 describe('createMessage', () => {
@@ -18,7 +18,6 @@ describe('createMessage', () => {
     const message = createMessage(process, 'service:default');
 
     expect(message).to.deep.equal({
-      process: process.id,
       actions: [
         {
           $schema: 'https://schemas.letsflow.io/v1.0/action',
@@ -29,7 +28,6 @@ describe('createMessage', () => {
           title: 'complete',
         },
       ],
-      etag: etag(process),
     });
   });
 
@@ -62,7 +60,6 @@ describe('createMessage', () => {
     const message = createMessage(process, 'default');
 
     expect(message).to.deep.equal({
-      process: process.id,
       actions: [
         {
           $schema: 'https://schemas.letsflow.io/v1.0/action',
@@ -83,7 +80,6 @@ describe('createMessage', () => {
           title: 'Cancel',
         },
       ],
-      etag: etag(process),
     });
   });
 
@@ -105,7 +101,6 @@ describe('createMessage', () => {
     const message = createMessage(process, 'default');
 
     expect(message).to.deep.equal({
-      process: process.id,
       actions: [
         {
           $schema: 'https://schemas.letsflow.io/v1.0/action',
@@ -117,7 +112,6 @@ describe('createMessage', () => {
         },
       ],
       instructions: 'complete the process',
-      etag: etag(process),
     });
   });
 
@@ -136,9 +130,7 @@ describe('createMessage', () => {
     const message = createMessage(process, 'default');
 
     expect(message).to.deep.equal({
-      process: process.id,
       actions: [],
-      etag: etag(process),
     });
   });
 });
