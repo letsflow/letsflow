@@ -46,6 +46,12 @@
     "current": {
       "$ref": "#/$defs/state"
     },
+    "previous": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/logEntry"
+      }
+    },
     "next": {
       "type": "array",
       "items": {
@@ -120,6 +126,34 @@
           }
         }
       }
+    },
+    "logEntry": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
     },
     "predictedState": {
       "type": "object",

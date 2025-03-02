@@ -3,10 +3,6 @@
   "$id": "https://schemas.letsflow.io/v1.0/scenario",
   "type": "object",
   "properties": {
-    "$schema": {
-      "type": "string",
-      "const": "https://schemas.letsflow.io/v1.0/scenario"
-    },
     "name": {
       "type": "string"
     },
@@ -159,7 +155,11 @@
           "type": "null"
         },
         "goto": {
-          "type": "string"
+          "type": "string",
+          "nullable": true
+        },
+        "log": {
+          "$ref": "#/$defs/logOrFalse"
         }
       },
       "required": [
@@ -186,7 +186,11 @@
           "type": "null"
         },
         "goto": {
-          "type": "string"
+          "type": "string",
+          "nullable": true
+        },
+        "log": {
+          "$ref": "#/$defs/logOrFalse"
         }
       },
       "required": [
@@ -224,14 +228,11 @@
               "$ref": "#/$defs/booleanFn"
             },
             "goto": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
+              "type": "string",
+              "nullable": true
+            },
+            "log": {
+              "$ref": "#/$defs/logOrFalse"
             }
           },
           "required": [
@@ -301,7 +302,17 @@
           "$ref": "#/$defs/timePeriod"
         },
         "trigger": {
-          "$ref": "#/$defs/stringFn"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "https://schemas.letsflow.io/v1.0/fn"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "message": {
           "oneOf": [
@@ -323,6 +334,31 @@
       },
       "required": [
         "service"
+      ]
+    },
+    "log": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/stringFn"
+        },
+        "description": {
+          "$ref": "#/$defs/stringFn"
+        },
+        "if": {
+          "$ref": "#/$defs/booleanFn"
+        }
+      }
+    },
+    "logOrFalse": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/log"
+        },
+        {
+          "type": "boolean",
+          "const": false
+        }
       ]
     },
     "stringFn": {
