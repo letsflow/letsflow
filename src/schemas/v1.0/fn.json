@@ -1,9 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.letsflow.io/v1.0/fn",
-  "type": "object",
   "oneOf": [
     {
+      "type": "object",
       "properties": {
         "<ref>": {
           "type": "string"
@@ -15,6 +15,7 @@
       "additionalProperties": false
     },
     {
+      "type": "object",
       "properties": {
         "<tpl>": {
           "type": "string"
@@ -26,6 +27,7 @@
       "additionalProperties": false
     },
     {
+      "type": "object",
       "properties": {
         "<tpl>": {
           "type": "object",

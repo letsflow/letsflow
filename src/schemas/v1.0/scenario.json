@@ -3,10 +3,6 @@
   "$id": "https://schemas.letsflow.io/v1.0/scenario",
   "type": "object",
   "properties": {
-    "$schema": {
-      "type": "string",
-      "const": "https://schemas.letsflow.io/v1.0/scenario"
-    },
     "name": {
       "type": "string"
     },
