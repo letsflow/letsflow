@@ -1,11 +1,19 @@
 import Ajv from 'ajv';
 import { v4 as uuidv4 } from 'uuid';
 import { ajv as defaultAjv } from '../ajv';
-import { NormalizedAction, NormalizedNotify, NormalizedScenario, Schema, Transition } from '../scenario/interfaces';
+import {
+  ActionTransition,
+  NormalizedAction,
+  NormalizedNotify,
+  NormalizedScenario,
+  Schema,
+  Transition,
+} from '../scenario/interfaces';
 import { uuid } from '../uuid';
 import { applyFn } from './fn';
 import { withHash } from './hash';
 import { Action, Actor, HashFn, InstantiateEvent, Notify, Process, State } from './interfaces';
+import { moveToNext } from './step';
 
 export function instantiate(
   scenario: NormalizedScenario & { id?: string },
@@ -24,7 +32,7 @@ export function instantiate(
 
   const current = instantiateState(process, 'initial', event.timestamp);
 
-  return { ...process, current };
+  return moveToNext({ ...process, current }, event);
 }
 
 export function createProcess(
@@ -95,8 +103,8 @@ export function instantiateState(process: Omit<Process, 'current'>, key: string,
   state.timestamp = timestamp ?? new Date();
 
   const actions = ((state.transitions ?? []) as Transition[])
-    .filter((transition) => 'on' in transition)
-    .filter((transition) => transition.if as boolean)
+    .filter((tr): tr is ActionTransition & { on: string } => 'on' in tr && tr.on !== null)
+    .filter((tr) => tr.if as boolean)
     .reduce(
       (acc, transition) => {
         const { on, by } = transition;

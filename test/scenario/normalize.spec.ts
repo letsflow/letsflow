@@ -820,6 +820,30 @@ describe('normalize', () => {
         extra: 'baz',
       });
     });
+
+    it('should handle a nop transition', () => {
+      const scenario: Scenario = {
+        states: {
+          initial: {
+            on: null,
+            goto: '(done)',
+          },
+        },
+      };
+
+      const normalized = normalize(scenario);
+
+      expect(normalized.actions).to.be.empty;
+      expect(normalized.states.initial).to.be.deep.eq({
+        title: 'initial',
+        description: '',
+        instructions: {},
+        notify: [],
+        transitions: [
+          { on: null, by: ['*'], if: true, goto: '(done)', log: { title: '', description: '', if: false } },
+        ],
+      });
+    });
   });
 
   describe('vars and result', () => {

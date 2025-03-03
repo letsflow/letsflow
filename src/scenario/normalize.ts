@@ -297,7 +297,7 @@ function determineTrigger(
 
   const transitions = state.transitions
     .filter((tr: NormalizedTransition) => {
-      if (!('on' in tr)) return false;
+      if (!('on' in tr) || tr.on === null) return false;
       if (tr.by.includes(`service:${service}`)) return true;
       if (!tr.by.includes('*') || !actions[tr.on]) return false;
 
@@ -312,12 +312,13 @@ function determineTrigger(
 function normalizeTransitions(key: string, state: State): Array<Transition> {
   if ('on' in state) {
     const by = Array.isArray(state.by) ? state.by : [state.by ?? '*'];
-    return [{ on: state.on, by, if: true, goto: state.goto, log: normalizeActionLog(state.log) }];
+    const log = state.on !== null ? normalizeActionLog(state.log) : normalizeNopLog(state.log);
+    return [{ on: state.on, by, if: true, goto: state.goto, log }];
   }
 
   if ('after' in state) {
     const after = convertTimePeriodToSeconds(state.after);
-    const log = normalizeTimeoutLog(state.log);
+    const log = normalizeNopLog(state.log);
     return [{ after, if: true, goto: state.goto, log }];
   }
 
@@ -335,7 +336,7 @@ function normalizeTransitions(key: string, state: State): Array<Transition> {
     }
 
     transition.if ??= true;
-    transition.log = 'on' in transition ? normalizeActionLog(transition.log) : normalizeTimeoutLog(transition.log);
+    transition.log = 'on' in transition ? normalizeActionLog(transition.log) : normalizeNopLog(transition.log);
   }
 
   return state.transitions;
@@ -354,8 +355,8 @@ function normalizeActionLog(log?: Log | false): Required<Log> {
   };
 }
 
-function normalizeTimeoutLog(log?: Log | false): Required<Log> {
-  return { title: '', description: '', if: false, ...(log || {}) };
+function normalizeNopLog(log?: Log | false): Required<Log> {
+  return { title: '', description: '', if: !!log, ...(typeof log === 'object' ? log : {}) };
 }
 
 function normalizeResult(scenario: Scenario): void {
@@ -386,7 +387,7 @@ function addImplicitActions(scenario: NormalizedScenario): void {
     .filter(([, state]) => !isEndState(state))
     .map(([key, state]) => {
       const actions = state.transitions
-        .filter((tr: NormalizedTransition): tr is NormalizedExplicitTransition => 'on' in tr)
+        .filter((tr: NormalizedTransition): tr is NormalizedExplicitTransition => 'on' in tr && tr.on !== null)
         .map((tr: NormalizedExplicitTransition) => [tr.on, filterActors(tr.by)] as const)
         .filter(([action]: [string]) => !scenario.actions[action]);
 
@@ -439,7 +440,7 @@ function addImplicitEndStates(states: Record<string, NormalizedState>): void {
 function addImplicitNotify(scenario: NormalizedScenario): void {
   for (const [key, state] of Object.entries(scenario.states)) {
     const actionsPerService = ((state.transitions ?? []) as NormalizedTransition[])
-      .filter((tr) => 'on' in tr)
+      .filter((tr): tr is NormalizedExplicitTransition & { on: string } => 'on' in tr && tr.on !== null)
       .map((tr): Array<{ action: string; actor: string }> => {
         const action = scenario.actions[tr.on] ?? scenario.actions[`${key}.${tr.on}`];
         return (tr.by.includes('*') ? (action?.actors ?? []) : tr.by)

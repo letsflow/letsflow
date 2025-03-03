@@ -277,6 +277,33 @@ describe('replay', () => {
     expect(callback.secondCall.args[0]).to.deep.equal(process1);
     expect(callback.secondCall.args[1]).to.deep.equal(events[2]);
   });
+
+  it('should move through multiple states when using null actions', () => {
+    const scenario = normalize({
+      title: 'some scenario',
+      states: {
+        initial: { on: 'next', goto: 'a' },
+        a: { on: null, goto: 'b' },
+        b: { on: null, goto: 'c', log: { title: 'O~O' } },
+        c: {
+          transitions: [
+            { on: null, goto: '(failed)', if: false },
+            { on: null, goto: 'last', log: { title: '>:)' } },
+          ],
+        },
+        last: { on: 'complete', goto: '(done)' },
+      },
+    });
+
+    const events = step(instantiate(scenario), 'next').events;
+    expect(events).to.have.length(2);
+
+    const process = replay(scenario, events);
+
+    expect(process.current.key).to.eq('last');
+    expect(process.events).to.have.length(2);
+    expect(process.previous.map((p) => p.title)).to.deep.eq(['next', 'O~O', '>:)']);
+  });
 });
 
 describe('migrate', () => {

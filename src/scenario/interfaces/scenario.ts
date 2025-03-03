@@ -49,7 +49,7 @@ interface BaseState {
 }
 
 interface SimpleState extends BaseState {
-  on: string;
+  on: string | null;
   by?: string | string[];
   goto: string | null;
   log?: Log | false;
@@ -68,15 +68,15 @@ export interface ExplicitState extends BaseState {
 export type State = ExplicitState | SimpleState | SimpleTimeoutState;
 export type EndState = Forbidden<BaseState, 'transitions' | 'on' | 'after' | 'goto'>;
 
-interface ActionTransition {
-  on: string;
+export interface ActionTransition {
+  on: string | null;
   by?: string | string[];
   if?: boolean | Fn;
   goto: string | null;
   log?: Log | false;
 }
 
-interface TimeoutTransition {
+export interface TimeoutTransition {
   after: string | number;
   if?: boolean | Fn;
   goto: string;

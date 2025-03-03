@@ -299,6 +299,30 @@ describe('step', () => {
       expect(event.errors).to.have.length(1);
       expect(event.errors![0]).to.eq("Action 'complete' is not allowed due to if condition");
     });
+
+    it('should move through multiple states when using null actions', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        states: {
+          initial: { on: 'next', goto: 'a' },
+          a: { on: null, goto: 'b' },
+          b: { on: null, goto: 'c', log: { title: 'O~O' } },
+          c: {
+            transitions: [
+              { on: null, goto: '(failed)', if: false },
+              { on: null, goto: 'last', log: { title: '>:)' } },
+            ],
+          },
+          last: { on: 'complete', goto: '(done)' },
+        },
+      });
+
+      const process = step(instantiate(scenario), 'next', 'actor');
+
+      expect(process.current.key).to.eq('last');
+      expect(process.events).to.have.length(2);
+      expect(process.previous.map((p) => p.title)).to.deep.eq(['next', 'O~O', '>:)']);
+    });
   });
 
   describe('response', () => {

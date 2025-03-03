@@ -422,6 +422,29 @@ describe('instantiate', () => {
       expect(current.actions).to.have.length(1);
       expect(current.actions[0].actor).to.deep.eq(['client', 'admin', 'management']);
     });
+
+    it('should move through multiple states when using null actions', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        states: {
+          initial: { on: null, goto: 'a' },
+          a: { on: null, goto: 'b', log: { title: 'O~O' } },
+          b: {
+            transitions: [
+              { on: null, goto: '(failed)', if: false },
+              { on: null, goto: 'last', log: { title: '>:)' } },
+            ],
+          },
+          last: { on: 'complete', goto: '(done)' },
+        },
+      });
+
+      const process = instantiate(scenario);
+
+      expect(process.current.key).to.eq('last');
+      expect(process.events).to.have.length(1);
+      expect(process.previous.map((p) => p.title)).to.deep.eq(['O~O', '>:)']);
+    });
   });
 
   describe('action', () => {

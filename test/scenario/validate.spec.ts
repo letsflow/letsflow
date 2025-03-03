@@ -456,62 +456,6 @@ describe('validate scenario', () => {
         expect(result).to.be.true;
       });
 
-      it('should fail for a simple state with a condition', () => {
-        const scenario = {
-          actions: {
-            next: {},
-          },
-          states: {
-            initial: {
-              on: 'next',
-              goto: '(done)',
-              if: true,
-            },
-          },
-        };
-
-        const result = validate(scenario);
-
-        expect(result).to.be.false;
-        expect(validate.errors).to.deep.contain({
-          instancePath: '/states/initial/if',
-          keyword: 'type',
-          message: 'must be null',
-          params: {
-            type: 'null',
-          },
-          schemaPath: '#/properties/if/type',
-        });
-      });
-
-      it('should fail for a timeout state with a condition', () => {
-        const scenario = {
-          actions: {
-            next: {},
-          },
-          states: {
-            initial: {
-              after: '5 minutes',
-              goto: '(done)',
-              if: true,
-            },
-          },
-        };
-
-        const result = validate(scenario);
-
-        expect(result).to.be.false;
-        expect(validate.errors).to.deep.contain({
-          instancePath: '/states/initial/if',
-          keyword: 'type',
-          message: 'must be null',
-          params: {
-            type: 'null',
-          },
-          schemaPath: '#/properties/if/type',
-        });
-      });
-
       it('should fail if `goto` references an unknown state', () => {
         const scenario = {
           actions: {
@@ -700,6 +644,122 @@ describe('validate scenario', () => {
             value: 'foo',
           },
           schemaPath: '',
+        });
+      });
+
+      it('should fail if explicit state has by property', () => {
+        const scenario = {
+          states: {
+            initial: {
+              by: 'someone',
+              transitions: [
+                {
+                  on: 'next',
+                  goto: '(done)',
+                },
+              ],
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(result).to.be.false;
+        expect(validate.errors![0]).to.deep.eq({
+          instancePath: '/states/initial',
+          keyword: 'errorMessage',
+          message: 'must not have a property by when property transitions is present',
+          params: {
+            errors: [
+              {
+                emUsed: true,
+                instancePath: '/states/initial',
+                keyword: 'not',
+                message: 'must NOT be valid',
+                params: {},
+                schemaPath: '#/dependentSchemas/transitions/allOf/0/not',
+              },
+            ],
+          },
+          schemaPath: '#/dependentSchemas/transitions/allOf/0/errorMessage',
+        });
+      });
+
+      it('should fail if transition has `by` with a null action', () => {
+        const scenario = {
+          actions: {
+            next: {},
+          },
+          states: {
+            initial: {
+              on: null,
+              by: 'foo',
+              goto: '(done)',
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(result).to.be.false;
+        expect(validate.errors).to.deep.contain({
+          instancePath: '/states/initial',
+          schemaPath: '#/not',
+          keyword: 'not',
+          params: {},
+          message: 'must NOT be valid',
+        });
+      });
+    });
+
+    describe('wildcard state', () => {
+      it('should succeed with a wildcard state', () => {
+        const scenario = {
+          states: {
+            '*': {
+              notify: 'logger',
+            },
+            initial: {
+              on: 'next',
+              goto: '(done)',
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(validate.errors).to.eq(null);
+        expect(result).to.be.true;
+      });
+
+      it('should fail with an invalid wildcard state', () => {
+        const scenario = {
+          states: {
+            '*': {
+              on: 'abc',
+              notify: 'logger',
+            },
+            initial: {
+              on: 'next',
+              goto: '(done)',
+            },
+          },
+        };
+
+        const result = validate(scenario);
+
+        expect(result).to.be.false;
+        expect(validate.errors).to.deep.contain({
+          instancePath: '/states/*',
+          schemaPath: '#/dependentRequired',
+          keyword: 'dependentRequired',
+          params: {
+            property: 'on',
+            missingProperty: 'goto',
+            depsCount: 1,
+            deps: 'goto',
+          },
+          message: 'must have property goto when property on is present',
         });
       });
     });

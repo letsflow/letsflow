@@ -48,9 +48,7 @@
       "additionalProperties": {
         "$ref": "#/$defs/state"
       },
-      "required": [
-        "initial"
-      ]
+      "required": ["initial"]
     },
     "vars": {
       "type": "object",
@@ -62,55 +60,12 @@
       "$ref": "https://schemas.letsflow.io/v1.0/schema"
     }
   },
-  "required": [
-    "states"
-  ],
-  "anyOf": [
-    {
-      "not": {
-        "required": ["name"]
-      }
-    },
-    {
-      "required": ["name", "version"]
-    }
-  ],
+  "required": ["states"],
+  "dependentRequired": {
+    "name": ["version"]
+  },
   "$defs": {
-    "state": {
-      "oneOf": [
-        {
-          "$ref": "#/$defs/explicitState"
-        },
-        {
-          "$ref": "#/$defs/simpleState"
-        },
-        {
-          "$ref": "#/$defs/timeoutState"
-        }
-      ]
-    },
     "partialState": {
-      "oneOf": [
-        {
-          "allOf": [
-            {
-              "$ref": "#/$defs/explicitState"
-            },
-            {
-              "type": "object",
-              "required": []
-            }
-          ]
-        },
-        {
-          "$ref": "#/$defs/simpleState"
-        },
-        {
-          "$ref": "#/$defs/timeoutState"
-        }
-      ]
-    },
-    "explicitState": {
       "type": "object",
       "properties": {
         "title": {
@@ -121,6 +76,23 @@
         },
         "notify": {
           "$ref": "#/$defs/notify"
+        },
+        "log": {
+          "$ref": "#/$defs/logOrFalse"
+        },
+        "on": {
+          "type": "string",
+          "nullable": true
+        },
+        "after": {
+          "$ref": "#/$defs/timePeriod"
+        },
+        "by": {
+          "$ref": "#/$defs/multiString"
+        },
+        "goto": {
+          "type": "string",
+          "nullable": true
         },
         "transitions": {
           "type": "array",
@@ -129,73 +101,52 @@
           }
         }
       },
-      "required": [
-        "transitions"
-      ]
-    },
-    "simpleState": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "$ref": "#/$defs/stringFn"
-        },
-        "instructions": {
-          "$ref": "#/$defs/instructions"
-        },
-        "notify": {
-          "$ref": "#/$defs/notify"
-        },
-        "on": {
-          "type": "string"
-        },
-        "by": {
-          "$ref": "#/$defs/multiString"
-        },
-        "if": {
-          "type": "null"
-        },
-        "goto": {
-          "type": "string",
-          "nullable": true
-        },
-        "log": {
-          "$ref": "#/$defs/logOrFalse"
-        }
+      "dependentRequired": {
+        "on": ["goto"],
+        "after": ["goto"]
       },
-      "required": [
-        "on",
-        "goto"
-      ]
-    },
-    "timeoutState": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "$ref": "#/$defs/stringFn"
-        },
-        "instructions": {
-          "$ref": "#/$defs/instructions"
-        },
-        "notify": {
-          "$ref": "#/$defs/notify"
-        },
+      "dependentSchemas": {
         "after": {
-          "$ref": "#/$defs/timePeriod"
+          "errorMessage": "must not have a property by when property after is present",
+          "not": {
+            "required": ["by"]
+          }
         },
-        "if": {
-          "type": "null"
-        },
-        "goto": {
-          "type": "string",
-          "nullable": true
-        },
-        "log": {
-          "$ref": "#/$defs/logOrFalse"
+        "transitions": {
+          "allOf": [
+            {
+              "errorMessage": "must not have a property by when property transitions is present",
+              "not": { "required": ["by"] }
+            },
+            {
+              "errorMessage": "must not have a property goto when property transitions is present",
+              "not": { "required": ["goto"] }
+            }
+          ]
         }
       },
-      "required": [
-        "after",
-        "goto"
+      "not": {
+        "properties": {
+          "on": {
+            "type": "null"
+          }
+        },
+        "required": ["on", "by"]
+      }
+    },
+    "state": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/partialState"
+        },
+        {
+          "type": "object",
+          "oneOf": [
+            { "required": ["on"] },
+            { "required": ["after"] },
+            { "required": ["transitions"] }
+          ]
+        }
       ]
     },
     "endState": {
@@ -214,51 +165,41 @@
       "nullable": true
     },
     "transition": {
-      "oneOf": [
-        {
-          "type": "object",
-          "properties": {
-            "on": {
-              "type": "string"
-            },
-            "by": {
-              "$ref": "#/$defs/multiString"
-            },
-            "if": {
-              "$ref": "#/$defs/booleanFn"
-            },
-            "goto": {
-              "type": "string",
-              "nullable": true
-            },
-            "log": {
-              "$ref": "#/$defs/logOrFalse"
-            }
-          },
-          "required": [
-            "on",
-            "goto"
-          ]
+      "type": "object",
+      "properties": {
+        "on": {
+          "type": "string",
+          "nullable": true
         },
-        {
-          "type": "object",
-          "properties": {
-            "after": {
-              "$ref": "#/$defs/timePeriod"
-            },
-            "if": {
-              "$ref": "#/$defs/booleanFn"
-            },
-            "goto": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "after",
-            "goto"
-          ]
+        "by": {
+          "$ref": "#/$defs/multiString"
+        },
+        "after": {
+          "$ref": "#/$defs/timePeriod"
+        },
+        "if": {
+          "$ref": "#/$defs/booleanFn"
+        },
+        "goto": {
+          "type": "string",
+          "nullable": true
+        },
+        "log": {
+          "$ref": "#/$defs/logOrFalse"
         }
-      ]
+      },
+      "required": ["goto"],
+      "oneOf": [
+        { "required": ["on"] },
+        { "required": ["after"] }
+      ],
+      "dependentSchemas": {
+        "after": {
+          "not": {
+            "required": ["by"]
+          }
+        }
+      }
     },
     "instructions": {
       "type": "object",
@@ -332,9 +273,7 @@
           ]
         }
       },
-      "required": [
-        "service"
-      ]
+      "required": ["service"]
     },
     "log": {
       "type": "object",

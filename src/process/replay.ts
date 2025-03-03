@@ -5,7 +5,7 @@ import { applyFn } from './fn';
 import { withHash } from './hash';
 import { createProcess, instantiateState } from './instantiate';
 import { ActionEvent, Event, HashFn, InstantiateEvent, Process } from './interfaces';
-import { findActionTransition, findTimeoutTransition, logTransition, update, validateStep } from './step';
+import { findActionTransition, findTimeoutTransition, logTransition, moveToNext, update, validateStep } from './step';
 import { isActionEvent, isInstantiateEvent, isTimeoutEvent } from './utils';
 import { validateProcess } from './validate';
 
@@ -112,13 +112,7 @@ function replayAction(process: Process, event: ActionEvent, options: { ajv?: Ajv
     throw new Error(`Event ${event.hash} should have been skipped:\n${updateErrors.join('\n')}`);
   }
 
-  logTransition(process, next!);
-
-  process.current = instantiateState(
-    process,
-    next!.goto ?? process.current.key,
-    next!.goto ? event.timestamp : process.current.timestamp,
-  );
+  moveToNext(process, event, next);
 }
 
 function replayTimeout(process: Process, event: Event) {

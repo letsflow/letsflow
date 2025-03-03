@@ -14,7 +14,7 @@ export interface NormalizedAction {
 }
 
 export interface NormalizedExplicitTransition {
-  on: string;
+  on: string | null;
   by: string[];
   if: boolean | Fn;
   goto: string | null;

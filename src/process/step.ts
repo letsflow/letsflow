@@ -13,7 +13,7 @@ import { applyFn, ReplaceFn } from './fn';
 import { withHash } from './hash';
 import { defaultValue, instantiateAction, instantiateActor, instantiateState } from './instantiate';
 import { HashFn, Process } from './interfaces';
-import { ActionEvent, TimeoutEvent } from './interfaces/event';
+import { ActionEvent, Event, TimeoutEvent } from './interfaces/event';
 import { clean } from './utils';
 import { validateProcess } from './validate';
 
@@ -73,7 +73,7 @@ export function step<T extends Process>(
 
   const updateErrors = !isPrediction(process) ? validateProcess(process, { ajv }) : [];
 
-  const next = findActionTransition(process, action, actor.key);
+  let next = findActionTransition(process, action, actor.key);
   if (!next) {
     updateErrors.push(
       `No transition found for action '${action}' in state '${process.current.key}' for actor ${actor.key}`,
@@ -86,26 +86,45 @@ export function step<T extends Process>(
     return reverted;
   }
 
-  logTransition(process, next!);
+  moveToNext(process, event, next);
 
-  process.current = instantiateState(
-    process,
-    next!.goto ?? process.current.key,
-    next!.goto ? event.timestamp : process.current.timestamp,
-  );
+  return process;
+}
+
+export function moveToNext(process: Process, event: Event, next?: NormalizedExplicitTransition): Process {
+  next ??= findActionTransition(process, null);
+  if (!next) return process;
+
+  const seen = new Set<string>();
+  do {
+    if (next!.goto && seen.has(next!.goto)) break;
+
+    logTransition(process, next);
+
+    process.current = instantiateState(
+      process,
+      next.goto ?? process.current.key,
+      next.goto ? event.timestamp : process.current.timestamp,
+    );
+
+    next = next!.goto ? findActionTransition(process, null) : undefined;
+  } while (next?.goto);
 
   return process;
 }
 
 export function findActionTransition(
   process: Process,
-  action: string,
-  actor: string,
+  action: string | null,
+  actor?: string,
 ): NormalizedExplicitTransition | undefined {
-  return process.scenario.states[process.current.key].transitions.find((transition: NormalizedTransition): boolean => {
+  const currentState = process.scenario.states[process.current.key];
+  if (!currentState.transitions) return; // end state
+
+  return currentState.transitions.find((transition: NormalizedTransition): boolean => {
     if (!('on' in transition)) return false;
     const tr = applyFn(transition, process);
-    return tr.if && tr.on === action && includesActor(tr.by, actor);
+    return tr.if && tr.on === action && (actor === undefined || includesActor(tr.by, actor));
   });
 }
 

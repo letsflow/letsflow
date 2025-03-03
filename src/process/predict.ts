@@ -41,7 +41,7 @@ function tryToStep<T extends Process>(process: T, options: { ajv?: Ajv; hashFn?:
     return process;
   }
 
-  const transitions: NormalizedExplicitTransition[] = state.transitions.filter(
+  const transitions: Array<NormalizedExplicitTransition & { on: string }> = state.transitions.filter(
     (tr: NormalizedTransition) => 'on' in tr && tr.on !== null,
   );
 

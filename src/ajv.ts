@@ -1,3 +1,4 @@
+import ajvErrors from 'ajv-errors';
 import ajvFormats from 'ajv-formats';
 import Ajv from 'ajv/dist/2020';
 import { actionSchema, actorSchema, fnSchema, processSchema, scenarioSchema, schemaSchema } from './schemas/v1.0';
@@ -24,3 +25,4 @@ ajv.addKeyword('$anchor'); // Workaround for https://github.com/ajv-validator/aj
 ajv.addSchema([scenarioSchema, actionSchema, actorSchema, fnSchema, schemaSchema, processSchema]);
 
 ajvFormats(ajv);
+ajvErrors(ajv);
