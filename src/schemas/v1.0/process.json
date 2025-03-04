@@ -4,61 +4,68 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "A unique identifier for the process.",
       "type": "string",
       "format": "uuid"
     },
     "title": {
+      "description": "A short, human-readable name for the process.",
       "type": "string"
     },
     "tags": {
+      "description": "A list of tags for categorization and filtering.",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "scenario": {
+      "description": "The scenario that the process is based on.",
       "allOf": [
         {
           "$ref": "https://schemas.letsflow.io/v1.0/scenario"
         },
         {
           "type": "object",
-          "properties": {
-            "id": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          "required": ["id"]
         }
       ]
     },
     "actors": {
+      "description": "A map of actors that are involved in the process.",
       "type": "object",
       "additionalProperties": {
         "$ref": "#/$defs/actor"
       }
     },
     "vars": {
+      "description": "A map of variables that are used in the process.",
       "type": "object",
       "additionalProperties": true
     },
-    "result": {},
+    "result": {
+      "description": "A variable that represents the result of the process."
+    },
     "current": {
+      "description": "The current state of the process.",
       "$ref": "#/$defs/state"
     },
     "previous": {
+      "description": "A log of the state transitions.",
       "type": "array",
       "items": {
         "$ref": "#/$defs/logEntry"
       }
     },
     "next": {
+      "description": "A list of predicted states.",
       "type": "array",
       "items": {
         "$ref": "#/$defs/predictedState"
       }
     },
     "events": {
+      "description": "A list of events that have occurred in the process.",
       "type": "array",
       "items": {
         "$ref": "#/$defs/event"
@@ -70,9 +77,11 @@
       "type": "object",
       "properties": {
         "id": {
+          "description": "The ID of the user that the actor represents.",
           "type": "string"
         },
         "role": {
+          "description": "The role(s) that the user must have to perform as this actor.",
           "anyOf": [
             {
               "type": "string"
@@ -86,40 +95,49 @@
           ]
         },
         "title": {
+          "description": "A short, human-readable description of the actor.",
           "type": "string"
         }
       },
       "additionalProperties": true
     },
     "state": {
+      "description": "The current state of the process.",
       "type": "object",
       "properties": {
         "key": {
+          "description": "The key of the state as defined in the scenario.",
           "type": "string"
         },
         "timestamp": {
+          "description": "The timestamp when the state was entered.",
           "type": "string",
           "format": "date-time"
         },
         "title": {
+          "description": "A short, human-readable description of the state.",
           "type": "string"
         },
         "description": {
+          "description": "A longer, human-readable description of the state.",
           "type": "string"
         },
         "instructions": {
+          "description": "Map of instructions for each actor. The key is the actor key.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "notify": {
+          "description": "Services to notify when the state is entered.",
           "type": "array",
           "items": {
             "$ref": "#/$defs/notify"
           }
         },
         "actions": {
+          "description": "A list of actions that can be performed in the state.",
           "type": "array",
           "items": {
             "$ref": "#/$defs/action"
@@ -131,16 +149,20 @@
       "type": "object",
       "properties": {
         "title": {
+          "description": "The title of the log entry.",
           "type": "string"
         },
         "description": {
+          "description": "The description of the log entry.",
           "type": "string"
         },
         "timestamp": {
+          "description": "The timestamp of the state transition.",
           "type": "string",
           "format": "date-time"
         },
         "actor": {
+          "description": "The actor that performed the action for this state transition.",
           "type": "object",
           "properties": {
             "key": {
@@ -159,21 +181,26 @@
       "type": "object",
       "properties": {
         "key": {
+          "description": "The key of the predicted state as defined in the scenario.",
           "type": "string"
         },
         "title": {
+          "description": "A short, human-readable description of the state.",
           "type": "string"
         },
         "description": {
+          "description": "A longer, human-readable description of the state.",
           "type": "string"
         },
         "instructions": {
+          "description": "Map of instructions for each actor. The key is the actor key.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "actions": {
+          "description": "A list of actions that can be performed in the state.",
           "type": "array",
           "items": {
             "$ref": "#/$defs/action"
@@ -186,15 +213,19 @@
       "type": "object",
       "properties": {
         "service": {
+          "description": "The service to notify.",
           "type": "string"
         },
         "after": {
+          "description": "The number of seconds to wait before notifying the service.",
           "type": "integer"
         },
         "trigger": {
+          "description": "The event that triggers the notification.",
           "type": "string"
         },
         "message": {
+          "description": "A custom message to send to the service.",
           "oneOf": [
             {
               "type": "string"
@@ -210,28 +241,31 @@
       "type": "object",
       "properties": {
         "$schema": {
+          "description": "The JSON schema that describes this action.",
           "type": "string"
         },
         "key": {
+          "description": "The key of the action as defined in the scenario.",
           "type": "string"
         },
         "title": {
+          "description": "A short, human-readable name for the action.",
           "type": "string"
         },
         "description": {
+          "description": "A longer, human-readable description of the action.",
           "type": "string"
         },
         "actor": {
+          "description": "A list of actors that are allowed to perform the action.",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "response": {
+          "description": "A schema of the response that the action should return.",
           "$ref": "https://json-schema.org/draft/2020-12/schema"
-        },
-        "update": {
-          "type": "string"
         }
       }
     },

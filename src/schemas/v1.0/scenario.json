@@ -3,40 +3,54 @@
   "$id": "https://schemas.letsflow.io/v1.0/scenario",
   "type": "object",
   "properties": {
+    "id": {
+      "description": "The unique identifier of the scenario. This is generated from the hash of the scenario.",
+      "type": "string",
+      "format": "uuid"
+    },
     "name": {
+      "description": "A consistent name for the scenario.",
       "type": "string"
     },
     "version": {
+      "description": "A semantic version of the scenario. Used in combination with the name.",
       "type": "string"
     },
     "title": {
+      "description": "A short description of the workflow. This is copied to the process.",
       "type": "string"
     },
     "description": {
+      "description": "A longer description of the workflow.",
       "type": "string"
     },
     "tags": {
+      "description": "A list of tags for categorization and filtering.",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "actors": {
+      "description": "Schemas for actors that can participate in the process",
       "type": "object",
       "additionalProperties": {
         "$ref": "https://schemas.letsflow.io/v1.0/actor"
       }
     },
     "actions": {
+      "description": "Actions that can be performed in the process",
       "type": "object",
       "additionalProperties": {
         "$ref": "https://schemas.letsflow.io/v1.0/action"
       }
     },
     "states": {
+      "description": "The scenario models a workflow as a finite state machine. Each state is a node in the graph.",
       "type": "object",
       "properties": {
         "*": {
+          "description": "The wildcard state sets default properties of every state.",
           "$ref": "#/$defs/partialState"
         }
       },
@@ -51,12 +65,14 @@
       "required": ["initial"]
     },
     "vars": {
+      "description": "Schemas of variables that can be used in the process.",
       "type": "object",
       "additionalProperties": {
         "$ref": "https://schemas.letsflow.io/v1.0/schema"
       }
     },
     "result": {
+      "description": "The schema of the result of the process.",
       "$ref": "https://schemas.letsflow.io/v1.0/schema"
     }
   },
@@ -69,32 +85,48 @@
       "type": "object",
       "properties": {
         "title": {
+          "description": "A short, human-readable description of the state.",
           "$ref": "#/$defs/stringFn"
         },
+        "description": {
+          "description": "A longer, human-readable description of the state.",
+          "type": "string"
+        },
         "instructions": {
-          "$ref": "#/$defs/instructions"
+          "description": "Map of instructions for each actor. The key is the actor key.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/stringFn"
+          }
         },
         "notify": {
+          "description": "Services to notify when the state is entered.",
           "$ref": "#/$defs/notify"
         },
         "log": {
+          "description": "Information to log when the transitioned from this state",
           "$ref": "#/$defs/logOrFalse"
         },
         "on": {
+          "description": "The action that triggers the state transition e.",
           "type": "string",
           "nullable": true
         },
         "after": {
+          "description": "The time period after which the state transition is triggered.",
           "$ref": "#/$defs/timePeriod"
         },
         "by": {
+          "description": "The actor(s) that are allowed triggers the state transition.",
           "$ref": "#/$defs/multiString"
         },
         "goto": {
+          "description": "The state to transition to.",
           "type": "string",
           "nullable": true
         },
         "transitions": {
+          "description": "A list of transitions to other states.",
           "type": "array",
           "items": {
             "$ref": "#/$defs/transition"
@@ -121,6 +153,10 @@
             {
               "errorMessage": "must not have a property goto when property transitions is present",
               "not": { "required": ["goto"] }
+            },
+            {
+              "errorMessage": "must not have a property log when property transitions is present",
+              "not": { "required": ["log"] }
             }
           ]
         }
@@ -150,15 +186,22 @@
       ]
     },
     "endState": {
+      "description": "An end state is a state that ends the process. It has no transitions.",
       "type": "object",
       "properties": {
         "title": {
+          "description": "The title of the state.",
           "$ref": "#/$defs/stringFn"
         },
         "instructions": {
-          "$ref": "#/$defs/instructions"
+          "description": "Map of instructions for each actor. The key is the actor key.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/stringFn"
+          }
         },
         "notify": {
+          "description": "Services to notify when the state is entered.",
           "$ref": "#/$defs/notify"
         }
       },
@@ -168,23 +211,29 @@
       "type": "object",
       "properties": {
         "on": {
+          "description": "The action that triggers the state transition.",
           "type": "string",
           "nullable": true
         },
         "by": {
+          "description": "The actor(s) that are allowed triggers the state transition.",
           "$ref": "#/$defs/multiString"
         },
         "after": {
+          "description": "The time period after which the state transition is triggered.",
           "$ref": "#/$defs/timePeriod"
         },
         "if": {
+          "description": "A condition that must be met for the transition to occur.",
           "$ref": "#/$defs/booleanFn"
         },
         "goto": {
+          "description": "The state to transition to.",
           "type": "string",
           "nullable": true
         },
         "log": {
+          "description": "Information to log for this state transition",
           "$ref": "#/$defs/logOrFalse"
         }
       },
@@ -199,12 +248,6 @@
             "required": ["by"]
           }
         }
-      }
-    },
-    "instructions": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/$defs/stringFn"
       }
     },
     "notify": {
@@ -234,15 +277,19 @@
       "type": "object",
       "properties": {
         "service": {
+          "description": "The service to notify.",
           "type": "string"
         },
         "if": {
+          "description": "A condition that must be met for the notification to occur.",
           "$ref": "#/$defs/booleanFn"
         },
         "after": {
+          "description": "The delay for the notification.",
           "$ref": "#/$defs/timePeriod"
         },
         "trigger": {
+          "description": "The action that is triggered if the service gives a response.",
           "oneOf": [
             {
               "type": "string"
@@ -256,6 +303,7 @@
           ]
         },
         "message": {
+          "description": "The custom message to send to the service.",
           "oneOf": [
             {
               "type": "string"
@@ -279,12 +327,15 @@
       "type": "object",
       "properties": {
         "title": {
+          "description": "The title of the log entry.",
           "$ref": "#/$defs/stringFn"
         },
         "description": {
+          "description": "The description of the log entry.",
           "$ref": "#/$defs/stringFn"
         },
         "if": {
+          "description": "A condition that must be met for the log entry to be created.",
           "$ref": "#/$defs/booleanFn"
         }
       }
