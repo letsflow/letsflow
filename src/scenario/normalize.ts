@@ -133,7 +133,7 @@ function normalizeSchema(schema: Schema): Schema {
   if ('oneOf' in schema) schema.oneOf = normalizeListOfSchemas(schema.oneOf);
   if ('anyOf' in schema) schema.anyOf = normalizeListOfSchemas(schema.anyOf);
 
-  if ('$ref' in schema || 'anyOf' in schema || 'oneOf' in schema || 'allOf' in schema) {
+  if ('$ref' in schema) {
     return schema;
   }
 
