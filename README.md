@@ -74,7 +74,7 @@ const process = chain(
   (process) => step(process, 'complete', 'user')
 );
 
-console.log(process.current.state.key); // (done)
+console.log(process.current.key); // (done)
 console.log(process.actors.user.feeling); // happy
 ```
 
