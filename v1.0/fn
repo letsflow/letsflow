@@ -53,12 +53,6 @@
         "<tpl>"
       ],
       "additionalProperties": false
-    },
-    {
-      "type": "string",
-      "description": "This is added for YAML support, but not correct for JSON. It's only added to the published version, but not part of the schema in the core library.",
-      "pattern": "^!(ref|tpl)\\b"
     }
   ]
 }
-

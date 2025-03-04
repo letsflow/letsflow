@@ -5,12 +5,15 @@
   "nullable": true,
   "properties": {
     "$schema": {
+      "description": "The JSON schema that describes this action.",
       "type": "string"
     },
     "title": {
+      "description": "A short, human-readable name for the action.",
       "type": "string"
     },
     "description": {
+      "description": "A longer, human-readable description of the action.",
       "oneOf": [
         {
           "type": "string"
@@ -21,6 +24,7 @@
       ]
     },
     "actor": {
+      "description": "The actor(s) that are allowed to perform the action.",
       "oneOf": [
         {
           "type": "string"
@@ -44,9 +48,11 @@
       ]
     },
     "if": {
+      "description": "A condition that must be met in order for the action to be performed.",
       "$ref": "#/$defs/booleanFn"
     },
     "response": {
+      "description": "A schema of the response that the action should return.",
       "anyOf": [
         {
           "type": "string"
@@ -57,6 +63,7 @@
       ]
     },
     "update": {
+      "description": "Instructions for updating the process variables after the action is performed.",
       "oneOf": [
         {
           "type": "string"
@@ -78,6 +85,7 @@
       "type": "object",
       "properties": {
         "set": {
+          "description": "The variable to set.",
           "oneOf": [
             {
               "type": "string"
@@ -87,9 +95,14 @@
             }
           ]
         },
-        "value": {},
-        "stub": {},
+        "value": {
+          "description": "The value to set the variable to."
+        },
+        "stub": {
+          "description": "A stub to use as the value during prediction."
+        },
         "mode": {
+          "description": "How to update the variable.",
           "type": "string",
           "enum": [
             "merge",
@@ -98,6 +111,7 @@
           ]
         },
         "if": {
+          "description": "A condition that must be met in order for the update instruction to be applied.",
           "$ref": "#/$defs/booleanFn"
         }
       },
