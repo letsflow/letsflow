@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.letsflow.io/v1.0/schema",
-  "oneOf": [
+  "anyOf": [
     {
       "$ref": "https://json-schema.org/draft/2020-12/schema"
     },
@@ -16,20 +16,6 @@
     }
   ],
   "$defs": {
-    "simple": {
-      "$anchor": "simple",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/scalar"
-        },
-        {
-          "$ref": "#/$defs/object"
-        },
-        {
-          "$ref": "#/$defs/array"
-        }
-      ]
-    },
     "scalar": {
       "type": "string",
       "enum": [
@@ -58,7 +44,7 @@
         "properties": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/$defs/simple"
+            "$ref": "#"
           },
           "minProperties": 1
         },
@@ -74,14 +60,22 @@
               "type": "boolean"
             },
             {
-              "$ref": "#/$defs/simple"
+              "$ref": "#"
             }
           ],
           "default": false
+        },
+        "patternProperties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#"
+          }
         }
       },
-      "required": [
-        "properties"
+      "anyOf": [
+        { "required": ["patternProperties"] },
+        { "required": ["additionalProperties"] },
+        { "required": ["properties"] }
       ]
     },
     "array": {
@@ -101,7 +95,7 @@
           "type": "string"
         },
         "items": {
-          "$ref": "#/$defs/simple"
+          "$ref": "#"
         },
         "minItems": {
           "type": "number"

@@ -1,8 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.letsflow.io/v1.0/action",
-  "type": "object",
-  "nullable": true,
+  "type": ["object", "null"],
   "properties": {
     "$schema": {
       "description": "The JSON schema that describes this action.",

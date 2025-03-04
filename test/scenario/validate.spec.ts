@@ -156,12 +156,14 @@ describe('validate scenario', () => {
       const result = validate(scenario);
 
       expect(result).to.be.false;
-      expect(validate.errors).to.be.deep.contain({
+      expect(validate.errors![0]).to.be.deep.eq({
         instancePath: '/actors/user/type',
         keyword: 'const',
         message: 'must be equal to constant',
-        params: { allowedValue: 'object' },
-        schemaPath: '#/oneOf/0/allOf/1/properties/type/const',
+        params: {
+          allowedValue: 'object',
+        },
+        schemaPath: '#/properties/type/const',
       });
     });
 
@@ -320,33 +322,6 @@ describe('validate scenario', () => {
 
       expect(validate.errors).to.eq(null);
       expect(result).to.be.true;
-    });
-
-    it('should fail if action is referencing a service that is not in the scenario', () => {
-      const scenario = {
-        actions: {
-          next: {
-            actor: 'service:email',
-          },
-        },
-        states: {
-          initial: { on: 'next', goto: '(done)', notify: 'sms' },
-        },
-      };
-
-      const result = validate(scenario);
-
-      expect(result).to.be.false;
-      expect(validate.errors).to.deep.contain({
-        instancePath: '/actions/next/actor',
-        keyword: '',
-        message: 'must reference an actor or service',
-        params: {
-          allowedValues: ['actor', 'service:sms'],
-          value: 'service:email',
-        },
-        schemaPath: '',
-      });
     });
 
     it('should fail if update instruction is missing set', () => {

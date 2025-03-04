@@ -109,8 +109,7 @@
         },
         "on": {
           "description": "The action that triggers the state transition e.",
-          "type": "string",
-          "nullable": true
+          "type": ["string", "null"]
         },
         "after": {
           "description": "The time period after which the state transition is triggered.",
@@ -122,8 +121,7 @@
         },
         "goto": {
           "description": "The state to transition to.",
-          "type": "string",
-          "nullable": true
+          "type": ["string", "null"]
         },
         "transitions": {
           "description": "A list of transitions to other states.",
@@ -187,7 +185,7 @@
     },
     "endState": {
       "description": "An end state is a state that ends the process. It has no transitions.",
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "title": {
           "description": "The title of the state.",
@@ -204,16 +202,14 @@
           "description": "Services to notify when the state is entered.",
           "$ref": "#/$defs/notify"
         }
-      },
-      "nullable": true
+      }
     },
     "transition": {
       "type": "object",
       "properties": {
         "on": {
           "description": "The action that triggers the state transition.",
-          "type": "string",
-          "nullable": true
+          "type": ["string", "null"]
         },
         "by": {
           "description": "The actor(s) that are allowed triggers the state transition.",
@@ -229,8 +225,7 @@
         },
         "goto": {
           "description": "The state to transition to.",
-          "type": "string",
-          "nullable": true
+          "type": ["string", "null"]
         },
         "log": {
           "description": "Information to log for this state transition",
