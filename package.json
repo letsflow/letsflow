@@ -30,7 +30,7 @@
     "lib"
   ],
   "dependencies": {
-    "@letsflow/jmespath": "^1.1.4-jasny.4",
+    "@letsflow/jmespath": "^1.1.5-jasny.1",
     "@noble/hashes": "^1.7.1",
     "ajv": "^8.17.1",
     "ajv-errors": "^3.0.0",

@@ -90,7 +90,7 @@
         },
         "description": {
           "description": "A longer, human-readable description of the state.",
-          "type": "string"
+          "$ref": "#/$defs/stringFn"
         },
         "instructions": {
           "description": "Map of instructions for each actor. The key is the actor key.",
@@ -188,7 +188,11 @@
       "type": ["object", "null"],
       "properties": {
         "title": {
-          "description": "The title of the state.",
+          "description": "A short, human-readable description of the state.",
+          "$ref": "#/$defs/stringFn"
+        },
+        "description": {
+          "description": "A longer, human-readable description of the state.",
           "$ref": "#/$defs/stringFn"
         },
         "instructions": {
