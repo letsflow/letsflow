@@ -356,7 +356,7 @@ describe('step', () => {
       const event = process.events[1] as ActionEvent;
       expect(event.skipped).to.be.true;
       expect(event.errors).to.have.length(1);
-      expect(event.errors![0]).to.eq('Response is invalid: must be string');
+      expect(event.errors![0]).to.eq('Response is invalid: data must be string');
     });
 
     it('should skip the action if the response has invalid properties', () => {
