@@ -9,6 +9,7 @@ import {
   YAMLMap,
 } from 'yaml';
 import { stringifyString } from 'yaml/util';
+import { fnSchema } from './schemas/v1.0';
 
 const fnTag = (type: string): YAML.ScalarTag => ({
   identify: (value) => {
@@ -74,6 +75,7 @@ const requiredScalarTag: YAML.ScalarTag = {
   tag: '!required',
   resolve: (type) => ({ type, '!required': true }),
 };
+
 const requiredMapTag: YAML.CollectionTag = {
   tag: '!required',
   collection: 'map',
@@ -88,6 +90,28 @@ const requiredMapTag: YAML.CollectionTag = {
     map.items.push(new YAML.Pair(requiredKey, requiredValue) as any);
 
     return map;
+  },
+};
+
+const fnScalarTag: YAML.ScalarTag = {
+  tag: '!fn',
+  resolve: (type) => ({ oneOf: [{ type }, { $ref: fnSchema.$id }] }),
+};
+
+const fnMapTag: YAML.CollectionTag = {
+  tag: '!fn',
+  collection: 'map',
+  resolve(map: YAMLMap.Parsed) {
+    // Create a new YAML sequence (array)
+    const oneOfArray = new YAML.YAMLSeq();
+    oneOfArray.items.push(map); // Add the original map
+    oneOfArray.items.push(new YAML.Scalar({ $ref: fnSchema.$id })); // Add the schema reference
+
+    // Create a new map with 'oneOf' as the key
+    const result = new YAMLMap();
+    result.set('oneOf', oneOfArray);
+
+    return result;
   },
 };
 
@@ -150,6 +174,8 @@ export const schema = new YAML.Schema({
     defaultTag,
     requiredScalarTag,
     requiredMapTag,
+    fnScalarTag,
+    fnMapTag,
     updateModeFlag('merge'),
     updateModeFlag('append'),
   ],

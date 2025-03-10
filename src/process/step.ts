@@ -73,7 +73,7 @@ export function step<T extends Process>(
 
   const updateErrors = !isPrediction(process) ? validateProcess(process, { ajv }) : [];
 
-  let next = findActionTransition(process, action, actor.key);
+  const next = findActionTransition(process, action, actor.key);
   if (!next) {
     updateErrors.push(
       `No transition found for action '${action}' in state '${process.current.key}' for actor ${actor.key}`,

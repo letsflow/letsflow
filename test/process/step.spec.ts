@@ -666,7 +666,7 @@ describe('step', () => {
       uuid(scenario);
 
       const process = instantiate(scenario);
-      expect(process.current.notify).to.be.deep.eq([{service: 'my-app', after: 0 }]);
+      expect(process.current.notify).to.be.deep.eq([{ service: 'my-app', after: 0 }]);
 
       const stepped = step(process, 'complete', 'service:my-app');
       expect(stepped.current.key).to.eq('(done)');

@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { fnSchema } from '../src/schemas/v1.0';
 import { parse, stringify } from '../src/yaml';
 
 describe('yaml', () => {
@@ -137,6 +138,39 @@ describe('yaml', () => {
         bar: { type: 'string', format: 'date-time' },
         rob: { type: 'string', pattern: '^[a-zA-Z]{3}$' },
         qux: { type: 'string', pattern: '^\\d{13}$' },
+      });
+    });
+
+    it('should parse yaml with fn tags', () => {
+      const yamlString = `
+        foo: !fn string
+        bar: !fn
+          type: array
+          items: !fn string
+        wux:
+          type: object
+          properties:
+            one: !fn string
+            two: number
+      `;
+
+      const data = parse(yamlString);
+
+      expect(data).to.eql({
+        foo: { oneOf: [{ type: 'string' }, { $ref: fnSchema.$id }] },
+        bar: {
+          oneOf: [
+            { type: 'array', items: { oneOf: [{ type: 'string' }, { $ref: fnSchema.$id }] } },
+            { $ref: fnSchema.$id },
+          ],
+        },
+        wux: {
+          type: 'object',
+          properties: {
+            one: { oneOf: [{ type: 'string' }, { $ref: fnSchema.$id }] },
+            two: 'number',
+          },
+        },
       });
     });
 
