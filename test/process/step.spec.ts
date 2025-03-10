@@ -356,7 +356,41 @@ describe('step', () => {
       const event = process.events[1] as ActionEvent;
       expect(event.skipped).to.be.true;
       expect(event.errors).to.have.length(1);
-      expect(event.errors![0]).to.eq('Response is invalid: data must be string');
+      expect(event.errors![0]).to.eq('Response is invalid: must be string');
+    });
+
+    it('should skip the action if the response has invalid properties', () => {
+      const scenario = normalize({
+        title: 'some scenario',
+        actions: {
+          complete: {
+            response: {
+              properties: {
+                foo: 'number',
+                bar: 'string',
+              },
+              required: ['foo', 'bar'],
+            },
+          },
+        },
+        states: {
+          initial: {
+            on: 'complete',
+            goto: '(done)',
+          },
+        },
+      });
+
+      const process = step(instantiate(scenario), 'complete', 'actor', { foo: 'test' });
+
+      expect(process.current.key).to.eq('initial');
+      expect(process.events).to.have.length(2);
+
+      const event = process.events[1] as ActionEvent;
+      expect(event.skipped).to.be.true;
+      expect(event.errors).to.have.length(2);
+      expect(event.errors).to.contain('Response is invalid: data/foo must be number');
+      expect(event.errors).to.contain("Response is invalid: data must have required property 'bar'");
     });
 
     it('should use the default response if no response is set', () => {

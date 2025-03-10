@@ -212,7 +212,9 @@ export function validateStep(
     Object.keys(currentAction.response).length > 0 &&
     !ajv.validate(currentAction.response, response)
   ) {
-    errors.push(`Response is invalid: ${ajv.errorsText()}`);
+    for (const error of ajv.errors ?? []) {
+      errors.push(`Response is invalid: data${error.instancePath ?? ''} ${error.message}`);
+    }
   }
 
   return errors;
