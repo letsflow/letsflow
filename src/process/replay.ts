@@ -1,7 +1,7 @@
 import Ajv from 'ajv/dist/2020';
+import { applyFn } from '../fn';
 import { NormalizedScenario } from '../scenario/interfaces';
 import { uuid } from '../uuid';
-import { applyFn } from './fn';
 import { withHash } from './hash';
 import { createProcess, instantiateState } from './instantiate';
 import { ActionEvent, Event, HashFn, InstantiateEvent, Process } from './interfaces';

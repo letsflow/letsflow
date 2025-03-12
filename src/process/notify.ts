@@ -1,5 +1,5 @@
+import { applyFn } from '../fn';
 import { isFn } from '../scenario/utils';
-import { applyFn } from './fn';
 import { Process, StandardMessage } from './interfaces';
 import { clean } from './utils';
 

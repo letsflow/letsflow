@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { applyFn, ref, tpl } from '../../src/process/fn';
+import { applyFn, ref, tpl } from '../src/fn';
 
 describe('ref', () => {
   const data = { name: 'Alice', age: 25, map: { a: 1, b: 2, c: 3 } };

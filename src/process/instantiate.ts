@@ -1,6 +1,7 @@
 import Ajv from 'ajv';
 import { v4 as uuidv4 } from 'uuid';
 import { ajv as defaultAjv } from '../ajv';
+import { applyFn } from '../fn';
 import {
   ActionTransition,
   NormalizedAction,
@@ -11,7 +12,6 @@ import {
 } from '../scenario/interfaces';
 import { dedup } from '../scenario/utils';
 import { uuid } from '../uuid';
-import { applyFn } from './fn';
 import { withHash } from './hash';
 import { Action, Actor, HashFn, InstantiateEvent, Notify, Process, State } from './interfaces';
 import { moveToNext } from './step';

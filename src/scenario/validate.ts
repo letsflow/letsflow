@@ -1,6 +1,7 @@
 import Ajv from 'ajv';
 import { ErrorObject } from 'ajv/dist/types';
 import { ajv as defaultAjv } from '../ajv';
+import { removeFn } from '../fn';
 import { scenarioSchema } from '../schemas/v1.0';
 import { Fn, Notify } from './interfaces';
 import { EndState, Scenario, State, Transition } from './interfaces/scenario';
@@ -153,11 +154,27 @@ function validateSubSchema(instancePath: string, data: DataWithSchema, ajv: Ajv)
 
   const validate = ajv.compile(data.schema.includes(':') ? { $ref: data.schema } : { $ref: `schema:${data.schema}` });
   validate(data);
+  const originalErrors = validate.errors || [];
 
-  return (validate.errors || []).map((error) => ({
-    ...error,
-    instancePath: `${instancePath}${error.instancePath}`,
-  }));
+  const prunedData = removeFn(structuredClone(data));
+  validate(prunedData);
+  const prunedErrors = validate.errors || [];
+
+  return originalErrors
+    .filter((a) => prunedErrors.some((b) => isSameError(a, b)))
+    .map((error) => ({
+      ...error,
+      instancePath: `${instancePath}${error.instancePath}`,
+    }));
+}
+
+function isSameError(a: ErrorObject, b: ErrorObject): boolean {
+  return (
+    a.instancePath === b.instancePath &&
+    a.schemaPath === b.schemaPath &&
+    a.keyword === b.keyword &&
+    a.message === b.message
+  );
 }
 
 function getNotifyMessages(scenario: Scenario): Record<string, DataWithSchema> {

@@ -790,7 +790,7 @@ describe('validate scenario', () => {
       ajvFormats(ajv);
       ajvErrors(ajv);
 
-      ajv.addSchema({ $id: 'schema:foo', type: 'object', properties: { foo: { type: 'string' } } });
+      ajv.addSchema({ $id: 'schema:foo', type: 'object', properties: { foo: { type: 'string' } }, required: ['foo'] });
     });
 
     it('should validate a sub schema for an action', () => {
@@ -853,7 +853,6 @@ describe('validate scenario', () => {
       const scenario = {
         states: {
           initial: {
-            schema: 'foo',
             on: 'next',
             goto: '(done)',
             notify: {
@@ -885,7 +884,6 @@ describe('validate scenario', () => {
       const scenario = {
         states: {
           initial: {
-            schema: 'foo',
             on: 'next',
             goto: '(done)',
             notify: [
@@ -913,6 +911,24 @@ describe('validate scenario', () => {
         },
         schemaPath: 'schema:foo/properties/foo/type',
       });
+    });
+
+    it('should implicitly allow functions in a sub schema', () => {
+      const scenario = {
+        states: {
+          initial: {
+            schema: 'foo',
+            on: 'next',
+            goto: '(done)',
+            foo: { '<ref>': 'bar' },
+          },
+        },
+      };
+
+      const result = validate(scenario, { ajv });
+
+      expect(validate.errors).to.eq(null);
+      expect(result).to.be.true;
     });
   });
 });

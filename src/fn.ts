@@ -1,16 +1,8 @@
 import jmespath from '@letsflow/jmespath';
 import { render } from 'mustache';
-import { Fn } from '../scenario';
+import { Fn, ReplaceFn } from './scenario/interfaces/fn';
 
 type JSONData = Parameters<typeof jmespath.search>[0];
-
-export type ReplaceFn<T> = T extends Fn
-  ? never // Remove Fn from the type
-  : T extends Array<infer U>
-    ? Array<ReplaceFn<U>>
-    : T extends Record<string, any>
-      ? { [K in keyof T]: ReplaceFn<T[K]> }
-      : T;
 
 export function applyFn<T>(subject: T, data: Record<string, any>): ReplaceFn<T>;
 export function applyFn(subject: Fn, data: Record<string, any>): any;
@@ -42,6 +34,28 @@ export function applyFn(subject: any, data: Record<string, any>): any {
   }
 
   return Object.fromEntries(Object.entries(subject).map(([key, value]) => [key, applyFn(value, data)]));
+}
+
+export function removeFn<T>(subject: T): ReplaceFn<T>;
+export function removeFn(subject: Fn): any;
+export function removeFn(subject: any): any {
+  if (typeof subject !== 'object' || subject === null || subject instanceof Date) {
+    return subject;
+  }
+
+  if (Array.isArray(subject)) {
+    return subject.map((item) => removeFn(item));
+  }
+
+  if ('<ref>' in subject) {
+    return undefined;
+  }
+
+  if ('<tpl>' in subject) {
+    return undefined;
+  }
+
+  return Object.fromEntries(Object.entries(subject).map(([key, value]) => [key, removeFn(value)]));
 }
 
 export function ref(expression: string, data: JSONData): any {

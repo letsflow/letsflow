@@ -2,14 +2,15 @@ import Ajv, { Ajv2020 } from 'ajv/dist/2020';
 import get from 'get-value';
 import set from 'set-value';
 import { ajv as defaultAjv } from '../ajv';
+import { applyFn } from '../fn';
 import {
   NormalizedExplicitTransition,
   NormalizedTimeoutTransition,
   NormalizedTransition,
+  ReplaceFn,
   Transition,
   UpdateInstruction,
 } from '../scenario';
-import { applyFn, ReplaceFn } from './fn';
 import { withHash } from './hash';
 import { defaultValue, instantiateAction, instantiateActor, instantiateState } from './instantiate';
 import { HashFn, Process } from './interfaces';

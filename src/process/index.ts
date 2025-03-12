@@ -7,4 +7,4 @@ export { etag, lastModified } from './etag';
 export { hasEnded, chain } from './utils';
 export { hash, withHash, hmac } from './hash';
 export { createMessage, determineTrigger } from './notify';
-export { applyFn } from './fn';
+export { applyFn } from '../fn';
