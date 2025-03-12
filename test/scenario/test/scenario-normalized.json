@@ -82,7 +82,6 @@
           "if": true
         }
       ],
-      "$schema": "https://schemas.letsflow.io/v1.0/action",
       "title": "new lead",
       "description": "",
       "if": true
@@ -159,7 +158,6 @@
           "if": true
         }
       ],
-      "$schema": "https://schemas.letsflow.io/v1.0/action",
       "title": "create quote",
       "description": "",
       "if": true
@@ -191,7 +189,6 @@
           "title": "Change Client Info"
         }
       },
-      "$schema": "https://schemas.letsflow.io/v1.0/action",
       "title": "change client_info",
       "description": "",
       "if": true
@@ -206,7 +203,6 @@
           "title": "Cancel process"
         }
       },
-      "$schema": "https://schemas.letsflow.io/v1.0/action",
       "title": "cancel",
       "description": "",
       "if": true,
@@ -214,7 +210,6 @@
       "update": []
     },
     "review_quote.accept": {
-      "$schema": "https://schemas.letsflow.io/v1.0/action",
       "title": "accept",
       "description": "",
       "if": true,
@@ -225,7 +220,6 @@
       "update": []
     },
     "review_quote.reject": {
-      "$schema": "https://schemas.letsflow.io/v1.0/action",
       "title": "reject",
       "description": "",
       "if": true,

@@ -1,5 +1,17 @@
+import ajvErrors from 'ajv-errors';
+import ajvFormats from 'ajv-formats';
+import Ajv from 'ajv/dist/2020';
 import { expect } from 'chai';
-import { Scenario, validate } from '../../src/scenario';
+import sinon from 'sinon';
+import { Scenario, validate, validateAsync } from '../../src/scenario';
+import {
+  actionSchema,
+  actorSchema,
+  fnSchema,
+  processSchema,
+  scenarioSchema,
+  schemaSchema,
+} from '../../src/schemas/v1.0';
 
 describe('validate scenario', () => {
   describe('scenario', () => {
@@ -273,7 +285,7 @@ describe('validate scenario', () => {
       const result = validate(scenario);
 
       expect(result).to.be.false;
-      expect(validate.errors).to.deep.contain({
+      expect(validate.errors![0]).to.deep.eq({
         instancePath: '/actions/next/actor',
         keyword: '',
         message: 'must reference an actor or service',
@@ -763,5 +775,196 @@ describe('validate scenario', () => {
         expect(result).to.be.true;
       });
     });
+  });
+
+  describe('sub-schemas', () => {
+    let ajv: Ajv;
+
+    before(() => {
+      ajv = new Ajv({
+        allErrors: true,
+        schemas: [scenarioSchema, actionSchema, actorSchema, fnSchema, schemaSchema, processSchema],
+      });
+
+      ajv.addKeyword('$anchor');
+      ajvFormats(ajv);
+      ajvErrors(ajv);
+
+      ajv.addSchema({ $id: 'schema:foo', type: 'object', properties: { foo: { type: 'string' } } });
+    });
+
+    it('should validate a sub schema for an action', () => {
+      const scenario = {
+        actions: {
+          next: {
+            schema: 'foo',
+            foo: 42,
+          },
+        },
+        states: {
+          initial: {
+            on: 'next',
+            goto: '(done)',
+          },
+        },
+      };
+
+      const result = validate(scenario, { ajv });
+
+      expect(result).to.be.false;
+      expect(validate.errors![0]).to.deep.eq({
+        instancePath: '/actions/next/foo',
+        keyword: 'type',
+        message: 'must be string',
+        params: {
+          type: 'string',
+        },
+        schemaPath: 'schema:foo/properties/foo/type',
+      });
+    });
+
+    it('should validate a sub schema for a state', () => {
+      const scenario = {
+        states: {
+          initial: {
+            schema: 'foo',
+            on: 'next',
+            goto: '(done)',
+            foo: 42,
+          },
+        },
+      };
+
+      const result = validate(scenario, { ajv });
+
+      expect(result).to.be.false;
+      expect(validate.errors![0]).to.deep.eq({
+        instancePath: '/states/initial/foo',
+        keyword: 'type',
+        message: 'must be string',
+        params: {
+          type: 'string',
+        },
+        schemaPath: 'schema:foo/properties/foo/type',
+      });
+    });
+
+    it('should validate a sub schema for a notify message', () => {
+      const scenario = {
+        states: {
+          initial: {
+            schema: 'foo',
+            on: 'next',
+            goto: '(done)',
+            notify: {
+              service: 'test',
+              message: {
+                schema: 'foo',
+                foo: 42,
+              },
+            },
+          },
+        },
+      };
+
+      const result = validate(scenario, { ajv });
+
+      expect(result).to.be.false;
+      expect(validate.errors![0]).to.deep.eq({
+        instancePath: '/states/initial/notify/message/foo',
+        keyword: 'type',
+        message: 'must be string',
+        params: {
+          type: 'string',
+        },
+        schemaPath: 'schema:foo/properties/foo/type',
+      });
+    });
+
+    it('should validate a sub schema for a notify message (array)', () => {
+      const scenario = {
+        states: {
+          initial: {
+            schema: 'foo',
+            on: 'next',
+            goto: '(done)',
+            notify: [
+              {
+                service: 'test',
+                message: {
+                  schema: 'foo',
+                  foo: 42,
+                },
+              },
+            ],
+          },
+        },
+      };
+
+      const result = validate(scenario, { ajv });
+
+      expect(result).to.be.false;
+      expect(validate.errors![0]).to.deep.eq({
+        instancePath: '/states/initial/notify/0/message/foo',
+        keyword: 'type',
+        message: 'must be string',
+        params: {
+          type: 'string',
+        },
+        schemaPath: 'schema:foo/properties/foo/type',
+      });
+    });
+  });
+});
+
+describe('validate async', () => {
+  let ajv: Ajv;
+  const callback = sinon.stub();
+
+  before(() => {
+    ajv = new Ajv({
+      allErrors: true,
+      loadSchema: callback,
+      schemas: [scenarioSchema, actionSchema, actorSchema, fnSchema, schemaSchema, processSchema],
+    });
+
+    ajv.addKeyword('$anchor');
+    ajvFormats(ajv);
+    ajvErrors(ajv);
+  });
+
+  afterEach(() => {
+    callback.resetHistory();
+  });
+
+  it('should load external schemas with async', async () => {
+    callback.resolves({
+      type: 'object',
+      properties: { foo: { type: 'string' } },
+    });
+
+    const scenario = {
+      title: 'minimal scenario',
+      actions: {
+        next: {
+          schema: 'foo',
+          foo: 'bar',
+        },
+      },
+      states: {
+        initial: {
+          on: 'next',
+          goto: '(done)',
+        },
+      },
+    };
+
+    const result = await validateAsync(scenario, { ajv });
+
+    expect(callback.callCount).to.eq(1);
+    expect(callback.firstCall.args[0]).to.eq('schema:foo');
+
+    expect(validate.errors).to.eq(null);
+    expect(result).to.be.true;
   });
 });

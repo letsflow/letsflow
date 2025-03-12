@@ -9,6 +9,7 @@ import {
   Schema,
   Transition,
 } from '../scenario/interfaces';
+import { dedup } from '../scenario/utils';
 import { uuid } from '../uuid';
 import { applyFn } from './fn';
 import { withHash } from './hash';
@@ -224,8 +225,4 @@ function resolveRef(ajv: Ajv, uri: string, base?: Schema): Schema | undefined {
   }
 
   return refSchema as Schema | undefined;
-}
-
-function dedup<T>(array: Array<T>): Array<T> {
-  return Array.from(new Set(array));
 }

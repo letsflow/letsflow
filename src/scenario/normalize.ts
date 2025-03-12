@@ -1,4 +1,4 @@
-import { actionSchema, scenarioSchema, schemaSchema } from '../schemas/v1.0';
+import { scenarioSchema, schemaSchema } from '../schemas/v1.0';
 import {
   NormalizedAction,
   NormalizedExplicitTransition,
@@ -191,8 +191,6 @@ function normalizeActions(actions: Record<string, Action | null>): void {
 }
 
 function normalizeAction(action: Action, key?: string): NormalizedAction {
-  action.$schema ??= actionSchema.$id;
-
   if (key) {
     action.title ??= keyToTitle(key);
   }
@@ -409,7 +407,6 @@ function addImplicitActions(scenario: NormalizedScenario): void {
     }
 
     scenario.actions[key] = {
-      $schema: actionSchema.$id,
       title: keyToTitle(action),
       description: '',
       if: true,

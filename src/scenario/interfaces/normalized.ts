@@ -3,7 +3,7 @@ import { ActorSchema, EndState, ExplicitState, Log, UpdateInstruction } from './
 import { Schema } from './schema';
 
 export interface NormalizedAction {
-  $schema: string;
+  schema?: string;
   title: string;
   description: string | Fn;
   actor: Array<string | Fn> | Fn;
@@ -33,17 +33,18 @@ export interface NormalizedNotify {
   after: number;
   if: boolean | Fn;
   trigger: string | Fn | null;
-  message?: string | Fn | Record<string, any>;
+  message?: string | Fn | { schema?: string; [_: string]: any };
 }
 
 export type NormalizedTransition = NormalizedExplicitTransition | NormalizedTimeoutTransition;
 
 export type NormalizedState =
-  | (Required<Omit<ExplicitState, 'transitions' | 'notify'>> & {
+  | (Required<Omit<ExplicitState, 'schema' | 'transitions' | 'notify'>> & {
+      schema?: string;
       transitions: NormalizedTransition[];
       notify: NormalizedNotify[];
     })
-  | (Required<Omit<EndState, 'notify'>> & { notify: NormalizedNotify[] });
+  | (Required<Omit<EndState, 'schema' | 'notify'>> & { schema?: string; notify: NormalizedNotify[] });
 
 export interface NormalizedScenario {
   $schema: string;

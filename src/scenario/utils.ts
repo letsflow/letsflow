@@ -9,3 +9,7 @@ export function isFn(subject: any): subject is Fn {
     ('<ref>' in subject || '<tpl>' in subject)
   );
 }
+
+export function dedup<T>(array: Array<T>): Array<T> {
+  return Array.from(new Set(array));
+}

@@ -3,7 +3,7 @@
   "$id": "https://schemas.letsflow.io/v1.0/action",
   "type": ["object", "null"],
   "properties": {
-    "$schema": {
+    "schema": {
       "description": "The JSON schema that describes this action.",
       "type": "string"
     },

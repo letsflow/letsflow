@@ -37,7 +37,6 @@ describe('normalize', () => {
         },
         actions: {
           'initial.complete': {
-            $schema: 'https://schemas.letsflow.io/v1.0/action',
             title: 'complete',
             description: '',
             if: true,
@@ -220,7 +219,6 @@ describe('normalize', () => {
 
       expect(normalize(scenario).actions).to.deep.eq({
         complete: {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           if: true,
@@ -245,7 +243,6 @@ describe('normalize', () => {
 
       expect(normalize(scenario).actions).to.deep.eq({
         complete: {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           if: true,
@@ -299,7 +296,6 @@ describe('normalize', () => {
 
       expect(normalize(scenario).actions).to.deep.eq({
         one: {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'one',
           description: '',
           if: true,
@@ -310,7 +306,6 @@ describe('normalize', () => {
           update: [],
         },
         two: {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'two',
           description: '',
           if: true,
@@ -347,7 +342,6 @@ describe('normalize', () => {
 
       expect(normalize(scenario).actions).to.deep.eq({
         complete: {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           if: true,
@@ -397,7 +391,6 @@ describe('normalize', () => {
 
       expect(normalize(scenario).actions).to.deep.eq({
         complete: {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           if: true,
@@ -453,7 +446,6 @@ describe('normalize', () => {
 
       expect(normalized.actions).to.deep.eq({
         'initial.complete': {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           if: true,
@@ -568,7 +560,6 @@ describe('normalize', () => {
 
       expect(normalized.actions).to.deep.eq({
         'initial.complete': {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'complete',
           description: '',
           if: true,
@@ -577,7 +568,6 @@ describe('normalize', () => {
           update: [],
         },
         'initial.cancel': {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           title: 'cancel',
           description: '',
           if: true,
@@ -682,7 +672,6 @@ describe('normalize', () => {
       ]);
 
       expect(normalized.actions['third.complete']).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'complete',
         description: '',
         if: true,

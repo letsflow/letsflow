@@ -84,6 +84,10 @@
     "partialState": {
       "type": "object",
       "properties": {
+        "schema": {
+          "description": "The JSON schema that describes this state.",
+          "type": "string"
+        },
         "title": {
           "description": "A short, human-readable description of the state.",
           "$ref": "#/$defs/stringFn"
@@ -313,6 +317,10 @@
             {
               "type": "object",
               "properties": {
+                "schema": {
+                  "description": "The JSON schema that describes this message.",
+                  "type": "string"
+                },
                 "<ref>": false,
                 "<tpl>": false
               }

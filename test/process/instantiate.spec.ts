@@ -72,7 +72,7 @@ describe('instantiate', () => {
       expect(process.events.length).to.eq(1);
       const { hash: eventHash, ...event } = process.events[0] as InstantiateEvent;
       expect(event.timestamp).to.be.instanceof(Date);
-      expect(event.scenario).to.eq('fb933140-21d4-534c-98bf-dfd3cbbd19ea');
+      expect(event.scenario).to.eq('537d0f13-c01c-5273-8dfb-ba7e8328579d');
       expect(eventHash).to.eq(hash(event));
 
       expect(process.current.key).to.eq('initial');
@@ -80,7 +80,6 @@ describe('instantiate', () => {
       expect(process.current.timestamp).to.eq(event.timestamp);
       expect(process.current.actions).to.have.length(1);
       expect(process.current.actions[0]).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'complete',
         description: 'Complete some scenario',
         actor: ['actor'],
@@ -342,7 +341,6 @@ describe('instantiate', () => {
 
       expect(current.actions).to.have.length(1);
       expect(current.actions[0]).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'complete',
         description: 'Complete some scenario',
         actor: ['client'],
@@ -512,7 +510,6 @@ describe('instantiate', () => {
       const action = instantiateAction(process, 'one');
 
       expect(action).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'one',
         description: 'Complete some scenario',
         if: false,
@@ -526,7 +523,6 @@ describe('instantiate', () => {
       const action = instantiateAction(process, 'two');
 
       expect(action).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'two',
         description: '',
         actor: ['client_1', 'client_2'],
@@ -540,7 +536,6 @@ describe('instantiate', () => {
       const action = instantiateAction(process, 'three');
 
       expect(action).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'three',
         description: '',
         actor: ['admin', 'client_1', 'client_2'],
@@ -554,7 +549,6 @@ describe('instantiate', () => {
       const action = instantiateAction(process, 'three', undefined, ['admin', 'client_1', 'foo']);
 
       expect(action).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'three',
         description: '',
         actor: ['admin', 'client_1'],
@@ -568,7 +562,6 @@ describe('instantiate', () => {
       const action = instantiateAction(process, 'three', undefined, ['client_*']);
 
       expect(action).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'three',
         description: '',
         actor: ['client_1', 'client_2'],
@@ -582,7 +575,6 @@ describe('instantiate', () => {
       const action = instantiateAction(process, 'three', undefined, ['admin', '*']);
 
       expect(action).to.deep.eq({
-        $schema: 'https://schemas.letsflow.io/v1.0/action',
         title: 'three',
         description: '',
         actor: ['admin', 'client_1', 'client_2'],

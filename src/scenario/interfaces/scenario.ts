@@ -12,7 +12,7 @@ export interface ActorSchema extends Schema {
 }
 
 export interface Action {
-  $schema?: string;
+  schema?: string;
   title?: string;
   description?: string | Fn;
   actor?: string | Fn | Array<string | Fn>;
@@ -40,6 +40,7 @@ export interface Log {
 }
 
 interface BaseState {
+  schema?: string;
   title?: string | Fn;
   description?: string | Fn;
   instructions?: Record<string, string | Fn>;
@@ -90,7 +91,7 @@ export interface Notify {
   after?: string | number;
   if?: boolean | Fn;
   trigger?: string | null | Fn;
-  message?: string | Fn | Record<string, any>;
+  message?: string | Fn | { schema?: string; [_: string]: any };
 }
 
 export interface Scenario {

@@ -20,7 +20,6 @@ describe('createMessage', () => {
     expect(message).to.deep.equal({
       actions: [
         {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           actor: ['service:default'],
           description: '',
           key: 'complete',
@@ -62,7 +61,6 @@ describe('createMessage', () => {
     expect(message).to.deep.equal({
       actions: [
         {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           actor: ['service:default'],
           description: 'Complete the process',
           key: 'complete',
@@ -72,7 +70,6 @@ describe('createMessage', () => {
           title: 'Complete',
         },
         {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           actor: ['service:default'],
           description: 'Cancel the process',
           key: 'cancel',
@@ -103,7 +100,6 @@ describe('createMessage', () => {
     expect(message).to.deep.equal({
       actions: [
         {
-          $schema: 'https://schemas.letsflow.io/v1.0/action',
           actor: ['service:default'],
           description: '',
           key: 'complete',
