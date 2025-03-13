@@ -9,6 +9,7 @@ import {
   YAMLMap,
 } from 'yaml';
 import { stringifyString } from 'yaml/util';
+import { clean } from './process/utils';
 import { fnSchema } from './schemas/v1.0';
 
 const fnTag = (type: string): YAML.ScalarTag => ({
@@ -73,7 +74,7 @@ const patternTag: YAML.ScalarTag = {
 
 const requiredScalarTag: YAML.ScalarTag = {
   tag: '!required',
-  resolve: (type) => ({ type, '!required': true }),
+  resolve: (type) => clean({ type: type || undefined, '!required': true }),
 };
 
 const requiredMapTag: YAML.CollectionTag = {

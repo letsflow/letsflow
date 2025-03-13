@@ -4,34 +4,6 @@ import { parse, stringify } from '../src/yaml';
 
 describe('yaml', () => {
   describe('parse', () => {
-    it('t', () => {
-      const yamlString = `
-one: !ref abc.def
-two: !tpl "hello {{ planet }}"
-three: !tpl
-  template: "hello {{ planet }}"
-  view: !ref current.response
-four: !const abc
-five: !enum
-  - a
-  - b
-  - c
-six: !format datetime
-seven: !default 1234
-eight: !pattern /^foo/
-nine: !required string
-ten: !required
-  type: array
-  items: string
-eleven: !fn boolean
-twelve: !merge abc.def
-thirteen: !append abc.def`;
-
-      const data = parse(yamlString);
-
-      console.log(JSON.stringify(data, null, 2));
-    });
-
     it('should parse basic yaml', () => {
       const yamlString = `
         foo: bar
@@ -133,6 +105,7 @@ thirteen: !append abc.def`;
           properties:
             one: !required string
             two: number
+        omp: !required
       `;
 
       const data = parse(yamlString);
@@ -148,6 +121,7 @@ thirteen: !append abc.def`;
           },
           '!required': true,
         },
+        omp: { '!required': true },
       });
     });
 
