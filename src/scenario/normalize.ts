@@ -129,6 +129,10 @@ function normalizeListOfSchemas(schemas: Schema[]): Schema[] {
 }
 
 function normalizeSchema(schema: Schema): Schema {
+  if ('!required' in schema) {
+    delete schema['!required'];
+  }
+
   if ('allOf' in schema) schema.allOf = normalizeListOfSchemas(schema.allOf);
   if ('oneOf' in schema) schema.oneOf = normalizeListOfSchemas(schema.oneOf);
   if ('anyOf' in schema) schema.anyOf = normalizeListOfSchemas(schema.anyOf);
@@ -138,10 +142,6 @@ function normalizeSchema(schema: Schema): Schema {
   }
 
   determineSchema(schema);
-
-  if ('!required' in schema) {
-    delete schema['!required'];
-  }
 
   if (schema.properties) {
     const { required } = normalizeSchemas(schema.properties);

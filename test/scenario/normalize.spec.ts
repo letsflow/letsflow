@@ -897,6 +897,31 @@ describe('normalize', () => {
         type: 'string',
       });
     });
+
+    it('should normalize a $ref with !required', () => {
+      const scenario: Scenario = {
+        states: {},
+        result: {
+          properties: {
+            foo: {
+              $ref: 'https://example.com/schemas/result.json',
+              '!required': true,
+            },
+          },
+        },
+      };
+
+      expect(normalize(scenario).result).to.deep.eq({
+        type: 'object',
+        properties: {
+          foo: {
+            $ref: 'https://example.com/schemas/result.json',
+          },
+        },
+        required: ['foo'],
+        additionalProperties: false,
+      });
+    });
   });
 
   describe('schema', () => {
