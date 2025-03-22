@@ -189,6 +189,25 @@ describe('yaml', () => {
         rob: { mode: 'append', set: 'ghi' },
       });
     });
+
+    it('support `<<` merge', () => {
+      const yamlString = `
+        foo: &foo
+          bar: baz
+          won: 10
+        qux:
+          <<: *foo
+          baz: qux
+          won: 20
+      `;
+
+      const data = parse(yamlString);
+
+      expect(data).to.eql({
+        foo: { bar: 'baz', won: 10 },
+        qux: { bar: 'baz', baz: 'qux', won: 20 },
+      });
+    });
   });
 
   describe('stringify', () => {
@@ -206,7 +225,7 @@ describe('yaml', () => {
         baz:
           - qux
           - quux
-      `
+        `
           .replace(/^\s{8}/gm, '')
           .trim(),
       );

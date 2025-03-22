@@ -180,6 +180,7 @@ export const schema = new YAML.Schema({
     updateModeFlag('merge'),
     updateModeFlag('append'),
   ],
+  merge: true,
 });
 
 export function stringify(
