@@ -141,26 +141,30 @@
       },
       "dependentSchemas": {
         "after": {
-          "errorMessage": "must not have a property by when property after is present",
-          "not": {
-            "required": ["by"]
+          "properties": {
+            "by": false
+          },
+          "errorMessage": {
+            "properties": {
+              "by": "must not have a property by when property after is present"
+            }
           }
         },
         "transitions": {
-          "allOf": [
-            {
-              "errorMessage": "must not have a property by when property transitions is present",
-              "not": { "required": ["by"] }
-            },
-            {
-              "errorMessage": "must not have a property goto when property transitions is present",
-              "not": { "required": ["goto"] }
-            },
-            {
-              "errorMessage": "must not have a property log when property transitions is present",
-              "not": { "required": ["log"] }
+          "properties": {
+            "on": false,
+            "by": false,
+            "goto": false,
+            "log": false
+          },
+          "errorMessage": {
+            "properties": {
+              "on": "must not have a property on when property transitions is present",
+              "by": "must not have a property by when property transitions is present",
+              "goto": "must not have a property goto when property transitions is present",
+              "log": "must not have a property log when property transitions is present"
             }
-          ]
+          }
         }
       },
       "not": {
@@ -251,8 +255,8 @@
       ],
       "dependentSchemas": {
         "after": {
-          "not": {
-            "required": ["by"]
+          "properties": {
+            "by": false
           }
         }
       }

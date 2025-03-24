@@ -2,7 +2,8 @@
   "compilerOptions": {
     "alwaysStrict": true,
     "lib": ["ES2023", "es6", "dom"],
-    "module": "commonjs",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "sourceMap": true,
     "declaration": true,
     "target": "es6",

@@ -1,4 +1,4 @@
-export type Fn = FnRef | FnTpl;
+export type Fn = FnRef | FnTpl | FnSelect;
 
 interface FnRef {
   '<ref>': string;
@@ -9,9 +9,16 @@ interface FnTpl {
     | string
     | {
         template: string;
-        view?: any;
+        view?: Record<string, any>;
         partials?: Record<string, string>;
       };
+}
+
+interface FnSelect {
+  '<select>': {
+    _: string | number | boolean | Fn;
+    [option: string]: any;
+  };
 }
 
 export type ReplaceFn<T> = T extends Fn

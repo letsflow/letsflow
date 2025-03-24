@@ -33,6 +33,11 @@ export function applyFn(subject: any, data: Record<string, any>): any {
     return undefined;
   }
 
+  if ('<select>' in subject) {
+    const { $: on, '*': defaultValue, ...options } = applyFn(subject['<select>'], data);
+    return select(on, options, defaultValue);
+  }
+
   return Object.fromEntries(Object.entries(subject).map(([key, value]) => [key, applyFn(value, data)]));
 }
 
@@ -55,6 +60,10 @@ export function removeFn(subject: any): any {
     return undefined;
   }
 
+  if ('<select>' in subject) {
+    return undefined;
+  }
+
   return Object.fromEntries(Object.entries(subject).map(([key, value]) => [key, removeFn(value)]));
 }
 
@@ -68,4 +77,14 @@ export function ref(expression: string, data: JSONData): any {
 
 export function tpl(template: string, view: Record<string, any>, partials?: Record<string, string>): string {
   return render(template, view, partials, { escape: (v) => v });
+}
+
+export function select(on: string | number | boolean, options: Record<string, any>, defaultValue: any = null): any {
+  if (typeof on === 'boolean') {
+    on = on ? 'true' : 'false';
+  } else if (typeof on === 'number') {
+    on = on.toString();
+  }
+
+  return options[on] ?? defaultValue;
 }

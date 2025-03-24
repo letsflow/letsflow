@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { fnSchema } from '../src/schemas/v1.0';
 import { parse, stringify } from '../src/yaml';
 
 describe('yaml', () => {
@@ -28,6 +27,11 @@ describe('yaml', () => {
         wam: !tpl
           template: "Hello, {{ name }}!"
           view: { name: "John" }
+        des: !select
+          $: !ref type
+          foo: 42
+          bar: 99
+          '*': 1
       `;
 
       const data = parse(yamlString);
@@ -40,6 +44,14 @@ describe('yaml', () => {
           '<tpl>': {
             template: 'Hello, {{ name }}!',
             view: { name: 'John' },
+          },
+        },
+        des: {
+          '<select>': {
+            $: { '<ref>': 'type' },
+            foo: 42,
+            bar: 99,
+            '*': 1,
           },
         },
       });
@@ -143,39 +155,6 @@ describe('yaml', () => {
       });
     });
 
-    it('should parse yaml with fn tags', () => {
-      const yamlString = `
-        foo: !fn string
-        bar: !fn
-          type: array
-          items: !fn string
-        wux:
-          type: object
-          properties:
-            one: !fn string
-            two: number
-      `;
-
-      const data = parse(yamlString);
-
-      expect(data).to.eql({
-        foo: { oneOf: [{ type: 'string' }, { $ref: fnSchema.$id }] },
-        bar: {
-          oneOf: [
-            { type: 'array', items: { oneOf: [{ type: 'string' }, { $ref: fnSchema.$id }] } },
-            { $ref: fnSchema.$id },
-          ],
-        },
-        wux: {
-          type: 'object',
-          properties: {
-            one: { oneOf: [{ type: 'string' }, { $ref: fnSchema.$id }] },
-            two: 'number',
-          },
-        },
-      });
-    });
-
     it('should parse yaml with update instruction mode tags', () => {
       const yamlString = `
         bar: !merge def
@@ -247,7 +226,7 @@ describe('yaml', () => {
         bar: !ref abc > 0
         rob: !ref "!def"
         qux: !tpl Hello, {{ name }}!
-      `
+        `
           .replace(/^\s{8}/gm, '')
           .trim(),
       );

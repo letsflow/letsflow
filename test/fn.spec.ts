@@ -153,3 +153,93 @@ describe('applyFn', () => {
     expect(result).to.eq(expected);
   });
 });
+
+describe('select', () => {
+  it('should return the selected value', () => {
+    const subject = {
+      '<select>': {
+        $: 'foo',
+        foo: 42,
+        bar: 99,
+        '*': 1,
+      },
+    };
+
+    const result = applyFn(subject, {});
+
+    expect(result).to.eq(42);
+  });
+
+  it('should return the selected numeric value', () => {
+    const subject = {
+      '<select>': {
+        $: 42,
+        42: 'foo',
+        99: 'bar',
+      },
+    };
+
+    const result = applyFn(subject, {});
+
+    expect(result).to.eq('foo');
+  });
+
+  it('should return the selected boolean value', () => {
+    const subject = {
+      '<select>': {
+        $: true,
+        true: 'foo',
+        false: 'bar',
+      },
+    };
+
+    const result = applyFn(subject, {});
+
+    expect(result).to.eq('foo');
+  });
+
+  it('should select the default value if the key is not found', () => {
+    const subject = {
+      '<select>': {
+        $: 'baz',
+        foo: 42,
+        bar: 99,
+        '*': 1,
+      },
+    };
+
+    const result = applyFn(subject, {});
+
+    expect(result).to.eq(1);
+  });
+
+  it('should return null if the key is not found and no default value is provided', () => {
+    const subject = {
+      '<select>': {
+        $: 'baz',
+        foo: 42,
+        bar: 99,
+      },
+    };
+
+    const result = applyFn(subject, {});
+
+    expect(result).to.be.null;
+  });
+
+  it('should apply a <ref> function to the data of a <select> function', () => {
+    const subject = {
+      '<select>': {
+        $: { '<ref>': 'key' },
+        foo: { '<ref>': 'correct' },
+        bar: { '<ref>': 'incorrect' },
+      },
+    };
+    const expected = 42;
+    const data = { key: 'foo', correct: 42, incorrect: 99 };
+
+    const result = applyFn(subject, data);
+
+    expect(result).to.eq(expected);
+  });
+});

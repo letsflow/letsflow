@@ -1,58 +1,113 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.letsflow.io/v1.0/fn",
-  "oneOf": [
-    {
-      "type": "object",
-      "properties": {
-        "<ref>": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "<ref>"
-      ],
-      "additionalProperties": false
+  "type": "object",
+  "properties": {
+    "<ref>": {
+      "type": "string"
     },
-    {
-      "type": "object",
-      "properties": {
-        "<tpl>": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "<tpl>"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "<tpl>": {
+    "<tpl>": {
+      "oneOf": [
+        {
           "type": "object",
           "properties": {
             "template": {
-              "type": "string"
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#"
+                }
+              ]
             },
-            "view": {},
+            "view": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "<tpl>": false,
+                    "<select>": false,
+                    "<fn>": false
+                  }
+                },
+                {
+                  "$ref": "#"
+                }
+              ]
+            },
             "partials": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
-              }
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "properties": {
+                    "<tpl>": false,
+                    "<select>": false,
+                    "<fn>": false
+                  }
+                },
+                {
+                  "$ref": "#"
+                }
+              ]
             }
           },
           "required": [
             "template"
           ],
           "additionalProperties": false
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "<select>": {
+      "type": "object",
+      "properties": {
+        "$": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#"
+            }
+          ]
         }
       },
       "required": [
-        "<tpl>"
+        "$"
       ],
-      "additionalProperties": false
+      "additionalProperties": true
+    },
+    "additionalProperties": false
+  },
+  "oneOf": [
+    {
+      "required": [
+        "<ref>"
+      ]
+    },
+    {
+      "required": [
+        "<tpl>"
+      ]
+    },
+    {
+      "required": [
+        "<select>"
+      ]
     }
   ]
 }

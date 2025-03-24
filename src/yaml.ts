@@ -10,7 +10,6 @@ import {
 } from 'yaml';
 import { stringifyString } from 'yaml/util';
 import { clean } from './process/utils';
-import { fnSchema } from './schemas/v1.0';
 
 const fnTag = (type: string): YAML.ScalarTag => ({
   identify: (value) => {
@@ -33,6 +32,21 @@ const tplExplicitTag: YAML.CollectionTag = {
   collection: 'map',
   resolve(map: YAMLMap.Parsed) {
     const tplKey = new YAML.Scalar('<tpl>');
+    tplKey.range = [0, 0, 0];
+
+    const wrappedMap = new YAMLMap();
+    wrappedMap.range = [0, 0, 0];
+    wrappedMap.items.push(new YAML.Pair(tplKey, map) as any);
+
+    return wrappedMap;
+  },
+};
+
+const selectTag: YAML.CollectionTag = {
+  tag: '!select',
+  collection: 'map',
+  resolve(map: YAMLMap.Parsed) {
+    const tplKey = new YAML.Scalar('<select>');
     tplKey.range = [0, 0, 0];
 
     const wrappedMap = new YAMLMap();
@@ -94,28 +108,6 @@ const requiredMapTag: YAML.CollectionTag = {
   },
 };
 
-const fnScalarTag: YAML.ScalarTag = {
-  tag: '!fn',
-  resolve: (type) => ({ oneOf: [{ type }, { $ref: fnSchema.$id }] }),
-};
-
-const fnMapTag: YAML.CollectionTag = {
-  tag: '!fn',
-  collection: 'map',
-  resolve(map: YAMLMap.Parsed) {
-    // Create a new YAML sequence (array)
-    const oneOfArray = new YAML.YAMLSeq();
-    oneOfArray.items.push(map); // Add the original map
-    oneOfArray.items.push(new YAML.Scalar({ $ref: fnSchema.$id })); // Add the schema reference
-
-    // Create a new map with 'oneOf' as the key
-    const result = new YAMLMap();
-    result.set('oneOf', oneOfArray);
-
-    return result;
-  },
-};
-
 function parseValue(value: any) {
   const numValue: any = Number(value);
   if (!isNaN(numValue)) {
@@ -168,6 +160,7 @@ export const schema = new YAML.Schema({
     fnTag('ref'),
     fnTag('tpl'),
     tplExplicitTag,
+    selectTag,
     constTag,
     enumTag,
     formatTag,
@@ -175,8 +168,6 @@ export const schema = new YAML.Schema({
     defaultTag,
     requiredScalarTag,
     requiredMapTag,
-    fnScalarTag,
-    fnMapTag,
     updateModeFlag('merge'),
     updateModeFlag('append'),
   ],

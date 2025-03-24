@@ -653,22 +653,22 @@ describe('validate scenario', () => {
 
         expect(result).to.be.false;
         expect(validate.errors![0]).to.deep.eq({
-          instancePath: '/states/initial',
+          instancePath: '/states/initial/by',
           keyword: 'errorMessage',
           message: 'must not have a property by when property transitions is present',
           params: {
             errors: [
               {
                 emUsed: true,
-                instancePath: '/states/initial',
-                keyword: 'not',
-                message: 'must NOT be valid',
+                instancePath: '/states/initial/by',
+                keyword: 'false schema',
+                message: 'boolean schema is false',
                 params: {},
-                schemaPath: '#/dependentSchemas/transitions/allOf/0/not',
+                schemaPath: '#/dependentSchemas/transitions/properties/by/false schema',
               },
             ],
           },
-          schemaPath: '#/dependentSchemas/transitions/allOf/0/errorMessage',
+          schemaPath: '#/dependentSchemas/transitions/errorMessage',
         });
       });
 
