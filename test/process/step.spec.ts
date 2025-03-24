@@ -31,6 +31,9 @@ describe('step', () => {
       expect(process.current.key).to.eq('(done)');
       expect(process.current.title).to.eq('done');
       expect(process.current.timestamp.toISOString()).to.eq(process.events[1].timestamp.toISOString());
+
+      expect(process.isRunning).to.be.false;
+      expect(process.tags).to.include('(done)');
     });
 
     it('should step to the next state', () => {
@@ -67,6 +70,8 @@ describe('step', () => {
 
       expect(process.current.key).to.eq('second');
       expect(process.current.timestamp.toISOString()).to.eq(process.events[1].timestamp.toISOString());
+
+      expect(process.isRunning).to.be.true;
     });
 
     it('should pick the transition based on the actor', () => {

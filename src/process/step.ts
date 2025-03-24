@@ -4,6 +4,7 @@ import set from 'set-value';
 import { ajv as defaultAjv } from '../ajv';
 import { applyFn } from '../fn';
 import {
+  isEndState,
   NormalizedExplicitTransition,
   NormalizedTimeoutTransition,
   NormalizedTransition,
@@ -92,7 +93,7 @@ export function step<T extends Process>(
   return process;
 }
 
-export function moveToNext(process: Process, event: Event, next?: NormalizedExplicitTransition): Process {
+export function moveToNext(process: Process, event: Event, next?: NormalizedTransition): Process {
   next ??= findActionTransition(process, null);
   if (!next) return process;
 
@@ -110,6 +111,13 @@ export function moveToNext(process: Process, event: Event, next?: NormalizedExpl
 
     next = next!.goto ? findActionTransition(process, null) : undefined;
   } while (next?.goto);
+
+  const scenarioState = process.scenario.states[process.current.key];
+
+  if (isEndState(scenarioState)) {
+    process.isRunning = false;
+    process.tags.push(...scenarioState.tag);
+  }
 
   return process;
 }
@@ -246,7 +254,7 @@ export function timeout<T extends Process>(input: T, options: { hashFn?: HashFn;
   logTransition(process, next);
 
   if (next.goto !== null) {
-    process.current = instantiateState(process, next.goto, event.timestamp);
+    moveToNext(process, event, next);
   }
 
   return process;

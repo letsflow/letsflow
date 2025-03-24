@@ -12,6 +12,11 @@
       "description": "A short, human-readable name for the process.",
       "type": "string"
     },
+    "isRunning": {
+      "type": "boolean",
+      "default": true,
+      "description": "A flag indicating whether the process is running."
+    },
     "tags": {
       "description": "A list of tags for categorization and filtering.",
       "type": "array",

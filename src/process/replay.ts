@@ -128,7 +128,7 @@ function replayTimeout(process: Process, event: Event) {
   logTransition(process, next);
 
   if (next.goto !== null) {
-    process.current = instantiateState(process, next.goto, event.timestamp);
+    moveToNext(process, event, next);
   }
 }
 

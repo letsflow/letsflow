@@ -541,19 +541,28 @@
       "title": "canceled",
       "description": "",
       "instructions": {},
-      "notify": []
+      "notify": [],
+      "tag": [
+        "(canceled)"
+      ]
     },
     "(failed)": {
       "title": "failed",
       "description": "",
       "instructions": {},
-      "notify": []
+      "notify": [],
+      "tag": [
+        "(failed)"
+      ]
     },
     "(success)": {
       "title": "success",
       "description": "",
       "instructions": {},
-      "notify": []
+      "notify": [],
+      "tag": [
+        "(success)"
+      ]
     }
   },
   "vars": {

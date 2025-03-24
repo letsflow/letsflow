@@ -46,7 +46,8 @@ export function createProcess(
   return {
     id,
     title: scenario.title ?? `Process ${id}`,
-    tags: scenario.tags,
+    isRunning: true,
+    tags: [...scenario.tags],
     scenario: { id: scenarioId, ...scenario },
     actors: instantiateActors(scenario.actors, {}, options),
     vars: defaultValues(scenario.vars, options),

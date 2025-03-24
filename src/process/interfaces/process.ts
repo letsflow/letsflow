@@ -40,6 +40,7 @@ export interface State {
 export interface Process {
   id: string;
   title: string;
+  isRunning: boolean;
   tags: string[];
   scenario: { id: string } & NormalizedScenario;
   actors: Record<string, Actor>;

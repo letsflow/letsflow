@@ -209,6 +209,10 @@
         "notify": {
           "description": "Services to notify when the state is entered.",
           "$ref": "#/$defs/notify"
+        },
+        "tag": {
+          "description": "Tag or tags that are set when the state is entered.",
+          "$ref": "#/$defs/multiString"
         }
       }
     },

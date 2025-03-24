@@ -67,7 +67,7 @@ export interface ExplicitState extends BaseState {
 }
 
 export type State = ExplicitState | SimpleState | SimpleTimeoutState;
-export type EndState = Forbidden<BaseState, 'transitions' | 'on' | 'after' | 'goto'>;
+export type EndState = Forbidden<BaseState, 'transitions' | 'on' | 'after' | 'goto'> & { tag?: string | string[] };
 
 export interface ActionTransition {
   on: string | null;

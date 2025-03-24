@@ -237,22 +237,7 @@ function normalizeStates(
   actions: Record<string, NormalizedAction>,
 ): void {
   for (const key in states) {
-    const state = (states[key] || {}) as ExplicitState | EndState;
-
-    state.title ??= keyToTitle(key);
-    state.description ??= '';
-    state.instructions ??= {};
-
-    if (!isEndState(state)) {
-      state.transitions = normalizeTransitions(key, state);
-
-      delete (state as any).on;
-      delete (state as any).by;
-      delete (state as any).after;
-      delete (state as any).goto;
-    }
-
-    state.notify = normalizeNotify(state, actions);
+    normalizeState(states[key] || {}, key, actions);
   }
 
   if ('*' in states) {
@@ -263,6 +248,32 @@ function normalizeStates(
       mergeStates(state, anyState);
     });
   }
+}
+
+function normalizeState(
+  state: State | EndState,
+  key: string,
+  actions: Record<string, NormalizedAction>,
+): NormalizedState {
+  state.title ??= keyToTitle(key);
+  state.description ??= '';
+  state.instructions ??= {};
+
+  if (isEndState(state)) {
+    state.tag ??= [key];
+    if (!Array.isArray(state.tag)) state.tag = [state.tag];
+  } else {
+    state.transitions = normalizeTransitions(key, state);
+
+    delete (state as any).on;
+    delete (state as any).by;
+    delete (state as any).after;
+    delete (state as any).goto;
+  }
+
+  state.notify = normalizeNotify(state as ExplicitState | EndState, actions);
+
+  return state as NormalizedState;
 }
 
 function normalizeNotify(
@@ -430,6 +441,7 @@ function addImplicitEndStates(states: Record<string, NormalizedState>): void {
       description: '',
       instructions: {},
       notify: [],
+      tag: [key],
     };
   }
 }

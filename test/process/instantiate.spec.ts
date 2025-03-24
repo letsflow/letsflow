@@ -72,7 +72,7 @@ describe('instantiate', () => {
       expect(process.events.length).to.eq(1);
       const { hash: eventHash, ...event } = process.events[0] as InstantiateEvent;
       expect(event.timestamp).to.be.instanceof(Date);
-      expect(event.scenario).to.eq('537d0f13-c01c-5273-8dfb-ba7e8328579d');
+      expect(event.scenario).to.eq('e3be7461-b274-53b4-84cb-a95a4e175e70');
       expect(eventHash).to.eq(hash(event));
 
       expect(process.current.key).to.eq('initial');
@@ -310,6 +310,7 @@ describe('instantiate', () => {
             by: ['*'],
             if: true,
             goto: '(done)',
+            log: { title: '', description: '', if: false },
           },
         ],
         notify: [
@@ -369,6 +370,7 @@ describe('instantiate', () => {
     it('should exclude a notify if condition is false', () => {
       scenario.states.next = {
         title: 'Next state',
+        transitions: [],
         notify: [
           {
             service: 'email',
@@ -398,18 +400,21 @@ describe('instantiate', () => {
             by: ['admin', 'management'],
             if: true,
             goto: '(a)',
+            log: { title: '', description: '', if: false },
           },
           {
             on: 'complete',
             by: ['client', 'management'],
             if: true,
             goto: '(b)',
+            log: { title: '', description: '', if: false },
           },
           {
             on: 'complete',
             by: ['notary'],
             if: false,
             goto: '(c)',
+            log: { title: '', description: '', if: false },
           },
         ],
       };

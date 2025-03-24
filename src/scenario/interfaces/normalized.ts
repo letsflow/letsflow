@@ -38,13 +38,19 @@ export interface NormalizedNotify {
 
 export type NormalizedTransition = NormalizedExplicitTransition | NormalizedTimeoutTransition;
 
-export type NormalizedState =
-  | (Required<Omit<ExplicitState, 'schema' | 'transitions' | 'notify'>> & {
-      schema?: string;
-      transitions: NormalizedTransition[];
-      notify: NormalizedNotify[];
-    })
-  | (Required<Omit<EndState, 'schema' | 'notify'>> & { schema?: string; notify: NormalizedNotify[] });
+type NormalizedActiveState = Required<Omit<ExplicitState, 'schema' | 'transitions' | 'notify'>> & {
+  schema?: string;
+  transitions: NormalizedTransition[];
+  notify: NormalizedNotify[];
+};
+
+type NormalizedEndState = Required<Omit<EndState, 'schema' | 'notify' | 'tag'>> & {
+  schema?: string;
+  notify: NormalizedNotify[];
+  tag: string[];
+};
+
+export type NormalizedState = NormalizedActiveState | NormalizedEndState;
 
 export interface NormalizedScenario {
   $schema: string;

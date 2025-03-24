@@ -70,6 +70,7 @@ describe('normalize', () => {
             description: '',
             instructions: {},
             notify: [],
+            tag: ['(done)'],
           },
         },
         vars: {},
