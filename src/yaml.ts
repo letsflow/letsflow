@@ -12,7 +12,7 @@ import { stringifyString } from 'yaml/util';
 import { clean } from './process/utils';
 
 const fnTag = (type: string): YAML.ScalarTag => ({
-  identify: (value) => {
+  identify: (value: unknown): boolean => {
     return (
       typeof value === 'object' && value !== null && `<${type}>` in value && typeof value[`<${type}>`] === 'string'
     );

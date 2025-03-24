@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "alwaysStrict": true,
-    "lib": ["ES2023", "es6", "dom"],
+    "lib": ["dom"],
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "sourceMap": true,
     "declaration": true,
-    "target": "es6",
+    "target": "es2023",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {},
