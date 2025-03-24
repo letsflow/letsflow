@@ -1,7 +1,7 @@
 import { ActionEvent, Event, InstantiateEvent, Process, TimeoutEvent } from './interfaces';
 
 export function hasEnded(process: Process): boolean {
-  return !!process.current.key.match(/^\(.+\)$/);
+  return !process.isRunning;
 }
 
 export function chain<T extends Process>(process: T, ...fns: Array<(value: T) => T>): T {
