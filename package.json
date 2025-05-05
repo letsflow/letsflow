@@ -57,7 +57,7 @@
     "chai": "^5.2.0",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^10.1.2",
-    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-prettier": "^5.4.0",
     "mocha": "^11.2.2",
     "prettier": "^3.5.3",
     "sinon": "^20.0.0",
