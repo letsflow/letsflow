@@ -35,7 +35,7 @@
     "ajv": "^8.17.1",
     "ajv-errors": "^3.0.0",
     "ajv-formats": "^3.0.1",
-    "better-ajv-errors": "^1.2.0",
+    "better-ajv-errors": "^2.0.2",
     "fast-json-stable-stringify": "^2.1.0",
     "get-value": "^4.0.1",
     "mustache": "^4.2.0",
