@@ -52,7 +52,7 @@
     "@types/set-value": "^4.0.3",
     "@types/sinon": "^21.0.0",
     "@types/uuid": "^11.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.51.0",
+    "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.51.0",
     "chai": "^6.2.2",
     "eslint": "^9.39.2",
